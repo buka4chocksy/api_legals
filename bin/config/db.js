@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-const uri = process.env.DB_URI;
+const uri = process.env.DB_LOCAL;
 
 
 module.exports = function init() {
