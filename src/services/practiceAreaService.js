@@ -34,39 +34,39 @@ exports.update = (id, new_name) => {
 }
 
 //get all practicearea
-exports.getAll = ()=>{
-    return new Promise((resolve , reject)=>{
-        model.find({}).then(data =>{
-            if(data){
-                resolve({success:true , message:'practiceareas', data:data})
-            }else{
-                resolve({success:false , message:'no practicearea found !!!'})
+exports.getAll = () => {
+    return new Promise((resolve, reject) => {
+        model.find({}).then(data => {
+            if (data) {
+                resolve({ success: true, message: 'practiceareas', data: data })
+            } else {
+                resolve({ success: false, message: 'no practicearea found !!!' })
             }
         }).catch(err => reject(err));
     })
 }
 
 //get single practicearea
-exports.getById = (data)=>{
-    return new Promise((resolve , reject)=>{
-        model.findOne({_id:data}).then(found =>{
-            if(found){
-                resolve({success:true , message:found })
-            }else{
-                resolve({success:false , message:'could not find practicearea !!'})
+exports.getById = (data) => {
+    return new Promise((resolve, reject) => {
+        model.findOne({ _id: data }).then(found => {
+            if (found) {
+                resolve({ success: true, message: found })
+            } else {
+                resolve({ success: false, message: 'could not find practicearea !!' })
             }
         }).catch(err => reject(err));
     })
 }
 
 //delete practicearea
-exports.delete = (data)=>{
-    return new Promise((resolve , reject)=>{
-        model.findOneAndRemove({_id:data}).then(found =>{
-            if(found){
-                resolve({success:true , message:'practicearea deleted' })
-            }else{
-                resolve({success:false , message:'could not delete practicearea !!'})
+exports.delete = (data) => {
+    return new Promise((resolve, reject) => {
+        model.findOneAndRemove({ _id: data }).then(found => {
+            if (found) {
+                resolve({ success: true, message: 'practicearea deleted' })
+            } else {
+                resolve({ success: false, message: 'could not delete practicearea !!' })
             }
         }).catch(err => reject(err));
     })
