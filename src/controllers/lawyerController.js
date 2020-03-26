@@ -2,7 +2,7 @@ const service = require('../services/lawyerService')
 const cloudinary = require('../middlewares/cloudinary');
 module.exports = function lawyerController() {
     this.completeLawyerRegistration = (req, res) => {
-        service.completelawyerRegisteration(req.auth.publicId, req.body).then(data => {
+        service.completelawyerRegisteration(req.auth.Id, req.auth.publicId, req.body).then(data => {
             res.status(200).send(data)
         }).catch(err => res.status(500).send(err));
     }
@@ -20,7 +20,7 @@ module.exports = function lawyerController() {
             });
         }
         service
-            .uploadCertificate(req.auth.publicId, requestDetails)
+            .uploadCertificate(req.auth.Id, req.auth.publicId, requestDetails)
             .then(data => {
                 res.status(200).send(data);
             })
@@ -28,4 +28,24 @@ module.exports = function lawyerController() {
                 res.status(500).send(err);
             });
     };
+
+    this.getLawyerProile = (req, res) => {
+        service.getLawyerProfile(req.auth.Id).then(data => {
+            res.status(200).send(data);
+        }).catch(err => res.status(500).send(err))
+    }
+
+    this.updateLawyerProfile = (req, res) => {
+        service.editLawyerProfile(req.auth.publicId, req.body).then(data => {
+            res.status(200).send(data);
+        }).catch(err => res.status(500).send(err))
+    }
+
+    this.deleteUserAccount = (req, res) => {
+        service.deleteAccount(req.auth.Id).then(data => {
+            res.status(200).send(data);
+        }).catch(err => res.status(500).send(err))
+    }
+
+
 }
