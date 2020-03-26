@@ -2,10 +2,11 @@ const model = require('../models/lawyer');
 const user = require('../models/users')
 const authService = require('../services/authService')
 
-exports.completelawyerRegisteration = (id, data) => {
+exports.completelawyerRegisteration = (id, publicId, data) => {
     return new Promise((resolve, reject) => {
         const details = {
             user_id: id,
+            public_id: publicId,
             enrollment_number: data.enrollment_number,
             practice_area: [{
                 practice_area_id: data.practice_area
@@ -32,7 +33,7 @@ exports.completelawyerRegisteration = (id, data) => {
     })
 }
 
-exports.uploadCertificate = (id, data) => {
+exports.uploadCertificate = (id, publicId, data) => {
     return new Promise((resolve, reject) => {
         const detail = {
             image_url: data.imageUrl
@@ -41,10 +42,10 @@ exports.uploadCertificate = (id, data) => {
             .exec((err, updated) => {
                 if (err) reject(err);
                 if (updated) {
-                    user.findOneAndUpdate({ public_id: id }, { status: true }).exec((err, verified) => {
+                    user.findOneAndUpdate({ public_id: publicId }, { status: true }).exec((err, verified) => {
                         if (err) reject(err);
                         if (verified) {
-                            authService.getUserDetail(id).then(UserDetail => {
+                            authService.getUserDetail(publicId).then(UserDetail => {
                                 authService.generateToken(UserDetail).then(token => {
                                     resolve({
                                         success: true, data: { UserDetail, token: token },
@@ -56,10 +57,67 @@ exports.uploadCertificate = (id, data) => {
                             resolve({ success: false, message: 'Error encountered while completing lawyer signup' })
                         }
                     })
+                }else{
+                    resolve({ success: false, message: 'Error encountered while completing lawyer signup' }) 
                 }
             })
     })
 }
 
+//get lawyer profile 
+exports.getLawyerProfile = (id) => {
+    return new Promise((resolve, reject) => {
+        model.find({ user_id: id }).populate({ path: 'user_id', model: 'users' })
+            .populate({ path: "practice_area.practice_area_id", model: 'practiceArea', select: { _id: 0, __v: 0 } })
+            .populate({ path: "jurisdiction.jurisdiction_id", model: 'jurisdiction', select: { _id: 0, __v: 0 } })
+            .exec((err, found) => {
+                if (err) reject(err);
+                if (found) {
+                    resolve({ success: true, message: 'lawyer profile', data: found })
+                } else {
+                    resolve({ success: false, message: 'could not get lawyer profile !!' })
+                }
+            })
+    })
+}
 
+//update lawyer edit profile
+exports.editLawyerProfile = (id, data) => {
+    return new Promise((resolve, reject) => {
+        const details = {
+            gender: data.gender,
+            country: data.country,
+            state_of_origin: data.state_of_origin
+        }
+        model.findOneAndUpdate({ public_id: id }, details).exec((err, update) => {
+            if (err) reject(err);
+            if (update) {
+                resolve({ success: true, message: 'lawyer Profile updated !!!' })
+            } else {
+                resolve({ success: false, message: 'error updating lawyer profile!!!' })
+            }
+        })
+    })
+}
 
+//delete user account
+exports.deleteAccount = (id) => {
+    return new Promise((resolve, reject) => {
+        model.findOneAndRemove({user_id:id}).exec((err , deleted)=>{
+            if(err)reject(err);
+            if(deleted){
+                user.findByIdAndDelete({_id:id}).exec((err , done)=>{
+                    if(err)reject(err);
+                    if(done){
+                        resolve({success:true , message:'account deleted'})
+                    }else{
+                        resolve({success:false  , message:'error deleting account !!!'})
+                    }
+                })
+            }else{
+                resolve({success:false  , message:'error deleting account !!!'})
+
+            }
+        })
+    })
+}
