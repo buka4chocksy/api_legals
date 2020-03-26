@@ -24,20 +24,20 @@ exports.Register = (data) => {
         model.findOne({ email_address: userDetails.email_address }).then(found => {
             if (found) {
                 //when a lawyer has created a user profile but didnt complete his signup
-                if(found.user_type == 'lawyer' ){
-                    if(found.status == false){
-                        getUserDetail(found.public_id).then(user =>{
+                if (found.user_type == 'lawyer') {
+                    if (found.status == false) {
+                        getUserDetail(found.public_id).then(user => {
                             generateToken(user).then(token => {
                                 resolve({
-                                    success: true, data: token ,
+                                    success: true, data: token,
                                     message: 'please complete your signup process'
                                 })
                             }).catch(err => reject(err))
                         }).catch(err => reject(err))
-                    }else{
+                    } else {
                         resolve({ success: false, message: 'User already exists please proceed to sign in !!!' })
                     }
-                }else{
+                } else {
                     resolve({ success: false, message: 'User already exists!!!' })
                 }
             } else {
@@ -45,15 +45,15 @@ exports.Register = (data) => {
                 model.create(userDetails).then(created => {
                     if (created) {
                         if (userDetails.user_type == 'lawyer') {
-                            const lawyer_id = created.public_id 
-                                    getUserDetail(lawyer_id).then(user =>{
-                                        generateToken(user).then(token => {
-                                            resolve({
-                                                success: true, data: token ,
-                                                message: 'proceed to fill your  practicearea , enrollment number and jurisdiction '
-                                            })
-                                        }).catch(err => reject(err))
-                                    }).catch(err => reject(err))
+                            const lawyer_id = created.public_id
+                            getUserDetail(lawyer_id).then(user => {
+                                generateToken(user).then(token => {
+                                    resolve({
+                                        success: true, data: token,
+                                        message: 'proceed to fill your  practicearea , enrollment number and jurisdiction '
+                                    })
+                                }).catch(err => reject(err))
+                            }).catch(err => reject(err))
                         } else {
                             mailer.SignUpMail(userDetails.email_address, userDetails.status_code, userDetails.first_name, userDetails.last_name).then(sent => {
                                 if (sent) {
@@ -116,7 +116,7 @@ exports.userLogin = (email_address, password) => {
                 if (user.status != true) reject({ success: false, message: 'account not verified !!!' })
                 const comparePassword = bcrypt.compareSync(password, user.password)
                 if (comparePassword) {
-                    getUserDetail(user.publicId).then(activeUser => {
+                    getUserDetail(user.public_id).then(activeUser => {
                         generateToken(activeUser).then(token => {
                             resolve({
                                 success: true, data: { activeUser, token: token },
@@ -137,17 +137,17 @@ exports.userLogin = (email_address, password) => {
 }
 
 //user password change
-exports.changePassword = (email, data) => {
+exports.changePassword = (id, data) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ email_address: email }).then(exists => {
+        model.findOne({ public_id: id }).then(exists => {
             if (exists) {
                 const db_password = exists.password
                 const old_password = data.password
-                const new_password = bcrypt.hashSync(data.comfirm_password, 10)
+                const new_password = bcrypt.hashSync(data.new_password, 10)
 
                 const compare_password = bcrypt.compareSync(old_password, db_password)
                 if (compare_password == true) {
-                    model.findOneAndUpdate({ email_address: email }, { password: new_password })
+                    model.findOneAndUpdate({ public_id: id }, { password: new_password })
                         .then(updated => {
                             if (updated) {
                                 resolve({ success: true, message: 'Password updated successfully !!' })
@@ -165,6 +165,25 @@ exports.changePassword = (email, data) => {
     })
 }
 
+//profile picture update
+exports.profilePicture = (id, data) => {
+    return new Promise((resolve, reject) => {
+        const detail = {
+            image_url: data.imageUrl,
+            image_id: data.imageID
+        }
+        model.findOneAndUpdate({ public_id: id }, detail).exec((err, updated) => {
+            if (err) reject(err);
+            if (updated) {
+                resolve({ success: true, message: 'profile picture updated ' })
+            } else {
+                resolve({ success: false, message: 'Error updating profile picture' })
+            }
+        })
+    })
+}
+
+
 //get user details
 function getUserDetail(Id) {
     return new Promise((resolve, reject) => {
@@ -178,7 +197,7 @@ function getUserDetail(Id) {
                     publicId: data.public_id,
                     userType: data.user_type,
                     status: data.status,
-                    image_url:data.image_url
+                    image_url: data.image_url
                 };
                 resolve(specificUserDetail);
             })
