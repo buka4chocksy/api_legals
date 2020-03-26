@@ -34,39 +34,39 @@ exports.update = (id, new_name) => {
 }
 
 //get all jurisdiction
-exports.getAll = ()=>{
-    return new Promise((resolve , reject)=>{
-        model.find({}).then(data =>{
-            if(data){
-                resolve({success:true , message:'jurisdiction', data:data})
-            }else{
-                resolve({success:false , message:'no jurisdiction found !!!'})
+exports.getAll = () => {
+    return new Promise((resolve, reject) => {
+        model.find({}).then(data => {
+            if (data) {
+                resolve({ success: true, message: 'jurisdiction', data: data })
+            } else {
+                resolve({ success: false, message: 'no jurisdiction found !!!' })
             }
         }).catch(err => reject(err));
     })
 }
 
 //get single jurisdiction
-exports.getById = (data)=>{
-    return new Promise((resolve , reject)=>{
-        model.findOne({_id:data}).then(found =>{
-            if(found){
-                resolve({success:true , message:found })
-            }else{
-                resolve({success:false , message:'could not find jurisdiction !!'})
+exports.getById = (data) => {
+    return new Promise((resolve, reject) => {
+        model.findOne({ _id: data }).then(found => {
+            if (found) {
+                resolve({ success: true, message: found })
+            } else {
+                resolve({ success: false, message: 'could not find jurisdiction !!' })
             }
         }).catch(err => reject(err));
     })
 }
 
 //delete jurisdiction
-exports.delete = (data)=>{
-    return new Promise((resolve , reject)=>{
-        model.findOneAndRemove({_id:data}).then(found =>{
-            if(found){
-                resolve({success:true , message:'jurisdiction deleted' })
-            }else{
-                resolve({success:false , message:'could not delete jurisdiction !!'})
+exports.delete = (data) => {
+    return new Promise((resolve, reject) => {
+        model.findOneAndRemove({ _id: data }).then(found => {
+            if (found) {
+                resolve({ success: true, message: 'jurisdiction deleted' })
+            } else {
+                resolve({ success: false, message: 'could not delete jurisdiction !!' })
             }
         }).catch(err => reject(err));
     })
