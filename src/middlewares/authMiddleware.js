@@ -7,8 +7,6 @@ exports.authenticate = function(req,res,next){
     if(token){
         authVerify.verifyToken(token).then(decode =>{
             model.findOne({public_id:decode.publicId}).then(data =>{
-                console.log(data , 'hmmmmm')
-
                 if(data == null){
                     res.status(401).send({ success: false, message: "User does not exist" });
                 }else{
