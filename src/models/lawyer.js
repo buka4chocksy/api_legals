@@ -10,6 +10,10 @@ const lawyerSchema = new schema({
     jurisdiction: [{
         jurisdiction_id: { type: mongoose.SchemaTypes.ObjectId, ref: 'jurisdiction', autopopulate: true }
     }],
+    education: [{
+       institution: { type: String, default: '' },
+       degree:{ type: String, default: '' }
+    }],
     law_certificates: [{
         image_url: { type: String, default: '' },
     }],
