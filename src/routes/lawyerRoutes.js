@@ -9,6 +9,9 @@ module.exports = function(){
     router.get('/profile', middleware.authenticate, lawCtrl.getLawyerProile)
     router.post('/update_profile', middleware.authenticate, lawCtrl.updateLawyerProfile)
     router.delete('/delete_account', middleware.authenticate, lawCtrl.deleteUserAccount)
+    router.get('/lawyers/:pagesize/:pagenumber', middleware.authenticate ,  lawCtrl.getlawyerList)
+    router.get('/sort_practice_area/:id/:pagesize/:pagenumber', middleware.authenticate , lawCtrl.sortLawerByPracticeArea)
+    router.get('/sort_location/:pagesize/:pagenumber', middleware.authenticate , lawCtrl.sortLawyerByLocation)
 
     return router;
 }
