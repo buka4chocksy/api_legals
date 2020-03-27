@@ -47,5 +47,24 @@ module.exports = function lawyerController() {
         }).catch(err => res.status(500).send(err))
     }
 
+    this.getlawyerList = (req, res) => {
+        service.lawyerList(req.params.pagenumber, req.params.pagesize).then(data => {
+            res.status(200).send(data);
+        }).catch(err => res.status(500).send(err))
+    }
+
+    this.sortLawerByPracticeArea = (req, res) => {
+        service.sortLawerpracticeArea(req.params.id ,req.params.pagenumber, req.params.pagesize)
+            .then(data => {
+                res.status(200).send(data);
+            }).catch(err => res.status(500).send(err))
+    }
+
+    this.sortLawyerByLocation = (req, res) => {
+        service.sortLawyeryLocation(req.body,req.params.pagenumber, req.params.pagesize)
+            .then(data => {
+                res.status(200).send(data);
+            }).catch(err => res.status(500).send(err))
+    }
 
 }
