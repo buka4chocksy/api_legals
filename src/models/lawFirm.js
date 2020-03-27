@@ -3,6 +3,8 @@ const schema = mongoose.Schema;
 const lawFirmSchema = new schema({
     name_of_firm:{type:String , required:true},
     contact_email:{type:String , required:true},
+    image_url: { type: String, default: '' },
+    image_id: { type: String, default: '' },
     contact_phone_number:[{
         phone_number:{type:String , require:true}
     }],
@@ -10,7 +12,8 @@ const lawFirmSchema = new schema({
         practice_area_id: { type: mongoose.SchemaTypes.ObjectId, ref: 'practiceArea', autopopulate: true }
     }],
     practitioner: [{
-        practitioner_name: { type: String , require:true}
+        practitioner_name: { type: String , require:true},
+        degree:{ type: String , require:true},
     }],
     country: [{
         country_name: { type: String , require:true}
