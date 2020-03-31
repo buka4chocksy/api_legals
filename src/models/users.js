@@ -5,8 +5,6 @@ const userSchema = new schema({
     last_name: { type: String, required: true },
     email_address: { type: String, required: true, unique: true },
     phone_number: { type: String, required: true },
-    image_url: { type: String, default: '' },
-    image_id: { type: String, default: '' },
     status_code: { type: Number },
     gender: { type: String },
     password: { type: String, required: true },
