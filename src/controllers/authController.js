@@ -9,7 +9,8 @@ module.exports = function authController() {
     }
 
     this.verifyUser = (req, res) => {
-        service.verifyUser(req.body).then(data => {
+    
+        service.verifyUser(req.auth.email ,req.body).then(data => {
             res.status(200).send(data)
         }).catch(err => res.status(500).send(err));
     }
