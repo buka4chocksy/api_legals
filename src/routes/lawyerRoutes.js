@@ -12,6 +12,9 @@ module.exports = function(){
     router.get('/lawyers/:pagesize/:pagenumber', middleware.authenticate ,  lawCtrl.getlawyerList)
     router.get('/sort_practice_area/:id/:pagesize/:pagenumber', middleware.authenticate , lawCtrl.sortLawerByPracticeArea)
     router.get('/sort_location/:pagesize/:pagenumber', middleware.authenticate , lawCtrl.sortLawyerByLocation)
+    router.get('/search', middleware.authenticate , lawCtrl.searchLawyer)
+    router.put('/profile_picture', middleware.authenticate, multer.upload.single('profile'), lawCtrl.uploadProfilePicture)
+
 
     return router;
 }
