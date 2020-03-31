@@ -1,7 +1,13 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 const lawyerSchema = new schema({
-    user_id: { type: mongoose.SchemaTypes.ObjectId, ref: 'users', autopopulate: true },
+    first_name: { type: String, required: true },
+    last_name: { type: String, required: true },
+    email_address: { type: String, required: true, unique: true },
+    phone_number: { type: String, required: true },
+    image_url: { type: String, default: '' },
+    image_id: { type: String, default: '' },  
+    user_type: { type: String, required: true },
     public_id: { type: mongoose.SchemaTypes.ObjectId },
     enrollment_number: { type: String, default: '' },
     practice_area: [{
@@ -26,3 +32,4 @@ const lawyerSchema = new schema({
 
 
 module.exports = mongoose.model('lawyer', lawyerSchema);
+
