@@ -56,4 +56,11 @@ module.exports = function lawFirmController() {
                 res.status(200).send(data);
             }).catch(err => res.status(500).send(err))
     }
+
+    this.searchLawFirm = (req, res)=>{
+        service.searchLawfirm(req.body).then(data =>{
+            res.status(200).send(data);
+        }).catch(err => res.status(500).send(err))
+    }
+
 }
