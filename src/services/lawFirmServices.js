@@ -45,7 +45,6 @@ exports.createLawFirm = (id, data) => {
 
 //profile picture update
 exports.uploadProfilePicture = (id, firmId, data) => {
-    console.log(firmId, 'seee----')
     return new Promise((resolve, reject) => {
         const detail = {
             image_url: data.imageUrl,
@@ -98,7 +97,7 @@ exports.sortLawFirmBypracticeArea = (id, pagenumber = 1, pagesize = 20) => {
     return new Promise((resolve, reject) => {
         model.find({ 'practice_area.practice_area_id': id })
             .skip((parseInt(pagenumber - 1) * parseInt(pagesize))).limit(parseInt(pagesize))
-            .populate({ path: 'lawyer_id', model: 'users', select: { _id: 0, __v: 0 ,password: 0 , status_code:0 ,created_at:0 } })
+            .populate({ path: 'lawyer_id', model: 'users', select: { _id: 0, __v: 0, password: 0, status_code: 0, created_at: 0 } })
             .populate({ path: 'practice_area.practice_area_id', model: 'practiceArea' })
             .exec((err, found) => {
                 if (err) reject(err);
@@ -117,9 +116,9 @@ exports.sortLawFirmBypracticeArea = (id, pagenumber = 1, pagesize = 20) => {
 
 exports.sortLawFirmByLocation = (data, pagenumber = 1, pagesize = 20) => {
     return new Promise((resolve, reject) => {
-        model.find({ 'country.country_name': data.country , 'state.state_name':data.state })
+        model.find({ 'country.country_name': data.country, 'state.state_name': data.state })
             .skip((parseInt(pagenumber - 1) * parseInt(pagesize))).limit(parseInt(pagesize))
-            .populate({ path: 'lawyer_id', model: 'users', select: { _id: 0, __v: 0 ,password: 0 , status_code:0 ,created_at:0 } })
+            .populate({ path: 'lawyer_id', model: 'users', select: { _id: 0, __v: 0, password: 0, status_code: 0, created_at: 0 } })
             .populate({ path: 'practice_area.practice_area_id', model: 'practiceArea' })
             .exec((err, found) => {
                 if (err) reject(err);
@@ -131,6 +130,26 @@ exports.sortLawFirmByLocation = (data, pagenumber = 1, pagesize = 20) => {
                     resolve({ success: true, message: 'lawfirms found', data: maps })
                 } else {
                     resolve({ success: false, message: 'Could  not find data' })
+                }
+            })
+    })
+}
+
+
+exports.searchLawfirm = function (option) {
+    return new Promise((resolve, reject) => {
+        model.find({ name_of_firm: { $regex: option.search, $options: 'i' } }, { _id: 0, __v: 0 })
+            .populate({ path: 'lawyer_id', model: 'users', select: { _id: 0, __v: 0, password: 0, status_code: 0, created_at: 0 } })
+            .exec((err, found) => {
+                if (err) { reject(err); }
+                if (found == null || Object.keys(found).length === 0) {
+                    resolve({ success: false, data: {}, message: "We could not find what you are looking for." })
+                } else {
+                    var maps = found.sort(function (a, b) {
+                        return b.name_of_firm.length - a.name_of_firm.length;
+
+                    })
+                    resolve({ success: true, data: maps, message: "" });
                 }
             })
     })
