@@ -31,27 +31,4 @@ module.exports = function authController() {
         }).catch(err => res.status(500).send(err));
     }
 
-
-    this.uploadProfilePicture = async (req, res) => {
-        var requestDetails = {
-            image: req.file != null && req.file !== undefined ? req.file.path : null
-        };
-
-        if (req.image !== null && req.file !== undefined) {
-            await cloudinary.uploadToCloud(requestDetails.image).then(img => {
-                requestDetails.imageUrl = img.url;
-                requestDetails.imageID = img.ID;
-                return requestDetails;
-            });
-        }
-        service
-            .profilePicture(req.auth.publicId, requestDetails)
-            .then(data => {
-                res.status(200).send(data);
-            })
-            .catch(err => {
-                res.status(500).send(err);
-            });
-    };
-
 }
