@@ -3,7 +3,7 @@ const cloudinary = require('../middlewares/cloudinary')
 module.exports = function lawFirmController() {
 
     this.createLawFirm = (req, res) => {
-        service.createLawFirm(req.auth.Id, req.body).then(data => {
+        service.createLawFirm(req.auth.publicId, req.body).then(data => {
             res.status(200).send(data)
         }).catch(err => res.status(500).send(data))
     }
@@ -21,7 +21,7 @@ module.exports = function lawFirmController() {
             });
         }
         service
-            .uploadProfilePicture(req.auth.Id, req.query.firmId, requestDetails)
+            .uploadProfilePicture(req.auth.publicId, req.query.firmId, requestDetails)
             .then(data => {
                 res.status(200).send(data);
             })
@@ -31,7 +31,7 @@ module.exports = function lawFirmController() {
     };
 
     this.getlawfirmProfile = (req, res) => {
-        service.getLawFirmProfile(req.auth.Id, req.query.firmId)
+        service.getLawFirmProfile(req.auth.publicId, req.query.firmId)
             .then(data => {
                 res.status(200).send(data);
             }).catch(err => res.status(500).send(err));
