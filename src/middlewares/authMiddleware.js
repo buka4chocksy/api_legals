@@ -28,6 +28,7 @@ exports.authenticate = function(req,res,next){
     }
 }
 
+
 exports.authorize = function (req, res, next) {
     //Logic fot authorization goes in here    
 }
