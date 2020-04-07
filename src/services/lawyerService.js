@@ -2,7 +2,7 @@ const model = require('../models/lawyer');
 const user = require('../models/users')
 const authService = require('../services/authService')
 
-exports.completelawyerRegisteration = ( publicId, data) => {
+exports.completelawyerRegisteration = ( publicId, data , detail) => {
     return new Promise((resolve, reject) => {
         user.findOne({public_id:publicId}).exec((err , got)=>{
             if(err)reject(err)
@@ -20,20 +20,38 @@ exports.completelawyerRegisteration = ( publicId, data) => {
                     }],
                     jurisdiction: [{
                         jurisdiction_id: data.jurisdiction
+                    }],
+                    law_certificates: [{
+                        image_url: detail.imageUrl
                     }]
+
                 }
                 model.findOne({ public_id: publicId }).exec((err, exists) => {
                     if (err) reject(err)
                     if (exists) {
                         resolve({ success: true, message: 'lawyer details already exists , please proceed to upload certificate' })
                     } else {
-                        model.create(details).then(created => {
-                            if (created) {
-                               resolve({ success: true, message: 'complete your registration by uploading your certificate' })
-                            } else {
-                                resolve({ success: true, message: 'Error encountered while adding lawyer details' })
-                            }
-                        }).catch(err => reject(err))
+                            model.create(details).then(created => {
+                                if (created) {
+                                    user.findOneAndUpdate({ public_id: publicId }, { status: true }).exec((err, verified) => {
+                                        if (err) reject(err);
+                                        if (verified) {
+                                            authService.getUserDetail(publicId).then(UserDetail => {
+                                                authService.generateToken(UserDetail).then(token => {
+                                                    resolve({
+                                                        success: true, data: { UserDetail, token: token },
+                                                        message: 'authentication successfull !!!'
+                                                    })
+                                                }).catch(err => reject(err))
+                                            }).catch(err => reject(err))
+                                        } else {
+                                            resolve({ success: false, message: 'Error encountered while completing lawyer signup' })
+                                        }
+                                    })
+                                } else {
+                                    resolve({ success: true, message: 'Error encountered while adding lawyer details' })
+                                }
+                            }).catch(err => reject(err))
                     }
                 })
 
@@ -43,37 +61,6 @@ exports.completelawyerRegisteration = ( publicId, data) => {
         })
 
 
-    })
-}
-
-exports.uploadCertificate = (publicId, data) => {
-    return new Promise((resolve, reject) => {
-        const detail = {
-            image_url: data.imageUrl
-        }
-        model.findOneAndUpdate({ public_id: publicId }, { $push: { law_certificates: detail } })
-            .exec((err, updated) => {
-                if (err) reject(err);
-                if (updated) {
-                    user.findOneAndUpdate({ public_id: publicId }, { status: true }).exec((err, verified) => {
-                        if (err) reject(err);
-                        if (verified) {
-                            authService.getUserDetail(publicId).then(UserDetail => {
-                                authService.generateToken(UserDetail).then(token => {
-                                    resolve({
-                                        success: true, data: { UserDetail, token: token },
-                                        message: 'authentication successfull !!!'
-                                    })
-                                }).catch(err => reject(err))
-                            }).catch(err => reject(err))
-                        } else {
-                            resolve({ success: false, message: 'Error encountered while completing lawyer signup' })
-                        }
-                    })
-                } else {
-                    resolve({ success: false, message: 'Error encountered while completing lawyer signup' })
-                }
-            })
     })
 }
 
