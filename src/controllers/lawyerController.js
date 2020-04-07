@@ -1,14 +1,14 @@
 const service = require('../services/lawyerService')
 const cloudinary = require('../middlewares/cloudinary');
 module.exports = function lawyerController() {
-    this.completeLawyerRegistration = (req, res) => {
-        service.completelawyerRegisteration(req.auth.publicId, req.body).then(data => {
-            res.status(200).send(data)
-        }).catch(err => res.status(500).send(err));
-    }
+    // this.completeLawyerRegistration = (req, res) => {
+    //     service.completelawyerRegisteration(req.auth.publicId, req.body).then(data => {
+    //         res.status(200).send(data)
+    //     }).catch(err => res.status(500).send(err));
+    // }
 
-    this.uploadCertificate = async (req, res) => {
-        var requestDetails = {
+    this.completeLawyerRegistration = async(req, res) => {
+        const requestDetails = {
             image: req.file != null && req.file !== undefined ? req.file.path : null
         };
 
@@ -19,15 +19,10 @@ module.exports = function lawyerController() {
                 return requestDetails;
             });
         }
-        service
-            .uploadCertificate(req.auth.publicId, requestDetails)
-            .then(data => {
-                res.status(200).send(data);
-            })
-            .catch(err => {
-                res.status(500).send(err);
-            });
-    };
+        service.completelawyerRegisteration(req.auth.publicId, req.body , requestDetails).then(data => {
+            res.status(200).send(data)
+        }).catch(err => res.status(500).send(err));
+    }
 
     this.getLawyerProile = (req, res) => {
         service.getLawyerProfile(req.auth.publicId).then(data => {
