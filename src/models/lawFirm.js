@@ -24,7 +24,8 @@ const lawFirmSchema = new schema({
     address: [{
         address_name: { type: String , require:true}
     }],
-    lawyer_id:{ type: mongoose.SchemaTypes.ObjectId, ref: 'users', autopopulate: true },
+    lawyer_id:{ type: mongoose.SchemaTypes.ObjectId, ref: 'lawyer', autopopulate: true },
+    public_id:{ type: mongoose.SchemaTypes.ObjectId, ref: 'users', autopopulate: true },
     created_at: { type: Date, default: Date.now },
 
 })
