@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs')
 const mongoose = require('mongoose');
 const mailer = require('../middlewares/mailer');
 const secret = process.env.Secret
-const lawyer = require('../models/lawyer');
+const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
 //user signup
@@ -24,7 +24,6 @@ exports.Register = (data) => {
         model.findOne({ email_address: userDetails.email_address }).then(found => {
             if (found) {
                 //when a lawyer has created a user profile but didnt complete his signup
-                if (found.user_type == 'lawyer') {
                     if (found.status == false) {
                         getUserDetail(found.public_id).then(user => {
                             generateToken(user).then(token => {
@@ -37,9 +36,7 @@ exports.Register = (data) => {
                     } else {
                         resolve({ success: false, message: 'User already exists please proceed to sign in !!!' })
                     }
-                } else {
-                    resolve({ success: false, message: 'User already exists!!!' })
-                }
+
             } else {
                 //
                 model.create(userDetails).then(created => {
@@ -57,7 +54,14 @@ exports.Register = (data) => {
                         } else {
                             mailer.SignUpMail(userDetails.email_address, userDetails.status_code, userDetails.first_name, userDetails.last_name).then(sent => {
                                 if (sent) {
-                                    resolve({ success: true, message: 'Registration successfull , proceed to verify ur account !!' })
+                                    getUserDetail(created.public_id).then(clientDetail => {
+                                        generateToken(clientDetail).then(token => {
+                                            resolve({
+                                                success: true, data: token,
+                                                message: 'Registration successfull , proceed to verify ur account '
+                                            })
+                                        }).catch(err => reject(err))
+                                    }).catch(err => reject(err))
                                 } else {
                                     resolve({ success: false, message: 'Error encountered while signing up !!' })
                                 }
@@ -72,21 +76,43 @@ exports.Register = (data) => {
     })
 }
 
-//user verification
-exports.verifyUser = option => {
+//user verification 
+exports.verifyUser = (email ,option) => {
     return new Promise((resolve, reject) => {
         model
-            .findOne({ email_address: option.email_address })
+            .findOne({ email_address: email })
             .then(found => {
+                const clientData = {
+                    first_name: found.first_name,
+                    last_name: found.last_name,
+                    email_address: found.email_address,
+                    phone_number: found.phone_number,
+                    user_type: found.user_type,
+                    public_id:found.public_id
+                }
                 if (found.status_code == option.status_code) {
                     model
-                        .findOneAndUpdate({ email_address: option.email_address }, { status: true })
+                        .findOneAndUpdate({ email_address: email }, { status: true })
                         .then(updated => {
                             if (updated) {
-                                resolve({
-                                    success: true,
-                                    message: "account verification completed !!!"
-                                });
+                                client.create(clientData).then(created =>{
+                                    if(created){
+                                        getUserDetail(found.public_id).then(activeUser => {
+                                            generateToken(activeUser).then(token => {
+                                                resolve({
+                                                    success: true, data: { activeUser, token: token },
+                                                    message: 'authentication successfull !!!'
+                                                })
+                                            }).catch(err => reject(err))
+                                        }).catch(err => reject(err))
+                                    }else{
+                                        resolve({
+                                            success: false,
+                                            message: "Error verifying client !!!"
+                                        });
+                                    }
+                                }).catch(err => reject(err))
+                         
                             } else {
                                 resolve({
                                     success: false,
@@ -107,6 +133,8 @@ exports.verifyUser = option => {
             });
     });
 };
+
+
 
 //user login
 exports.userLogin = (email_address, password) => {
@@ -143,8 +171,7 @@ exports.changePassword = (id, data) => {
             if (exists) {
                 const db_password = exists.password
                 const old_password = data.password
-                const new_password = bcrypt.hashSync(data.new_password, 10)
-
+                const new_password = bcrypt.hashSync(data.comfirm_password, 10)
                 const compare_password = bcrypt.compareSync(old_password, db_password)
                 if (compare_password == true) {
                     model.findOneAndUpdate({ public_id: id }, { password: new_password })
@@ -165,23 +192,7 @@ exports.changePassword = (id, data) => {
     })
 }
 
-//profile picture update
-exports.profilePicture = (id, data) => {
-    return new Promise((resolve, reject) => {
-        const detail = {
-            image_url: data.imageUrl,
-            image_id: data.imageID
-        }
-        model.findOneAndUpdate({ public_id: id }, detail).exec((err, updated) => {
-            if (err) reject(err);
-            if (updated) {
-                resolve({ success: true, message: 'profile picture updated ' })
-            } else {
-                resolve({ success: false, message: 'Error updating profile picture' })
-            }
-        })
-    })
-}
+
 
 
 //get user details
