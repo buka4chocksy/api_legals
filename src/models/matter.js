@@ -5,7 +5,7 @@ var matterSchema = new Schema({
         Lawyer: { type: mongoose.SchemaTypes.ObjectId, ref: "Lawyer", autopopulate: [true, "lawyer id  not available"] },
         publicId: { type: mongoose.SchemaTypes.ObjectId }
     },
-    clientid: { type: mongoose.SchemaTypes.ObjectId, ref: "Client", autopopulate: true, index: true },
+    clientid: { type: mongoose.SchemaTypes.ObjectId, ref: "client", autopopulate: true, index: true },
     first_name: { type: String, lowercase: true },
     last_name: { type: String, lowercase: true },
     deadline: {
