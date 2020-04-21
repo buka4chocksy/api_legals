@@ -90,42 +90,46 @@ exports.verifyUser = (email ,option) => {
                     user_type: found.user_type,
                     public_id:found.public_id
                 }
-                if (found.status_code == option.status_code) {
-                    model
-                        .findOneAndUpdate({ email_address: email }, { status: true })
-                        .then(updated => {
-                            if (updated) {
-                                client.create(clientData).then(created =>{
-                                    if(created){
-                                        getUserDetail(found.public_id).then(activeUser => {
-                                            generateToken(activeUser).then(token => {
-                                                resolve({
-                                                    success: true, data: { activeUser, token: token },
-                                                    message: 'authentication successfull !!!'
-                                                })
+                if(clientData.user_type == 'lawyer'){
+                    resolve({success:false , message:'Sorry you cannot verify your account using this process'})
+                }else{
+                    if (found.status_code == option.status_code) {
+                        model
+                            .findOneAndUpdate({ email_address: email }, { status: true })
+                            .then(updated => {
+                                if (updated) {
+                                    client.create(clientData).then(created =>{
+                                        if(created){
+                                            getUserDetail(found.public_id).then(activeUser => {
+                                                generateToken(activeUser).then(token => {
+                                                    resolve({
+                                                        success: true, data: { activeUser, token: token },
+                                                        message: 'authentication successfull !!!'
+                                                    })
+                                                }).catch(err => reject(err))
                                             }).catch(err => reject(err))
-                                        }).catch(err => reject(err))
-                                    }else{
-                                        resolve({
-                                            success: false,
-                                            message: "Error verifying client !!!"
-                                        });
-                                    }
-                                }).catch(err => reject(err))
-                         
-                            } else {
-                                resolve({
-                                    success: false,
-                                    message: "account verification failed !!!"
-                                });
-                            }
-                        })
-                        .catch(err => reject(err));
-                } else {
-                    resolve({
-                        success: false,
-                        message: "invalid email or veririfcation code "
-                    });
+                                        }else{
+                                            resolve({
+                                                success: false,
+                                                message: "Error verifying client !!!"
+                                            });
+                                        }
+                                    }).catch(err => reject(err))
+                             
+                                } else {
+                                    resolve({
+                                        success: false,
+                                        message: "account verification failed !!!"
+                                    });
+                                }
+                            })
+                            .catch(err => reject(err));
+                    } else {
+                        resolve({
+                            success: false,
+                            message: "invalid email or veririfcation code "
+                        });
+                    }
                 }
             })
             .catch(err => {
