@@ -6,6 +6,7 @@ require('dotenv').config();
 const compression = require('compression');
 const router = express.Router();
 const rootRouter  = require('./src/routes/index.js')(router);
+const socialAuth = require('./src/routes/socialAuth')(router);
 const cors = require('cors');
 // const dbConfiguration = require('./bin/config/db');
 const passport = require('passport');
@@ -52,6 +53,7 @@ app.use(express.json());//for parsing application/json
 app.use(express.urlencoded({ extended: false})); //for parsing application/x-www-form-urlencoded
 app.use(cors());
 app.use('/api', rootRouter);
+app.use('/', socialAuth);
 
 
 app.use((req, res, next) => {
