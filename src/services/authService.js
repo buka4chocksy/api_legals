@@ -1,7 +1,7 @@
 const model = require('../models/users');
 const bcrypt = require('bcryptjs')
 const mongoose = require('mongoose');
-const mailer = require('../middlewares/mailer');
+// const mailer = require('../middlewares/mailer');
 const secret = process.env.Secret
 const jwt = require('jsonwebtoken');
 
@@ -26,13 +26,13 @@ exports.Register = (data) => {
             } else {
                 model.create(userDetails).then(created => {
                     if (created) {
-                        mailer.SignUpMail(userDetails.email_address, userDetails.status_code, userDetails.first_name, userDetails.last_name).then(sent => {
-                            if (sent) {
-                                resolve({ success: true, message: 'Registration successfull , proceed to verify ur account !!' })
-                            } else {
-                                resolve({ success: false, message: 'Error encountered while signing up !!' })
-                            }
-                        }).catch(err => reject(err));
+                        // mailer.SignUpMail(userDetails.email_address, userDetails.status_code, userDetails.first_name, userDetails.last_name).then(sent => {
+                        //     if (sent) {
+                        //         resolve({ success: true, message: 'Registration successfull , proceed to verify ur account !!' })
+                        //     } else {
+                        //         resolve({ success: false, message: 'Error encountered while signing up !!' })
+                        //     }
+                        // }).catch(err => reject(err));
                     } else {
                         resolve({ success: false, message: 'Error registering user !!' })
                     }
