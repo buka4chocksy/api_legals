@@ -53,7 +53,7 @@ app.use(express.json());//for parsing application/json
 app.use(express.urlencoded({ extended: false})); //for parsing application/x-www-form-urlencoded
 app.use(cors());
 app.use('/api', rootRouter);
-app.use('/', socialAuth);
+app.use('', socialAuth);
 
 
 app.use((req, res, next) => {
