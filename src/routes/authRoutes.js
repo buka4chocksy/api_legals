@@ -1,6 +1,8 @@
 const router = require('express').Router()
 const authController = require('../controllers/authController')
 const middleware = require('../middlewares/authMiddleware');
+const passport = require('passport');
+
 module.exports = function () {
     const authCtrl = new authController()
     router.post('/register', authCtrl.Register)
