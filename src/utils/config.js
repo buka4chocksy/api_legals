@@ -2,7 +2,7 @@ module.exports = {
     google: {
       clientID: process.env.clientID,
       clientSecret: process.env.clientSecret,
-      callbackURL: 'https://match-likes.herokuapp.com/auth/google/callback',
+      callbackURL: 'https://lawyerapp-api.herokuapp.com//auth/google/callback',
     },
     linkedin: {
       clientID: process.env.LINKEDIN_CLIENT_ID,
