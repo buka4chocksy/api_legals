@@ -21,6 +21,14 @@ module.exports = function authController() {
         }).catch(err => res.status(500).send(err));
     }
 
+
+    this.terms = (req, res) => {
+        service.acceptTerms(req.body, req.auth.publicId).then(data => {
+            res.status(200).send(data)
+        }).catch(err => res.status(500).send(err));
+    }
+
+
     this.changePassword = (req, res) => {
         const data = {
             password: req.body.password,
