@@ -34,7 +34,18 @@ exports.Register = (data) => {
                             }).catch(err => reject(err))
                         }).catch(err => reject(err))
                     } else {
-                        resolve({ success: false, message: 'User already exists please proceed to sign in !!!' })
+                        if(found.terms == false){
+                            getUserDetail(found.public_id).then(user => {
+                                generateToken(user).then(token => {
+                                    resolve({
+                                        success: true, data: token,
+                                        message: 'please accept the terms and condition'
+                                    })
+                                }).catch(err => reject(err))
+                            }).catch(err => reject(err))
+                        }else{
+                            resolve({ success: false, message: 'User already exists please proceed to sign in !!!' })
+                        }
                     }
 
             } else {
@@ -138,7 +149,28 @@ exports.verifyUser = (email ,option) => {
     });
 };
 
-
+exports.acceptTerms =(data , id)=>{
+    return new Promise((resolve , reject)=>{
+        
+        if(data.accept == 'accept'){
+            model.findOneAndUpdate({public_id:id},{terms:true}).exec((err , updated)=>{
+            if(err)reject(err);
+                if(updated){
+                    getUserDetail(id).then(activeUser => {
+                        generateToken(activeUser).then(token => {
+                            resolve({
+                                success: true, data: { activeUser, token: token },
+                                message: 'authentication successfull !!!'
+                            })
+                        }).catch(err => reject(err))
+                    }).catch(err => reject(err)) 
+                }
+            })
+        }else{
+            resolve({success:false , message:'Terms and policy declined !!!'})
+        }
+    })
+}
 
 //user login
 exports.userLogin = (email_address, password) => {
@@ -146,6 +178,16 @@ exports.userLogin = (email_address, password) => {
         model.findOne({ email_address: email_address }, { _id: 0, __v: 0, }).then(user => {
             if (user) {
                 if (user.status != true) reject({ success: false, message: 'account not verified !!!' })
+            if(user.terms !=true){
+                getUserDetail(user.public_id).then(activeUser => {
+                    generateToken(activeUser).then(token => {
+                        resolve({
+                            success: false, token: token ,
+                            message: 'Sorry you have not accepted the terms and condition!!!'
+                        })
+                    }).catch(err => reject(err))
+                }).catch(err => reject(err))
+            }else{
                 const comparePassword = bcrypt.compareSync(password, user.password)
                 if (comparePassword) {
                     getUserDetail(user.public_id).then(activeUser => {
@@ -159,6 +201,8 @@ exports.userLogin = (email_address, password) => {
                 } else {
                     resolve({ success: false, message: 'incorrect email or password ' })
                 }
+            }
+
             } else {
                 resolve({ success: false, message: 'user does not exist !!!' })
             }
@@ -167,6 +211,8 @@ exports.userLogin = (email_address, password) => {
         })
     })
 }
+
+
 
 //user password change
 exports.changePassword = (id, data) => {
