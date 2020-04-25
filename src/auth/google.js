@@ -11,7 +11,8 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
             const userDetails = {
                 oauthID: profile.id,
                 name: profile.displayName,
-                image_url: profile._json.picture
+                profileImage: profile._json.picture,
+                created: new Date()
             }
             console.log('checking user to be created: ', userDetails)
             User.create(userDetails).then(created => {
