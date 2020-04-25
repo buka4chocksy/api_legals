@@ -3,7 +3,7 @@ const { google } = require('../utils/config');
 const model = require('../models/users');
 
 module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
-    User.findOne({ oauthID: profile.id }, (err, user) => {
+    model.findOne({ oauthID: profile.id }, (err, user) => {
         if (err) console.log(err);
         if (!err && user !== null) {
             done(null, user);
@@ -17,7 +17,7 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
             model.create(userDetails).then(created => {
                 if (created) {
                     console.log('Google User created successfully!')
-                    done(null, user)
+                    done(null, created)
                 }
             })
                 .catch(err => {
