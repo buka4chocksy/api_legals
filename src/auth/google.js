@@ -11,8 +11,7 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
             user = new User({
                 oauthID: profile.id,
                 name: profile.displayName,
-                image_url:profile._json.picture,
-                created_at: new Date(),
+                image_url:profile._json.picture
             })
             user.save(() => {
                 if(err) console.log(err);
