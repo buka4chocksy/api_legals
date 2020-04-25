@@ -3,7 +3,7 @@ const schema = mongoose.Schema;
 const userSchema = new schema({
     // first_name: { type: String },
     // last_name: { type: String },
-    // oauthID: { type: String },
+    oauthID: { type: String },
     name: { type: String },
     // email_address: { type: String, unique: true },
     // phone_number: { type: String },
