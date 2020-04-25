@@ -1,9 +1,9 @@
 const GoogleStrategy = require('passport-google-oauth20');
 const { google } = require('../utils/config');
-const model = require('../models/users');
+const User = require('../models/users');
 
 module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
-    model.findOne({ oauthID: profile.id }, (err, user) => {
+    User.findOne({ oauthID: profile.id }, (err, user) => {
         if (err) console.log(err);
         if (!err && user !== null) {
             done(null, user);
@@ -14,7 +14,7 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
                 image_url: profile._json.picture
             }
             console.log('checking user to be created: ', userDetails)
-            model.create(userDetails).then(created => {
+            User.create(userDetails).then(created => {
                 if (created) {
                     console.log('Google User created successfully!')
                     done(null, created)
