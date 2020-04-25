@@ -1,6 +1,6 @@
 const GoogleStrategy = require('passport-google-oauth20');
 const { google } = require('../utils/config');
-const User = require('../models/users');
+const model = require('../models/users');
 
 module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
     User.findOne({ oauthID: profile.id }, (err, user) => {
@@ -8,18 +8,21 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
         if (!err && user !== null) {
             done(null, user);
         } else {
-            user = {
+            const userDetails = {
                 oauthID: profile.id,
                 name: profile.displayName,
                 image_url: profile._json.picture
             }
-            User.create(user, (err, us) => {
-                if(err) console.log('Error ocurred while creating this user')
-                if(us) {
+            console.log('checking user to be created: ', userDetails)
+            model.create(userDetails).then(created => {
+                if (created) {
                     console.log('Google User created successfully!')
                     done(null, user)
                 }
             })
+                .catch(err => {
+                    console.log('Error ocurred while creating this user')
+                })
             // user = new User({
             //     oauthID: profile.id,
             //     name: profile.displayName,
