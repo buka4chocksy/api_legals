@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-const schema = mongoose.Schema;
-const userSchema = new schema({
+const userSchema = mongoose.Schema({
     // first_name: { type: String },
     // last_name: { type: String },
     oauthID: { type: String },
@@ -17,4 +16,4 @@ const userSchema = new schema({
     created_at: { type: Date, default: Date.now },
 })
 
-module.exports = mongoose.model('users', userSchema);
+module.exports = mongoose.model('User', userSchema);
