@@ -14,27 +14,27 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
                 image_url: profile._json.picture
             }
             console.log('checking user to be created: ', userDetails)
-            // User.create(userDetails).then(created => {
-            //     if (created) {
-            //         console.log('Google User created successfully!')
-            //         done(null, created)
-            //     }
-            // })
-            //     .catch(err => {
-            //         console.log('Error ocurred while creating this user')
-            //     })
-            user = new User({
-                oauthID: profile.id,
-                name: profile.displayName,
-                image_url:profile._json.picture
-            })
-            user.save(() => {
-                if(err) console.log(err);
-                else {
-                    console.log('saving google user...')
-                    done(null, user)
+            User.create(userDetails).then(created => {
+                if (created) {
+                    console.log('Google User created successfully!')
+                    done(null, created)
                 }
             })
+                .catch(err => {
+                    console.log('Error ocurred while creating this user')
+                })
+            // user = new User({
+            //     oauthID: profile.id,
+            //     name: profile.displayName,
+            //     image_url:profile._json.picture
+            // })
+            // user.save(() => {
+            //     if(err) console.log(err);
+            //     else {
+            //         console.log('saving google user...')
+            //         done(null, user)
+            //     }
+            // })
         }
     })
 })
