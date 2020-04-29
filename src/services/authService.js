@@ -1,7 +1,7 @@
 const model = require('../models/users');
 const bcrypt = require('bcryptjs')
 const mongoose = require('mongoose');
-const mailer = require('../middlewares/mailer');
+// const mailer = require('../middlewares/mailer');
 const secret = process.env.Secret
 const client = require('../models/client');
 const jwt = require('jsonwebtoken');
