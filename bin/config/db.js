@@ -1,12 +1,11 @@
 var mongoose = require('mongoose');
 const uri = process.env.DB_LOCAL;
-const oauth = process.env.lawDBURL;
 
 
 module.exports = function init() {
-    if (oauth) {
+    if (uri) {
         mongoose.connect(
-            oauth, {
+            uri, {
             useNewUrlParser: true,
             useCreateIndex: true,
             useUnifiedTopology: true
