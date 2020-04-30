@@ -12,9 +12,9 @@ exports.completelawyerRegisteration = ( publicId, data , detail) => {
                     last_name:got.last_name,
                     email_address:got.email_address,
                     phone_number:got.phone_number,
-                    user_type:got.user_type,
                     public_id: publicId,
                     enrollment_number: data.enrollment_number,
+                    user_type:data.user_type,
                     practice_area: [{
                     practice_area_id: data.practice_area
                     }],
@@ -33,7 +33,7 @@ exports.completelawyerRegisteration = ( publicId, data , detail) => {
                     } else {
                             model.create(details).then(created => {
                                 if (created) {
-                                    user.findOneAndUpdate({ public_id: publicId }, { status: true }).exec((err, verified) => {
+                                    user.findOneAndUpdate({ public_id: publicId }, { status: true ,user_type:details.user_type  }).exec((err, verified) => {
                                         if (err) reject(err);
                                         if (verified) {
                                             authService.getUserDetail(publicId).then(UserDetail => {
