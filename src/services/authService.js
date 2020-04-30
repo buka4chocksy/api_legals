@@ -7,6 +7,86 @@ const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
 //user signup
+// exports.Register = (data) => {
+//     return new Promise((resolve, reject) => {
+//         const hash = bcrypt.hashSync(data.password, 10)
+//         const gen = Math.floor(1000 + Math.random() * 9000);
+//         const userDetails = {
+//             first_name: data.first_name,
+//             last_name: data.last_name,
+//             email_address: data.email_address,
+//             phone_number: data.phone_number,
+//             user_type: data.user_type,
+//             status_code: gen,
+//             password: hash,
+//             public_id: mongoose.Types.ObjectId(),
+//         }
+//         model.findOne({ email_address: userDetails.email_address }).then(found => {
+//             if (found) {
+//                 //when a lawyer has created a user profile but didnt complete his signup
+//                     if (found.status == false) {
+//                         getUserDetail(found.public_id).then(user => {
+//                             generateToken(user).then(token => {
+//                                 resolve({
+//                                     success: true, data: token,
+//                                     message: 'please complete your signup process'
+//                                 })
+//                             }).catch(err => reject(err))
+//                         }).catch(err => reject(err))
+//                     } else {
+//                         if(found.terms == false){
+//                             getUserDetail(found.public_id).then(user => {
+//                                 generateToken(user).then(token => {
+//                                     resolve({
+//                                         success: true, data: token,
+//                                         message: 'please accept the terms and condition'
+//                                     })
+//                                 }).catch(err => reject(err))
+//                             }).catch(err => reject(err))
+//                         }else{
+//                             resolve({ success: false, message: 'User already exists please proceed to sign in !!!' })
+//                         }
+//                     }
+
+//             } else {
+//                 //
+//                 model.create(userDetails).then(created => {
+//                     if (created) {
+//                         if (userDetails.user_type == 'lawyer') {
+//                             const lawyer_id = created.public_id
+//                             getUserDetail(lawyer_id).then(user => {
+//                                 generateToken(user).then(token => {
+//                                     resolve({
+//                                         success: true, data: token,
+//                                         message: 'proceed to fill your  practicearea , enrollment number and jurisdiction '
+//                                     })
+//                                 }).catch(err => reject(err))
+//                             }).catch(err => reject(err))
+//                         } else {
+//                             mailer.SignUpMail(userDetails.email_address, userDetails.status_code, userDetails.first_name, userDetails.last_name).then(sent => {
+//                                 if (sent) {
+//                                     getUserDetail(created.public_id).then(clientDetail => {
+//                                         generateToken(clientDetail).then(token => {
+//                                             resolve({
+//                                                 success: true, data: token,
+//                                                 message: 'Registration successfull , proceed to verify ur account '
+//                                             })
+//                                         }).catch(err => reject(err))
+//                                     }).catch(err => reject(err))
+//                                 } else {
+//                                     resolve({ success: false, message: 'Error encountered while signing up !!' })
+//                                 }
+//                             }).catch(err => reject(err));
+//                         }
+//                     } else {
+//                         resolve({ success: false, message: 'Error registering user !!' })
+//                     }
+//                 }).catch(err => reject(err));
+//             }
+//         }).catch(err => reject(err));
+//     })
+// }
+
 exports.Register = (data) => {
     return new Promise((resolve, reject) => {
         const hash = bcrypt.hashSync(data.password, 10)
@@ -16,7 +96,6 @@ exports.Register = (data) => {
             last_name: data.last_name,
             email_address: data.email_address,
             phone_number: data.phone_number,
-            user_type: data.user_type,
             status_code: gen,
             password: hash,
             public_id: mongoose.Types.ObjectId(),
@@ -49,35 +128,17 @@ exports.Register = (data) => {
                     }
 
             } else {
-                //
                 model.create(userDetails).then(created => {
                     if (created) {
-                        if (userDetails.user_type == 'lawyer') {
-                            const lawyer_id = created.public_id
-                            getUserDetail(lawyer_id).then(user => {
+                            const user_id = created.public_id
+                            getUserDetail(user_id).then(user => {
                                 generateToken(user).then(token => {
                                     resolve({
                                         success: true, data: token,
-                                        message: 'proceed to fill your  practicearea , enrollment number and jurisdiction '
+                                        message: 'Signup almost complete, please choose part '
                                     })
                                 }).catch(err => reject(err))
                             }).catch(err => reject(err))
-                        } else {
-                            mailer.SignUpMail(userDetails.email_address, userDetails.status_code, userDetails.first_name, userDetails.last_name).then(sent => {
-                                if (sent) {
-                                    getUserDetail(created.public_id).then(clientDetail => {
-                                        generateToken(clientDetail).then(token => {
-                                            resolve({
-                                                success: true, data: token,
-                                                message: 'Registration successfull , proceed to verify ur account '
-                                            })
-                                        }).catch(err => reject(err))
-                                    }).catch(err => reject(err))
-                                } else {
-                                    resolve({ success: false, message: 'Error encountered while signing up !!' })
-                                }
-                            }).catch(err => reject(err));
-                        }
                     } else {
                         resolve({ success: false, message: 'Error registering user !!' })
                     }
@@ -151,9 +212,9 @@ exports.verifyUser = (email ,option) => {
 
 exports.acceptTerms =(data , id)=>{
     return new Promise((resolve , reject)=>{
-        
         if(data.accept == 'accept'){
-            model.findOneAndUpdate({public_id:id},{terms:true}).exec((err , updated)=>{
+            const usertype  = data.user_type == 'client' ? 'client' : 'lawyer'
+            model.findOneAndUpdate({public_id:id},{status:true , user_type:usertype}).exec((err , updated)=>{
             if(err)reject(err);
                 if(updated){
                     getUserDetail(id).then(activeUser => {
@@ -177,8 +238,7 @@ exports.userLogin = (email_address, password) => {
     return new Promise((resolve, reject) => {
         model.findOne({ email_address: email_address }, { _id: 0, __v: 0, }).then(user => {
             if (user) {
-                if (user.status != true) reject({ success: false, message: 'account not verified !!!' })
-            if(user.terms !=true){
+            if(user.status !==true){
                 getUserDetail(user.public_id).then(activeUser => {
                     generateToken(activeUser).then(token => {
                         resolve({
