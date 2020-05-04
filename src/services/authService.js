@@ -108,20 +108,22 @@ exports.Register = (data) => {
                             generateToken(user).then(token => {
                                 resolve({
                                     success: true, data: token,
-                                    message: 'please complete your signup process'
+                                    message: 'please complete your signup process',
+                                    status:200
                                 })
-                            }).catch(err => reject(err))
-                        }).catch(err => reject(err))
+                            }).catch(err => reject({err:err ,status:500 }))
+                        }).catch(err => reject({err:err ,status:500 }))
                     } else {
                         if(found.terms == false){
                             getUserDetail(found.public_id).then(user => {
                                 generateToken(user).then(token => {
                                     resolve({
                                         success: true, data: token,
-                                        message: 'please accept the terms and condition'
+                                        message: 'please accept the terms and condition',
+                                        status_code:200
                                     })
-                                }).catch(err => reject(err))
-                            }).catch(err => reject(err))
+                                }).catch(err => reject({err:err ,status:500 }))
+                            }).catch(err => reject({err:err ,status:500 }))
                         }else{
                             resolve({ success: false, message: 'User already exists please proceed to sign in !!!' })
                         }
@@ -135,16 +137,16 @@ exports.Register = (data) => {
                                 generateToken(user).then(token => {
                                     resolve({
                                         success: true, data: token,
-                                        message: 'Signup almost complete, please choose part '
+                                        message: 'Signup almost complete, please choose part ', status : 200
                                     })
-                                }).catch(err => reject(err))
-                            }).catch(err => reject(err))
+                                }).catch(err => reject({err:err ,status:401 }))
+                            }).catch(err => reject({err:err ,status:404 }))
                     } else {
-                        resolve({ success: false, message: 'Error registering user !!' })
+                        resolve({ success: false, message: 'Error registering user !!' , status:400})
                     }
-                }).catch(err => reject(err));
+                }).catch(err => reject({err:err ,status:500 }));
             }
-        }).catch(err => reject(err));
+        }).catch(err => reject({err:err ,status:500 }));
     })
 }
 
@@ -215,20 +217,21 @@ exports.acceptTerms =(data , id)=>{
         if(data.accept == 'accept'){
             const usertype  = data.user_type == 'client' ? 'client' : 'lawyer'
             model.findOneAndUpdate({public_id:id},{status:true , user_type:usertype}).exec((err , updated)=>{
-            if(err)reject(err);
+            if(err)reject({err:err , status:500});
                 if(updated){
                     getUserDetail(id).then(activeUser => {
                         generateToken(activeUser).then(token => {
                             resolve({
                                 success: true, data: { activeUser, token: token },
-                                message: 'authentication successfull !!!'
+                                message: 'authentication successfull !!!',
+                                status:200
                             })
-                        }).catch(err => reject(err))
-                    }).catch(err => reject(err)) 
+                        }).catch(err => reject({err:err , status:500}))
+                    }).catch(err => reject({err:err , status:500})) 
                 }
             })
         }else{
-            resolve({success:false , message:'Terms and policy declined !!!'})
+            resolve({success:false , message:'Terms and policy declined !!!' , status:401})
         }
     })
 }
@@ -243,10 +246,11 @@ exports.userLogin = (email_address, password) => {
                     generateToken(activeUser).then(token => {
                         resolve({
                             success: false, token: token ,
-                            message: 'Sorry you have not accepted the terms and condition!!!'
+                            message: 'Sorry you have not accepted the terms and condition!!!',
+                            status:401
                         })
-                    }).catch(err => reject(err))
-                }).catch(err => reject(err))
+                    }).catch(err => reject({err:err , status:500}))
+                }).catch(err => reject({err:err , status:500}))
             }else{
                 const comparePassword = bcrypt.compareSync(password, user.password)
                 if (comparePassword) {
@@ -254,20 +258,21 @@ exports.userLogin = (email_address, password) => {
                         generateToken(activeUser).then(token => {
                             resolve({
                                 success: true, data: { activeUser, token: token },
-                                message: 'authentication successfull !!!'
+                                message: 'authentication successfull !!!',
+                                status:200
                             })
-                        }).catch(err => reject(err))
-                    }).catch(err => reject(err))
+                        }).catch(err => reject({err:err , status:500}))
+                    }).catch(err => reject({err:err , status:500}))
                 } else {
-                    resolve({ success: false, message: 'incorrect email or password ' })
+                    resolve({ success: false, message: 'incorrect email or password ', status:400 })
                 }
             }
 
             } else {
-                resolve({ success: false, message: 'user does not exist !!!' })
+                resolve({ success: false, message: 'user does not exist !!!' , status:404 })
             }
         }).catch(err => {
-            reject(err)
+            reject({err:err , status:500})
         })
     })
 }
@@ -287,18 +292,18 @@ exports.changePassword = (id, data) => {
                     model.findOneAndUpdate({ public_id: id }, { password: new_password })
                         .then(updated => {
                             if (updated) {
-                                resolve({ success: true, message: 'Password updated successfully !!' })
+                                resolve({ success: true, message: 'Password updated successfully !!', status:200 })
                             } else {
-                                resolve({ success: false, message: 'Password was not updated successfully !!' })
+                                resolve({ success: false, message: 'Password was not updated successfully !!' , status:400 })
                             }
-                        }).catch(err => reject(err))
+                        }).catch(err => reject({err:err , status:500}))
                 } else {
-                    resolve({ success: false, message: 'Invalid password inserted !!!' })
+                    resolve({ success: false, message: 'Invalid password inserted !!!'  , status:400})
                 }
             } else {
-                resolve({ success: false, message: 'user does not exists !!!' })
+                resolve({ success: false, message: 'user does not exists !!!' ,status:404})
             }
-        }).catch(err => reject(err));
+        }).catch(err => reject({err:err , status:500}));
     })
 }
 
