@@ -4,8 +4,8 @@ module.exports = function authController() {
 
     this.Register = (req, res, next) => {
         service.Register(req.body).then(data => {
-            res.status(200).send(data)
-        }).catch(err => res.status(500).send(err));
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err.err));
     }
 
     this.verifyUser = (req, res) => {
@@ -17,15 +17,15 @@ module.exports = function authController() {
 
     this.loginUser = (req, res) => {
         service.userLogin(req.body.email_address, req.body.password).then(data => {
-            res.status(200).send(data)
-        }).catch(err => res.status(500).send(err));
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
     }
 
 
     this.terms = (req, res) => {
         service.acceptTerms(req.body, req.auth.publicId).then(data => {
-            res.status(200).send(data)
-        }).catch(err => res.status(500).send(err));
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
     }
 
 
@@ -35,8 +35,8 @@ module.exports = function authController() {
             comfirm_password: req.body.new_password
         }
         service.changePassword(req.auth.publicId, data).then(data => {
-            res.status(200).send(data)
-        }).catch(err => res.status(500).send(err));
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
     }
 
 }
