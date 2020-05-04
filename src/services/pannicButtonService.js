@@ -3,9 +3,9 @@ const user = require('../models/users');
 exports.createPannic = (data,id,usertype)=>{
     return new Promise((resolve , reject)=>{
         model.findOne({public_id:id}).exec((err , exists)=>{
-            if(err)reject(err);
+            if(err)reject({err: err , status:500});
             if(exists){
-                resolve({success:false , message:'details already exists'})
+                resolve({success:false , message:'details already exists' , status:400})
             }else{
                 //while creating pannic as client front end will have to pick the usertype data from front end 
                 //but as a lawyer the usertype will come from the database
@@ -25,16 +25,16 @@ exports.createPannic = (data,id,usertype)=>{
                             user.findOneAndUpdate({public_id:id}, {user_type:data.user_type}).exec((err , result)=>{
                                 if(err)reject(err);
                                 if(result){
-                                    resolve({success:true , message:'pannic alert details created successfully'}) 
+                                    resolve({success:true , message:'pannic alert details created successfully', status:200}) 
                                 }else{
-                                    resolve({success:true , message:'Error creating pannic alert'})
+                                    resolve({success:true , message:'Error creating pannic alert' , status:400})
                                 }
                             })
                         }else{
-                            resolve({success:true , message:'pannic alert details created successfully'})
+                            resolve({success:true , message:'pannic alert details created successfully' , status:200})
                         }
                     }else{
-                        resolve({success:false , message:' error encountered while creating pannic alert details'})   
+                        resolve({success:false , message:' error encountered while creating pannic alert details', status:400})   
                     }
                 }).catch(err => reject(err));
             }
@@ -45,11 +45,11 @@ exports.createPannic = (data,id,usertype)=>{
 exports.getAllPannicAlerts = ()=>{
     return new Promise((resolve, reject)=>{
     model.find({}).exec((err, found)=>{
-        if(err)reject(err);
+        if(err)reject({err: err , status:500});
         if(found){
-            resolve({success:true , message:found})
+            resolve({success:true , message:found , status:200})
         }else{
-            resolve({success:false , message:'could not find panic alerts'})
+            resolve({success:false , message:'could not find panic alerts', status:404})
         }
     })      
     })
@@ -58,11 +58,11 @@ exports.getAllPannicAlerts = ()=>{
 exports.getPannicAlertById = (id)=>{
     return new Promise((resolve , reject)=>{
         model.findOne({public_id:id}).exec((err , found)=>{
-            if(err)reject(err);
+            if(err)reject({err: err , status:500});
             if(found){
-                resolve({success:true , message:found})
+                resolve({success:true , message:found , status:200})
             }else{
-                resolve({success:false ,message:'panic alert detail not found for this user'})
+                resolve({success:false ,message:'panic alert detail not found for this user' , status:404})
             }
         })
     })
