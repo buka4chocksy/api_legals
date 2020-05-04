@@ -20,52 +20,52 @@ module.exports = function lawyerController() {
             });
         }
         service.completelawyerRegisteration(req.auth.publicId, req.body , requestDetails).then(data => {
-            res.status(200).send(data)
-        }).catch(err => res.status(500).send(err));
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
     }
 
     this.getLawyerProile = (req, res) => {
         service.getLawyerProfile(req.auth.publicId).then(data => {
-            res.status(200).send(data);
-        }).catch(err => res.status(500).send(err))
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
     }
 
     this.updateLawyerProfile = (req, res) => {
         service.editLawyerProfile(req.auth.publicId, req.body).then(data => {
-            res.status(200).send(data);
-        }).catch(err => res.status(500).send(err))
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
     }
 
     this.deleteUserAccount = (req, res) => {
         service.deleteAccount(req.auth.Id , req.auth.publicId).then(data => {
-            res.status(200).send(data);
-        }).catch(err => res.status(500).send(err))
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
     }
 
     this.getlawyerList = (req, res) => {
         service.lawyerList(req.params.pagenumber, req.params.pagesize).then(data => {
-            res.status(200).send(data);
-        }).catch(err => res.status(500).send(err))
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
     }
 
     this.sortLawerByPracticeArea = (req, res) => {
         service.sortLawerpracticeArea(req.params.id ,req.params.pagenumber, req.params.pagesize)
             .then(data => {
-                res.status(200).send(data);
-            }).catch(err => res.status(500).send(err))
+                res.status(data.status).send(data);
+            }).catch(err => res.status(err.status).send(err))
     }
 
     this.sortLawyerByLocation = (req, res) => {
         service.sortLawyeryLocation(req.body,req.params.pagenumber, req.params.pagesize)
             .then(data => {
-                res.status(200).send(data);
-            }).catch(err => res.status(500).send(err))
+                res.status(data.status).send(data);
+            }).catch(err => res.status(err.status).send(err))
     }
 
     this.searchLawyer = (req, res)=>{
         service.searchLawyer(req.body).then(data =>{
-            res.status(200).send(data);
-        }).catch(err => res.status(500).send(err))
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
     }
 
 
@@ -84,10 +84,10 @@ module.exports = function lawyerController() {
         service
             .profilePicture(req.auth.publicId, requestDetails)
             .then(data => {
-                res.status(200).send(data);
+                res.status(data.status).send(data);
             })
             .catch(err => {
-                res.status(500).send(err);
+                res.status(err.status).send(err);
             });
     };
 
