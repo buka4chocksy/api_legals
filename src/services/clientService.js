@@ -28,6 +28,8 @@ exports.editClientProfile = (id, data) => {
             state_of_origin: data.state_of_origin
         }
         model.findOneAndUpdate({ public_id: id }, details).exec((err, update) => {
+            console.log(details ,'hmmmmmwwwwww---',id , err)
+
             if (err) reject({err: err , status:500});
             if (update) {
                 resolve({ success: true, message: 'client Profile updated !!!', status:200 })
