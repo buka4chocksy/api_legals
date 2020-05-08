@@ -6,86 +6,6 @@ const secret = process.env.Secret
 const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
-//user signup
-// exports.Register = (data) => {
-//     return new Promise((resolve, reject) => {
-//         const hash = bcrypt.hashSync(data.password, 10)
-//         const gen = Math.floor(1000 + Math.random() * 9000);
-//         const userDetails = {
-//             first_name: data.first_name,
-//             last_name: data.last_name,
-//             email_address: data.email_address,
-//             phone_number: data.phone_number,
-//             user_type: data.user_type,
-//             status_code: gen,
-//             password: hash,
-//             public_id: mongoose.Types.ObjectId(),
-//         }
-//         model.findOne({ email_address: userDetails.email_address }).then(found => {
-//             if (found) {
-//                 //when a lawyer has created a user profile but didnt complete his signup
-//                     if (found.status == false) {
-//                         getUserDetail(found.public_id).then(user => {
-//                             generateToken(user).then(token => {
-//                                 resolve({
-//                                     success: true, data: token,
-//                                     message: 'please complete your signup process'
-//                                 })
-//                             }).catch(err => reject(err))
-//                         }).catch(err => reject(err))
-//                     } else {
-//                         if(found.terms == false){
-//                             getUserDetail(found.public_id).then(user => {
-//                                 generateToken(user).then(token => {
-//                                     resolve({
-//                                         success: true, data: token,
-//                                         message: 'please accept the terms and condition'
-//                                     })
-//                                 }).catch(err => reject(err))
-//                             }).catch(err => reject(err))
-//                         }else{
-//                             resolve({ success: false, message: 'User already exists please proceed to sign in !!!' })
-//                         }
-//                     }
-
-//             } else {
-//                 //
-//                 model.create(userDetails).then(created => {
-//                     if (created) {
-//                         if (userDetails.user_type == 'lawyer') {
-//                             const lawyer_id = created.public_id
-//                             getUserDetail(lawyer_id).then(user => {
-//                                 generateToken(user).then(token => {
-//                                     resolve({
-//                                         success: true, data: token,
-//                                         message: 'proceed to fill your  practicearea , enrollment number and jurisdiction '
-//                                     })
-//                                 }).catch(err => reject(err))
-//                             }).catch(err => reject(err))
-//                         } else {
-//                             mailer.SignUpMail(userDetails.email_address, userDetails.status_code, userDetails.first_name, userDetails.last_name).then(sent => {
-//                                 if (sent) {
-//                                     getUserDetail(created.public_id).then(clientDetail => {
-//                                         generateToken(clientDetail).then(token => {
-//                                             resolve({
-//                                                 success: true, data: token,
-//                                                 message: 'Registration successfull , proceed to verify ur account '
-//                                             })
-//                                         }).catch(err => reject(err))
-//                                     }).catch(err => reject(err))
-//                                 } else {
-//                                     resolve({ success: false, message: 'Error encountered while signing up !!' })
-//                                 }
-//                             }).catch(err => reject(err));
-//                         }
-//                     } else {
-//                         resolve({ success: false, message: 'Error registering user !!' })
-//                     }
-//                 }).catch(err => reject(err));
-//             }
-//         }).catch(err => reject(err));
-//     })
-// }
 
 exports.Register = (data) => {
     return new Promise((resolve, reject) => {
@@ -103,55 +23,41 @@ exports.Register = (data) => {
         model.findOne({ email_address: userDetails.email_address }).then(found => {
             if (found) {
                 //when a lawyer has created a user profile but didnt complete his signup
-                    if (found.status == false) {
-                        getUserDetail(found.public_id).then(user => {
-                            generateToken(user).then(token => {
-                                resolve({
-                                    success: true, data: token,
-                                    message: 'please complete your signup process',
-                                    status:200
-                                })
-                            }).catch(err => reject({err:err ,status:500 }))
-                        }).catch(err => reject({err:err ,status:500 }))
-                    } else {
-                        if(found.terms == false){
-                            getUserDetail(found.public_id).then(user => {
-                                generateToken(user).then(token => {
-                                    resolve({
-                                        success: true, data: token,
-                                        message: 'please accept the terms and condition',
-                                        status_code:200
-                                    })
-                                }).catch(err => reject({err:err ,status:500 }))
-                            }).catch(err => reject({err:err ,status:500 }))
-                        }else{
-                            resolve({ success: false, message: 'User already exists please proceed to sign in !!!' })
-                        }
-                    }
+                if (found.status == false) {
+                    resolve({
+                        success: true,
+                        message: 'please complete your signup process',
+                        status: 200
+                    })
+                } else {
+
+                    resolve({ success: false, message: 'User already exists please proceed to sign in !!!', status: 400 })
+                }
 
             } else {
                 model.create(userDetails).then(created => {
                     if (created) {
-                            const user_id = created.public_id
-                            getUserDetail(user_id).then(user => {
-                                generateToken(user).then(token => {
-                                    resolve({
-                                        success: true, data: token,
-                                        message: 'Signup almost complete, please choose part ', status : 200
-                                    })
-                                }).catch(err => reject({err:err ,status:401 }))
-                            }).catch(err => reject({err:err ,status:404 }))
+                        const user_id = created.public_id
+                        getUserDetail(user_id).then(user => {
+                            generateToken(user).then(token => {
+                                //after signup is complete the user token is updated to the user db
+                                resolve({
+                                    success: true, data: token,
+                                    message: 'Signup almost complete, please choose part ', status: 200
+                                })
+                            })
+                        }).catch(err => reject({ err: err, status: 401 }))
                     } else {
-                        resolve({ success: false, message: 'Error registering user !!' , status:400})
+                        resolve({ success: false, message: 'Error registering user !!', status: 400 })
                     }
-                }).catch(err => reject({err:err ,status:500 }));
+                }).catch(err => reject({ err: err, status: 500 }));
             }
-        }).catch(err => reject({err:err ,status:500 }));
+        }).catch(err => reject({ err: err, status: 500 }));
     })
 }
 
 //user verification 
-exports.verifyUser = (email ,option) => {
+exports.verifyUser = (email, option) => {
     return new Promise((resolve, reject) => {
         model
             .findOne({ email_address: email })
@@ -162,18 +68,18 @@ exports.verifyUser = (email ,option) => {
                     email_address: found.email_address,
                     phone_number: found.phone_number,
                     user_type: found.user_type,
-                    public_id:found.public_id
+                    public_id: found.public_id
                 }
-                if(clientData.user_type == 'lawyer'){
-                    resolve({success:false , message:'Sorry you cannot verify your account using this process'})
-                }else{
+                if (clientData.user_type == 'lawyer') {
+                    resolve({ success: false, message: 'Sorry you cannot verify your account using this process' })
+                } else {
                     if (found.status_code == option.status_code) {
                         model
                             .findOneAndUpdate({ email_address: email }, { status: true })
                             .then(updated => {
                                 if (updated) {
-                                    client.create(clientData).then(created =>{
-                                        if(created){
+                                    client.create(clientData).then(created => {
+                                        if (created) {
                                             getUserDetail(found.public_id).then(activeUser => {
                                                 generateToken(activeUser).then(token => {
                                                     resolve({
@@ -182,14 +88,14 @@ exports.verifyUser = (email ,option) => {
                                                     })
                                                 }).catch(err => reject(err))
                                             }).catch(err => reject(err))
-                                        }else{
+                                        } else {
                                             resolve({
                                                 success: false,
                                                 message: "Error verifying client !!!"
                                             });
                                         }
                                     }).catch(err => reject(err))
-                             
+
                                 } else {
                                     resolve({
                                         success: false,
@@ -212,26 +118,58 @@ exports.verifyUser = (email ,option) => {
     });
 };
 
-exports.acceptTerms =(data , id)=>{
-    return new Promise((resolve , reject)=>{
-        if(data.accept == 'accept'){
-            const usertype  = data.user_type == 'client' ? 'client' : 'lawyer'
-            model.findOneAndUpdate({public_id:id},{status:true , user_type:usertype}).exec((err , updated)=>{
-            if(err)reject({err:err , status:500});
-                if(updated){
-                    getUserDetail(id).then(activeUser => {
-                        generateToken(activeUser).then(token => {
-                            resolve({
-                                success: true, data: { activeUser, token: token },
-                                message: 'authentication successfull !!!',
-                                status:200
-                            })
-                        }).catch(err => reject({err:err , status:500}))
-                    }).catch(err => reject({err:err , status:500})) 
+exports.acceptTerms = (data, id) => {
+    return new Promise((resolve, reject) => {
+        if (data.accept == 'accept') {
+            const usertype = data.user_type == 'client' ? 'client' : 'lawyer'
+            model.findOneAndUpdate({ public_id: id }, { status: true, user_type: usertype }).exec((err, updated) => {
+                if (err) reject({ err: err, status: 500 });
+                if (updated) {
+                    if (data.user_type == 'client') {
+                        model.findOne({ public_id: id }).then(user => {
+                            const clientData = {
+                                first_name: user.first_name,
+                                last_name: user.last_name,
+                                email_address: user.email_address,
+                                phone_number: user.phone_number,
+                                user_type: data.user_type,
+                                public_id: user.public_id
+                            }
+                            client.create(clientData).then(created => {
+                                if (created) {
+                                    getUserDetail(id).then(activeUser => {
+                                        generateToken(activeUser).then(token => {
+
+                                            resolve({
+                                                success: true, data: { activeUser, token: token },
+                                                message: 'authentication successfull !!!',
+                                                status: 200
+                                            })
+                                        }).catch(err => reject({ err: err, status: 500 }))
+                                    }).catch(err => reject({ err: err, status: 500 }))
+                                } else {
+                                    resolve({ success: false, message: 'Error creating user', status: 401 })
+                                }
+                            }).catch(err => reject({ err: err, status: 500 }))
+                        }).catch(err => reject({ err: err, status: 500 }))
+                    } else {
+
+                        getUserDetail(id).then(activeUser => {
+                            generateToken(activeUser).then(token => {
+                                resolve({
+                                    success: true, data: { activeUser, token: token },
+                                    message: 'authentication successfull !!!',
+                                    status: 200
+                                })
+                            }).catch(err => reject({ err: err, status: 500 }))
+                        }).catch(err => reject({ err: err, status: 500 }))
+                    }
+                } else {
+                    resolve({ success: false, message: 'Error updating user policy!!!', status: 401 })
                 }
             })
-        }else{
-            resolve({success:false , message:'Terms and policy declined !!!' , status:401})
+        } else {
+            resolve({ success: false, message: 'Terms and policy declined !!!', status: 401 })
         }
     })
 }
@@ -241,38 +179,35 @@ exports.userLogin = (email_address, password) => {
     return new Promise((resolve, reject) => {
         model.findOne({ email_address: email_address }, { _id: 0, __v: 0, }).then(user => {
             if (user) {
-            if(user.status !==true){
-                getUserDetail(user.public_id).then(activeUser => {
-                    generateToken(activeUser).then(token => {
-                        resolve({
-                            success: false, token: token ,
-                            message: 'Sorry you have not accepted the terms and condition!!!',
-                            status:401
-                        })
-                    }).catch(err => reject({err:err , status:500}))
-                }).catch(err => reject({err:err , status:500}))
-            }else{
-                const comparePassword = bcrypt.compareSync(password, user.password)
-                if (comparePassword) {
-                    getUserDetail(user.public_id).then(activeUser => {
-                        generateToken(activeUser).then(token => {
-                            resolve({
-                                success: true, data: { activeUser, token: token },
-                                message: 'authentication successfull !!!',
-                                status:200
-                            })
-                        }).catch(err => reject({err:err , status:500}))
-                    }).catch(err => reject({err:err , status:500}))
+                if (user.status !== true) {
+                    resolve({
+                        success: false,
+                        message: 'Sorry you have not accepted the terms and condition!!!',
+                        status: 401
+                    })
+
                 } else {
-                    resolve({ success: false, message: 'incorrect email or password ', status:400 })
+                    const comparePassword = bcrypt.compareSync(password, user.password)
+                    if (comparePassword) {
+                        getUserDetail(user.public_id).then(activeUser => {
+                            generateToken(activeUser).then(token => {
+                                resolve({
+                                    success: true, data: { activeUser, token: token },
+                                    message: 'authentication successfull !!!',
+                                    status: 200
+                                })
+                            }).catch(err => reject({ err: err, status: 500 }))
+                        }).catch(err => reject({ err: err, status: 500 }))
+                    } else {
+                        resolve({ success: false, message: 'incorrect email or password ', status: 400 })
+                    }
                 }
-            }
 
             } else {
-                resolve({ success: false, message: 'user does not exist !!!' , status:404 })
+                resolve({ success: false, message: 'user does not exist !!!', status: 404 })
             }
         }).catch(err => {
-            reject({err:err , status:500})
+            reject({ err: err, status: 500 })
         })
     })
 }
@@ -292,22 +227,87 @@ exports.changePassword = (id, data) => {
                     model.findOneAndUpdate({ public_id: id }, { password: new_password })
                         .then(updated => {
                             if (updated) {
-                                resolve({ success: true, message: 'Password updated successfully !!', status:200 })
+                                resolve({ success: true, message: 'Password updated successfully !!', status: 200 })
                             } else {
-                                resolve({ success: false, message: 'Password was not updated successfully !!' , status:400 })
+                                resolve({ success: false, message: 'Password was not updated successfully !!', status: 400 })
                             }
-                        }).catch(err => reject({err:err , status:500}))
+                        }).catch(err => reject({ err: err, status: 500 }))
                 } else {
-                    resolve({ success: false, message: 'Invalid password inserted !!!'  , status:400})
+                    resolve({ success: false, message: 'Invalid password inserted !!!', status: 400 })
                 }
             } else {
-                resolve({ success: false, message: 'user does not exists !!!' ,status:404})
+                resolve({ success: false, message: 'user does not exists !!!', status: 404 })
             }
-        }).catch(err => reject({err:err , status:500}));
+        }).catch(err => reject({ err: err, status: 500 }));
     })
 }
 
+exports.DBupdateToken = (id ,tokenID ,deviceID)=>{
+    return new Promise((resolve , reject )=>{
+        let details = {
+            token: [{
+                tokenID:tokenID,
+                deviceID:deviceID
+            }]
+        }
+        model.findOne({public_id:id}).exec((err , found)=>{
+            if(err)reject({success:false , err:err , status:500});
+            let existing =  found.token
+         let reesult =  existing.filter(a => a.tokenID === tokenID && a.deviceID === deviceID ? a : null)
 
+         if(reesult.length > 0){
+            resolve({success:false , message:'token already exists',status:400})
+         }else{
+            model.findOneAndUpdate({public_id:id}, {$push:{token:details.token}}).exec((err , updated)=>{
+                if(err)reject({success:false , err:err , status:500});
+                if(updated){
+                    resolve({success:true , message:'token details updated !!', status:200})
+                }else{
+                    resolve({success:false , message:'Error updating token ',status:400})
+                }
+            })
+         }
+            
+            })
+       
+    })
+} 
+
+exports.refreshToken = (token, device)=>{
+    return new Promise((resolve  , reject)=>{
+        model.findOne({token:{$elemMatch:{tokenID:token , deviceID:device}}}).exec((err , result)=>{
+            if(err)reject({success:false , err:err , status:500});
+            if(!result){
+                resolve({success:false ,message:'user does not exist' , status:400})
+            }else{
+               // console.log(result , 'wereewwwww')
+                let specificToken = result.token
+            let tokenResult =  specificToken.filter(a => a.tokenID === token && a.deviceID === device ? a : null)
+            if(tokenResult !== null){
+                  let userId = result.public_id
+
+                getUserDetail(userId).then(activeUser => {
+                    generateToken(activeUser).then(token => {
+                        tokenResult[0].tokenID = token;
+                        result.save((err , saved)=>{
+                            if(err)reject({err:err, status:400 , message:'Error saving token'})
+                            resolve({
+                                success: true, token: token ,
+                                message: 'refresh token generated  !!!',
+                                status: 200
+                            })                       
+                         })
+
+                    }).catch(err => reject({ err: err, status: 500 }))
+                }).catch(err => reject({ err: err, status: 500 }))
+            }else{
+                resolve({status:false, status:400 , message:'un-authorized access'})
+            }
+              
+            }
+        })
+    })
+}
 
 
 //get user details
@@ -335,7 +335,7 @@ exports.getUserDetail = getUserDetail
 //generate token
 function generateToken(data = {}) {
     return new Promise((resolve, reject) => {
-        jwt.sign({ ...data }, secret, { expiresIn: "24hrs" }, function (err, token) {
+        jwt.sign({ ...data }, secret, { expiresIn: "20 mins" }, function (err, token) {
             if (err) {
                 reject(err);
             } else {
