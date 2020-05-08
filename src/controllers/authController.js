@@ -39,4 +39,21 @@ module.exports = function authController() {
         }).catch(err => res.status(err.status).send(err));
     }
 
+    this.DBupdateToken = (req,res)=>{
+        const token = req.body.token || req.query.token || req.headers['x-access-token']
+        const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
+        service.DBupdateToken(req.auth.publicId , token, device).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.refreshToken = (req,res)=>{
+        const token = req.body.token || req.query.token || req.headers['x-access-token']
+        const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
+
+        service.refreshToken(token , device).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
 }
