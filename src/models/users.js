@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 const userSchema = new schema({
@@ -15,6 +16,10 @@ const userSchema = new schema({
     status: { type: Boolean, default: false },
     public_id: { type: mongoose.SchemaTypes.ObjectId },
     created_at: { type: Date, default: Date.now },
+    token: [{
+        tokenID: {type: String, default: null},
+        deviceID: {type: String, default: null}
+    }]
 })
 
 module.exports = mongoose.model('users', userSchema);
