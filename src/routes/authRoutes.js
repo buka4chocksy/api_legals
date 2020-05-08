@@ -9,5 +9,7 @@ module.exports = function () {
     router.post('/terms',middleware.authenticate, authCtrl.terms )
     router.post('/authenticate', authCtrl.loginUser)
     router.put('/change_password', middleware.authenticate, authCtrl.changePassword)
+    router.put('/update_token', middleware.authenticate1 , authCtrl.DBupdateToken)
+    router.put('/refresh_token' , authCtrl.refreshToken)
     return router;
 }
