@@ -8,7 +8,7 @@ module.exports = function () {
         passport.authenticate('google', { failureRedirect: '/auth/google' }),
         (req, res) => {
             console.log('checking google request: ', req.user)
-            res.redirect('OAuthLogin://login?user=' + JSON.stringify(req.user))
+            res.redirect('lawyerpp://signup?user=' + JSON.stringify(req.user))
         }
     );
     // Linkedin Auth
@@ -17,7 +17,7 @@ module.exports = function () {
         passport.authenticate('linkedin', { failureRedirect: '/error' }),
         (req, res) => {
             console.log('checking linkedin user: ', req.user)
-            res.redirect('OAuthLogin://login?user=' + JSON.stringify(req.user))
+            res.redirect('lawyerpp://signup?user=' + JSON.stringify(req.user))
         })
     return router;
 }
