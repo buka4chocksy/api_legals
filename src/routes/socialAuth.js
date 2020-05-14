@@ -3,7 +3,7 @@ const passport = require('passport');
 
 module.exports = function () {
     // google auth
-    router.get('/auth/google', passport.authenticate('google', { scope: ['profile'] }));
+    router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'https://www.googleapis.com/auth/plus.login', 'https://www.googleapis.com/auth/plus.profile.emails.read'] }));
     router.get('/auth/google/callback',
         passport.authenticate('google', { failureRedirect: '/auth/google' }),
         (req, res) => {
