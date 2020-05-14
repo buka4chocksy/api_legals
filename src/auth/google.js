@@ -4,6 +4,7 @@ const User = require('../models/users');
 
 module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
     User.findOne({ oauthID: profile.id }, (err, user) => {
+        console.log('checking PROFILE: ', profile)
         if (err) console.log(err);
         if (!err && user !== null) {
             done(null, user);
