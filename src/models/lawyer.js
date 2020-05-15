@@ -18,8 +18,20 @@ const lawyerSchema = new schema({
     }],
     education: [{
        institution: { type: String, default: '' },
-       degree:{ type: String, default: '' }
+       degree:{ type: String, default: '' },
+       qualification:{ type: String, default: '' },
+       yearFrom:{ type: Date, default: '' },
+       yearTo:{ type: Date, default: '' },
     }],
+    experience: [{
+        organisation: { type: String, default: '' },
+        role:{ type: String, default: '' },
+        workHighlight:{ type: String, default: '' },
+        honours:{ type: String, default: '' },
+        yearFrom:{ type: Date, default: '' },
+        yearTo:{ type: Date, default: '' },
+     }],
+     profileSummary:{type:String , default:''},
     law_certificates: [{
         image_url: { type: String, default: '' },
     }],
