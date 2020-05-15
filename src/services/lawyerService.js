@@ -1,6 +1,7 @@
 const model = require('../models/lawyer');
 const user = require('../models/users')
 const authService = require('../services/authService')
+let jsonPatch = require('fast-json-patch')
 
 exports.completelawyerRegisteration = (publicId, data, detail) => {
     return new Promise((resolve, reject) => {
@@ -26,7 +27,6 @@ exports.completelawyerRegisteration = (publicId, data, detail) => {
                     }]
 
                 }
-                console.log(details , ' see details')
                 model.findOne({ public_id: publicId }).exec((err, exists) => {
                     if (err) reject({ err: err, status: 500 })
                     if (exists) {
@@ -81,24 +81,43 @@ exports.getLawyerProfile = (id) => {
     })
 }
 
-//update lawyer edit profile
 exports.editLawyerProfile = (id, data) => {
     return new Promise((resolve, reject) => {
-        const details = {
-            gender: data.gender,
-            country: data.country,
-            state_of_origin: data.state_of_origin
-        }
-        model.findOneAndUpdate({ public_id: id }, details).exec((err, update) => {
+        model.findOne({ public_id: id }).exec((err, found) => {
             if (err) reject({ err: err, status: 500 });
-            if (update) {
-                resolve({ success: true, message: 'lawyer Profile updated !!!', status: 200 })
-            } else {
-                resolve({ success: false, message: 'error updating lawyer profile!!!', status: 400 })
+            if(!found){
+                resolve({ success: true, message: 'lawyer profile not updated',  status: 200 })
+            }else{
+                var updateProfile =  jsonPatch.applyPatch(found.toObject(), data);
+                model.findOneAndUpdate({public_id:id}, updateProfile.newDocument, {upsert:true , new:true}).exec((err , updated)=>{
+                    if (err) reject({ err: err, status: 500 });
+                    resolve({ success: true, message: 'lawyer profile updated successfully', status: 200 })
+                })
             }
+
         })
     })
 }
+
+
+// //update lawyer edit profile
+// exports.editLawyerProfile = (id, data) => {
+//     return new Promise((resolve, reject) => {
+//         const details = {
+//             gender: data.gender,
+//             country: data.country,
+//             state_of_origin: data.state_of_origin
+//         }
+//         model.findOneAndUpdate({ public_id: id }, details).exec((err, update) => {
+//             if (err) reject({ err: err, status: 500 });
+//             if (update) {
+//                 resolve({ success: true, message: 'lawyer Profile updated !!!', status: 200 })
+//             } else {
+//                 resolve({ success: false, message: 'error updating lawyer profile!!!', status: 400 })
+//             }
+//         })
+//     })
+// }
 
 //delete user account
 exports.deleteAccount = (id, publicId) => {
