@@ -1,11 +1,15 @@
 const router = require('express').Router()
 const authController = require('../controllers/authController')
 const middleware = require('../middlewares/authMiddleware');
-module.exports = function(){
+const multer = require('../middlewares/multer');
+module.exports = function () {
     const authCtrl = new authController()
     router.post('/register', authCtrl.Register)
-    router.put('/verify',authCtrl.verifyUser)
+    router.put('/verify',middleware.authenticate, authCtrl.verifyUser)
+    router.post('/terms',middleware.authenticate, authCtrl.terms )
     router.post('/authenticate', authCtrl.loginUser)
-    router.put('/change_password',middleware.authenticate , authCtrl.changePassword)
+    router.put('/change_password', middleware.authenticate, authCtrl.changePassword)
+    router.put('/update_token', middleware.authenticate1 , authCtrl.DBupdateToken)
+    router.put('/refresh_token' , authCtrl.refreshToken)
     return router;
 }
