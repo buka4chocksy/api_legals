@@ -32,6 +32,7 @@
     "dotenv": "^6.2.0",
     "express": "^4.16.4",
     "express-session": "^1.17.1",
+    "fast-json-patch": "^3.0.0-1",
     "jsonwebtoken": "^8.5.0",
     "mailgun-js": "^0.22.0",
     "mongoose": "^5.4.18",
