@@ -37,12 +37,10 @@ passport.use(LinkedinStrategy);
 
 // serialize and deserialize
 passport.serializeUser(function(user, done) {
-    console.log('serializeUser: ' + user._id);
     done(null, user._id);
   });
-  passport.deserializeUser(function(id, done) {
+passport.deserializeUser(function(id, done) {
     User.findById(id, function(err, user){
-      console.log('deserializeUser: ',user);
         if(!err) done(null, user);
         else done(err, null);
       });
