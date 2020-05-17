@@ -10,8 +10,14 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
             done(null, user);
         } else {
             const userDetails = {
-                oauthID: profile.id,
-                name: profile.displayName,
+                oauth: {
+                    oauthID: profile.id,
+                    provider: null
+                },
+                first_name: profile.displayName.split(" ")[0],
+                last_name: profile.displayName.split(" ")[1],
+                // oauthID: profile.id,
+                // name: profile.displayName,
                 image_url: profile._json.picture,
             }
             User.create(userDetails).then(created => {

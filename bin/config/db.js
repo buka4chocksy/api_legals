@@ -1,12 +1,10 @@
 var mongoose = require('mongoose');
-const uri = process.env.DB_LOCAL;
-const oauth = process.env.lawDBURL;
-
+const db = process.env.NODE_ENV === "production" ? process.env.lawDBURL : process.env.localDB;
 
 module.exports = function init() {
-    if (oauth) {
+    if (db) {
         mongoose.connect(
-            oauth, {
+            db, {
             useNewUrlParser: true,
             useCreateIndex: true,
             useUnifiedTopology: true

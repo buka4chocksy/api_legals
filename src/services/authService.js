@@ -6,11 +6,11 @@ const secret = process.env.Secret
 const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
-
 exports.Register = (data) => {
     return new Promise((resolve, reject) => {
         const hash = bcrypt.hashSync(data.password, 10)
         const gen = Math.floor(1000 + Math.random() * 9000);
+        const check = data.hasOwnProperty('oauthID');
         const userDetails = {
             first_name: data.first_name,
             last_name: data.last_name,
@@ -20,39 +20,49 @@ exports.Register = (data) => {
             password: hash,
             public_id: mongoose.Types.ObjectId(),
         }
-        model.findOne({ email_address: userDetails.email_address }).then(found => {
-            if (found) {
-                //when a lawyer has created a user profile but didnt complete his signup
-                if (found.status == false) {
-                    resolve({
-                        success: true,
-                        message: 'please complete your signup process',
-                        status: 200
-                    })
+        if (check) {
+            // complete signup for oauth Users
+            model.findOneAndUpdate({ "oauth.oauthID": data.oauthID }, { phone_number: data.phone_number }).exec((err, updated) => {
+                if (err) reject({ err: err, status: 500 });
+                if (updated) {
+                    resolve({ success: true, message: 'User updated successfully', status: 200 })
                 } else {
-
-                    resolve({ success: false, message: 'User already exists please proceed to sign in !!!', status: 400 })
+                    resolve({ success: false, message: 'Error updating this user!!!', status: 401 })
                 }
-
-            } else {
-                model.create(userDetails).then(created => {
-                    if (created) {
-                        const user_id = created.public_id
-                        getUserDetail(user_id).then(user => {
-                            generateToken(user).then(token => {
-                                //after signup is complete the user token is updated to the user db
-                                resolve({
-                                    success: true, data: token,
-                                    message: 'Signup almost complete, please choose part ', status: 200
-                                })
-                            })
-                        }).catch(err => reject({ err: err, status: 401 }))
+            })
+        } else {
+            model.findOne({ email_address: userDetails.email_address }).then(found => {
+                if (found) {
+                    //when a lawyer has created a user profile but didnt complete his signup
+                    if (found.status == false) {
+                        resolve({
+                            success: true,
+                            message: 'please complete your signup process',
+                            status: 200
+                        })
                     } else {
-                        resolve({ success: false, message: 'Error registering user !!', status: 400 })
+                        resolve({ success: false, message: 'User already exists please proceed to sign in !!!', status: 400 })
                     }
-                }).catch(err => reject({ err: err, status: 500 }));
-            }
-        }).catch(err => reject({ err: err, status: 500 }));
+                } else {
+                    model.create(userDetails).then(created => {
+                        if (created) {
+                            const user_id = created.public_id
+                            getUserDetail(user_id).then(user => {
+                                generateToken(user).then(token => {
+                                    //after signup is complete the user token is updated to the user db
+                                    resolve({
+                                        success: true, data: token,
+                                        message: 'Signup almost complete, please choose part ', status: 200
+                                    })
+                                })
+                            }).catch(err => reject({ err: err, status: 401 }))
+                        } else {
+                            resolve({ success: false, message: 'Error registering user !!', status: 400 })
+                        }
+                    }).catch(err => reject({ err: err, status: 500 }));
+                }
+            }).catch(err => reject({ err: err, status: 500 }));
+        }
     })
 }
 
@@ -242,68 +252,68 @@ exports.changePassword = (id, data) => {
     })
 }
 
-exports.DBupdateToken = (id ,tokenID ,deviceID)=>{
-    return new Promise((resolve , reject )=>{
+exports.DBupdateToken = (id, tokenID, deviceID) => {
+    return new Promise((resolve, reject) => {
         let details = {
             token: [{
-                tokenID:tokenID,
-                deviceID:deviceID
+                tokenID: tokenID,
+                deviceID: deviceID
             }]
         }
-        model.findOne({public_id:id}).exec((err , found)=>{
-            if(err)reject({success:false , err:err , status:500});
-            let existing =  found.token
-         let reesult =  existing.filter(a => a.tokenID === tokenID && a.deviceID === deviceID ? a : null)
+        model.findOne({ public_id: id }).exec((err, found) => {
+            if (err) reject({ success: false, err: err, status: 500 });
+            let existing = found.token
+            let reesult = existing.filter(a => a.tokenID === tokenID && a.deviceID === deviceID ? a : null)
 
-         if(reesult.length > 0){
-            resolve({success:false , message:'token already exists',status:400})
-         }else{
-            model.findOneAndUpdate({public_id:id}, {$push:{token:details.token}}).exec((err , updated)=>{
-                if(err)reject({success:false , err:err , status:500});
-                if(updated){
-                    resolve({success:true , message:'token details updated !!', status:200})
-                }else{
-                    resolve({success:false , message:'Error updating token ',status:400})
-                }
-            })
-         }
-            
-            })
-       
-    })
-} 
-
-exports.refreshToken = (token, device)=>{
-    return new Promise((resolve  , reject)=>{
-        model.findOne({token:{$elemMatch:{tokenID:token , deviceID:device}}}).exec((err , result)=>{
-            if(err)reject({success:false , err:err , status:500});
-            if(!result){
-                resolve({success:false ,message:'user does not exist' , status:400})
-            }else{
-               // console.log(result , 'wereewwwww')
-                let specificToken = result.token
-            let tokenResult =  specificToken.filter(a => a.tokenID === token && a.deviceID === device ? a : null)
-            if(tokenResult !== null){
-                  let userId = result.public_id
-
-                getUserDetail(userId).then(activeUser => {
-                    generateToken(activeUser).then(token => {
-                        tokenResult[0].tokenID = token;
-                        result.save((err , saved)=>{
-                            if(err)reject({err:err, status:400 , message:'Error saving token'})
-                            resolve({
-                                success: true, token: token ,
-                                message: 'refresh token generated  !!!',
-                                status: 200
-                            })                       
-                         })
-
-                    }).catch(err => reject({ err: err, status: 500 }))
-                }).catch(err => reject({ err: err, status: 500 }))
-            }else{
-                resolve({status:false, status:400 , message:'un-authorized access'})
+            if (reesult.length > 0) {
+                resolve({ success: false, message: 'token already exists', status: 400 })
+            } else {
+                model.findOneAndUpdate({ public_id: id }, { $push: { token: details.token } }).exec((err, updated) => {
+                    if (err) reject({ success: false, err: err, status: 500 });
+                    if (updated) {
+                        resolve({ success: true, message: 'token details updated !!', status: 200 })
+                    } else {
+                        resolve({ success: false, message: 'Error updating token ', status: 400 })
+                    }
+                })
             }
-              
+
+        })
+
+    })
+}
+
+exports.refreshToken = (token, device) => {
+    return new Promise((resolve, reject) => {
+        model.findOne({ token: { $elemMatch: { tokenID: token, deviceID: device } } }).exec((err, result) => {
+            if (err) reject({ success: false, err: err, status: 500 });
+            if (!result) {
+                resolve({ success: false, message: 'user does not exist', status: 400 })
+            } else {
+                // console.log(result , 'wereewwwww')
+                let specificToken = result.token
+                let tokenResult = specificToken.filter(a => a.tokenID === token && a.deviceID === device ? a : null)
+                if (tokenResult !== null) {
+                    let userId = result.public_id
+
+                    getUserDetail(userId).then(activeUser => {
+                        generateToken(activeUser).then(token => {
+                            tokenResult[0].tokenID = token;
+                            result.save((err, saved) => {
+                                if (err) reject({ err: err, status: 400, message: 'Error saving token' })
+                                resolve({
+                                    success: true, token: token,
+                                    message: 'refresh token generated  !!!',
+                                    status: 200
+                                })
+                            })
+
+                        }).catch(err => reject({ err: err, status: 500 }))
+                    }).catch(err => reject({ err: err, status: 500 }))
+                } else {
+                    resolve({ status: false, status: 400, message: 'un-authorized access' })
+                }
+
             }
         })
     })
