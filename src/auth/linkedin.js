@@ -4,7 +4,7 @@ const User = require('../models/users');
 
 module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken, profile, done) => {
     User.findOne({ oauthID: profile.id }, (err, user) => {
-        console.log(profile._json)
+        console.log(profile)
         if (err) console.log(err);
         if (!err && user !== null) {
             done(null, user);
