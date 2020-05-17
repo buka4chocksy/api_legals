@@ -3,26 +3,41 @@ const { linkedin } = require('../utils/config')
 const User = require('../models/users');
 
 module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken, profile, done) => {
-        User.findOne({ oauthID: profile.id }, (err, user) => {
-            if(err) console.log(err);
-            if(!err && user !== null) {
-                done(null, user);
-            } else {
-                const userDetails = {
-                    oauthID: profile.id,
-                    name: profile.displayName,
-                    image_url: profile.photos[0].value,
+    User.findOne({ oauthID: profile.id }, (err, user) => {
+        console.log(profile)
+        if (err) console.log(err);
+        if (!err && user !== null) {
+            done(null, user);
+        } else {
+            const user = new User;
+            user.first_name = profile.displayName.split(" ")[0]
+            user.last_name = profile.displayName.split(" ")[1]
+            user.image_url = profile.photos[0].value;
+            user.oauth.oauthID = profile.id;
+            user.oauth.provider = profile.provider || null;
+            user.save().then(created => {
+                if (created) {
+                    console.log('Linkedin User created successfully!')
+                    done(null, created)
                 }
-                User.create(userDetails).then(created => {
-                    if(created) {
-                        console.log('Linkedin User created successfully!')
-                        done(null, created)
-                    }
-                })
-                .catch(err => {
-                    console.log('Error ocurred while creating this user')
-                })
-            }
-        })
-    }
+            }).catch(err => {
+                console.log('Error ocurred while creating this user')
+            })
+            // const userDetails = {
+            //     oauthID: profile.id,
+            //     name: profile.displayName,
+            //     image_url: profile.photos[0].value,
+            // }
+            // User.create(userDetails).then(created => {
+            //     if (created) {
+            //         console.log('Linkedin User created successfully!')
+            //         done(null, created)
+            //     }
+            // })
+            //     .catch(err => {
+            //         console.log('Error ocurred while creating this user')
+            //     })
+        }
+    })
+}
 )
