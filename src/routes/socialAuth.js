@@ -5,7 +5,7 @@ module.exports = function () {
     // google auth
     router.get('/auth/google', passport.authenticate('google', { scope: ['profile'] }));
     router.get('/auth/google/callback',
-        passport.authenticate('google', { failureRedirect: '/auth/google' }),
+        passport.authenticate('google', { failureRedirect: '/error' }),
         (req, res) => {
             console.log('checking google request: ', req.user)
             res.redirect('lawyerpp://signup?user=' + JSON.stringify(req.user))
