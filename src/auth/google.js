@@ -14,7 +14,7 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
             user.last_name = profile.displayName.split(" ")[1]
             user.image_url = profile._json.picture;
             user.oauth.oauthID = profile.id;
-            user.oauth.oauthID = profile.provider;
+            user.oauth.provider = profile.provider;
             user.save().then(created => {
                 if (created) {
                     console.log('Google User created successfully!')
@@ -23,26 +23,6 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
             }).catch(err => {
                 console.log('Error ocurred while creating this user')
             })
-            // const userDetails = {
-            //     oauth: {
-            //         oauthID: profile.id,
-            //         provider: profile.provider
-            //     },
-            //     first_name: profile.displayName.split(" ")[0],
-            //     last_name: profile.displayName.split(" ")[1],
-            //     // oauthID: profile.id,
-            //     // name: profile.displayName,
-            //     image_url: profile._json.picture,
-            // }
-            // User.create(userDetails).then(created => {
-            //     if (created) {
-            //         console.log('Google User created successfully!')
-            //         done(null, created)
-            //     }
-            // })
-            //     .catch(err => {
-            //         console.log('Error ocurred while creating this user')
-            //     })
         }
     })
 })
