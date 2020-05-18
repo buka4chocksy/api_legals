@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 
 exports.Register = (data) => {
     return new Promise((resolve, reject) => {
-        const hash = bcrypt.hashSync(data.password, 10)
+        const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
         const gen = Math.floor(1000 + Math.random() * 9000);
         const check = data.hasOwnProperty('oauthID');
         const userDetails = {
