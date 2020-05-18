@@ -14,7 +14,7 @@ module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken
             user.email_address = profile.emails[0].value
             user.image_url = profile.photos[0].value;
             user.oauth.oauthID = profile.id;
-            user.oauth.provider = profile.provider || null;
+            user.oauth.provider = profile.provider;
             user.save().then(created => {
                 if (created) {
                     console.log('Linkedin User created successfully!')
