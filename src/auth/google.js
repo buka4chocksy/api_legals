@@ -20,7 +20,7 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
                     done(null, created)
                 }
             }).catch(err => {
-                console.log('Error ocurred while creating this user')
+                console.log(err)
             })
         }
     })
