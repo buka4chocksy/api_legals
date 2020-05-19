@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const passport = require('passport');
+const authService = require('../services/authService');
 
 module.exports = function () {
     // google auth
@@ -17,7 +18,21 @@ module.exports = function () {
         passport.authenticate('linkedin', { failureRedirect: '/error' }),
         (req, res) => {
             console.log('checking linkedin user: ', req.user)
-            res.redirect('lawyerpp://signup?user=' + JSON.stringify(req.user))
+            const data = {
+                oauthID: req.user.oauth.oauthID,
+                first_name: req.user.first_name,
+                last_name: req.user.last_name,
+                email_address: req.user.email_address
+            }
+            authService.generateToken(data).then(token => {
+                const response = {
+                    token: token,
+                    first_name: req.user.first_name,
+                    last_name: req.user.last_name,
+                    email_address: req.user.email_address
+                }
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
+            })
         })
     return router;
 }
