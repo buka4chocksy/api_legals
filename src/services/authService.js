@@ -7,7 +7,7 @@ const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
 
-exports.Register = (data , deviceID) => {
+exports.Register = (data, deviceID) => {
     return new Promise((resolve, reject) => {
         const hash = bcrypt.hashSync(data.password, 10)
         const gen = Math.floor(1000 + Math.random() * 9000);
@@ -41,13 +41,13 @@ exports.Register = (data , deviceID) => {
                         getUserDetail(user_id).then(user => {
                             generateToken(user).then(token => {
                                 //after signup is complete the user token is updated to the user db
-                                this.DBupdateToken(user_id , token,deviceID).then(tokenUpdated =>{
-                                    if(tokenUpdated){
+                                this.DBupdateToken(user_id, token, deviceID).then(tokenUpdated => {
+                                    if (tokenUpdated) {
                                         resolve({
                                             success: true, data: token,
                                             message: 'Signup almost complete, please choose part ', status: 200
                                         })
-                                    }else{
+                                    } else {
                                         resolve({
                                             success: true,
                                             message: 'could not update token ', status: 404
@@ -252,68 +252,68 @@ exports.changePassword = (id, data) => {
     })
 }
 
-exports.DBupdateToken = (id ,tokenID ,deviceID)=>{
-    return new Promise((resolve , reject )=>{
+exports.DBupdateToken = (id, tokenID, deviceID) => {
+    return new Promise((resolve, reject) => {
         let details = {
             token: [{
-                tokenID:tokenID,
-                deviceID:deviceID
+                tokenID: tokenID,
+                deviceID: deviceID
             }]
         }
-        model.findOne({public_id:id}).exec((err , found)=>{
-            if(err)reject({success:false , err:err , status:500});
-            let existing =  found.token
-         let reesult =  existing.filter(a => a.tokenID === tokenID && a.deviceID === deviceID ? a : null)
+        model.findOne({ public_id: id }).exec((err, found) => {
+            if (err) reject({ success: false, err: err, status: 500 });
+            let existing = found.token
+            let reesult = existing.filter(a => a.tokenID === tokenID && a.deviceID === deviceID ? a : null)
 
-         if(reesult.length > 0){
-            resolve({success:false , message:'token already exists',status:400})
-         }else{
-            model.findOneAndUpdate({public_id:id}, {$push:{token:details.token}}).exec((err , updated)=>{
-                if(err)reject({success:false , err:err , status:500});
-                if(updated){
-                    resolve({success:true , message:'token details updated !!', status:200})
-                }else{
-                    resolve({success:false , message:'Error updating token ',status:400})
-                }
-            })
-         }
-            
-            })
-       
-    })
-} 
-
-exports.refreshToken = (token, device)=>{
-    return new Promise((resolve  , reject)=>{
-        model.findOne({token:{$elemMatch:{tokenID:token , deviceID:device}}}).exec((err , result)=>{
-            if(err)reject({success:false , err:err , status:500});
-            if(!result){
-                resolve({success:false ,message:'user does not exist' , status:400})
-            }else{
-               // console.log(result , 'wereewwwww')
-                let specificToken = result.token
-            let tokenResult =  specificToken.filter(a => a.tokenID === token && a.deviceID === device ? a : null)
-            if(tokenResult !== null){
-                  let userId = result.public_id
-
-                getUserDetail(userId).then(activeUser => {
-                    generateToken(activeUser).then(token => {
-                        tokenResult[0].tokenID = token;
-                        result.save((err , saved)=>{
-                            if(err)reject({err:err, status:400 , message:'Error saving token'})
-                            resolve({
-                                success: true, token: token ,
-                                message: 'refresh token generated  !!!',
-                                status: 200
-                            })                       
-                         })
-
-                    }).catch(err => reject({ err: err, status: 500 }))
-                }).catch(err => reject({ err: err, status: 500 }))
-            }else{
-                resolve({status:false, status:400 , message:'un-authorized access'})
+            if (reesult.length > 0) {
+                resolve({ success: false, message: 'token already exists', status: 400 })
+            } else {
+                model.findOneAndUpdate({ public_id: id }, { $push: { token: details.token } }).exec((err, updated) => {
+                    if (err) reject({ success: false, err: err, status: 500 });
+                    if (updated) {
+                        resolve({ success: true, message: 'token details updated !!', status: 200 })
+                    } else {
+                        resolve({ success: false, message: 'Error updating token ', status: 400 })
+                    }
+                })
             }
-              
+
+        })
+
+    })
+}
+
+exports.refreshToken = (token, device) => {
+    return new Promise((resolve, reject) => {
+        model.findOne({ token: { $elemMatch: { tokenID: token, deviceID: device } } }).exec((err, result) => {
+            if (err) reject({ success: false, err: err, status: 500 });
+            if (!result) {
+                resolve({ success: false, message: 'user does not exist', status: 400 })
+            } else {
+                // console.log(result , 'wereewwwww')
+                let specificToken = result.token
+                let tokenResult = specificToken.filter(a => a.tokenID === token && a.deviceID === device ? a : null)
+                if (tokenResult !== null) {
+                    let userId = result.public_id
+
+                    getUserDetail(userId).then(activeUser => {
+                        generateToken(activeUser).then(token => {
+                            tokenResult[0].tokenID = token;
+                            result.save((err, saved) => {
+                                if (err) reject({ err: err, status: 400, message: 'Error saving token' })
+                                resolve({
+                                    success: true, token: token,
+                                    message: 'refresh token generated  !!!',
+                                    status: 200
+                                })
+                            })
+
+                        }).catch(err => reject({ err: err, status: 500 }))
+                    }).catch(err => reject({ err: err, status: 500 }))
+                } else {
+                    resolve({ status: false, status: 400, message: 'un-authorized access' })
+                }
+
             }
         })
     })
