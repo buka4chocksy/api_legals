@@ -18,20 +18,16 @@ module.exports = function () {
         passport.authenticate('linkedin', { failureRedirect: '/error' }),
         (req, res) => {
             console.log('checking linkedin user: ', req.user)
-            const data = {
-                oauthID: req.user.oauth.oauthID,
-                first_name: req.user.first_name,
-                last_name: req.user.last_name,
-                email_address: req.user.email_address
-            }
-            authService.generateToken(data).then(token => {
-                const response = {
-                    token: token,
-                    first_name: req.user.first_name,
-                    last_name: req.user.last_name,
-                    email_address: req.user.email_address
-                }
-                res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
+            authService.getUserDetail(req.user.public_id).then(activeUser => {
+                authService.generateToken(activeUser).then(token => {
+                    const response = {
+                        token: token,
+                        first_name: activeUser.first_name,
+                        last_name: activeUser.last_name,
+                        email_address: activeUser.email_address
+                    }
+                    res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
+                })
             })
         })
     return router;
