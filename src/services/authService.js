@@ -27,7 +27,7 @@ exports.Register = (data, deviceID) => {
                 model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).exec((err, updated) => {
                     if (err) reject({ err: err, status: 500 });
                     if (updated) {
-                        this.DBupdateToken(decode.publicId, data.token, deviceID).then(tokenUpdated => {
+                        DBupdateToken(decode.publicId, data.token, deviceID).then(tokenUpdated => {
                             if(tokenUpdated) {
                                 resolve({ success: true, token, message: 'User updated successfully', status: 200 })
                             } else {
@@ -270,7 +270,7 @@ exports.changePassword = (id, data) => {
     })
 }
 
-exports.DBupdateToken = (id, tokenID, deviceID) => {
+function DBupdateToken  (id, tokenID, deviceID){
     return new Promise((resolve, reject) => {
         let details = {
             token: [{
@@ -279,20 +279,25 @@ exports.DBupdateToken = (id, tokenID, deviceID) => {
             }]
         }
         model.findOne({ public_id: id }).exec((err, found) => {
+
             if (err) reject({ success: false, err: err, status: 500 });
             let existing = found.token
+
             let reesult = existing.filter(a => a.tokenID === tokenID && a.deviceID === deviceID ? a : null)
 
             if (reesult.length > 0) {
                 resolve({ success: false, message: 'token already exists', status: 400 })
             } else {
+                console.log(id , details.token , 'hmmm----')
+
                 model.findOneAndUpdate({ public_id: id }, { $push: { token: details.token } }).exec((err, updated) => {
-                    if (err) reject({ success: false, err: err, status: 500 });
                     if (updated) {
                         resolve({ success: true, message: 'token details updated !!', status: 200 })
                     } else {
                         resolve({ success: false, message: 'Error updating token ', status: 400 })
                     }
+                    if (err) reject({ success: false, err: err, status: 500 });
+
                 })
             }
 
@@ -300,6 +305,8 @@ exports.DBupdateToken = (id, tokenID, deviceID) => {
 
     })
 }
+
+exports.DBupdateToken = DBupdateToken
 
 exports.refreshToken = (token, device) => {
     return new Promise((resolve, reject) => {
@@ -385,7 +392,7 @@ function verifyToken(token = "") {
             decodedToken
         ) {
             if (err) {
-                reject(err);
+                reject({message:'Token has expired',status:400});
             } else {
                 resolve(decodedToken);
             }

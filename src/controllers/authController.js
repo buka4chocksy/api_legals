@@ -6,7 +6,7 @@ module.exports = function authController() {
         const device = req.body.deviceID || req.query.deviceID || req.headers['device-id'];
         service.Register(req.body, device).then(data => {
             res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(err.err));
+        }).catch(err => res.status(err.status).send(err));
     }
 
     this.verifyUser = (req, res) => {
