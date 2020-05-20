@@ -12,6 +12,7 @@ const cors = require('cors');
 const passport = require('passport');
 const session = require('express-session');
 const GoogleStrategy = require('./src/auth/google');
+const LinkedinStrategy = require('./src/auth/linkedin');
 /**
  * Middlewares go here for the application.
  * if it gets to cumbersome then we can move to seperate file
@@ -31,14 +32,15 @@ app.use(session({
 // Register Google Passport strategy
 passport.use(GoogleStrategy);
 
+// Register Linkedin Passport strategy
+passport.use(LinkedinStrategy);
+
 // serialize and deserialize
 passport.serializeUser(function(user, done) {
-    console.log('serializeUser: ' + user._id);
     done(null, user._id);
   });
-  passport.deserializeUser(function(id, done) {
+passport.deserializeUser(function(id, done) {
     User.findById(id, function(err, user){
-      console.log('deserializeUser: ',user);
         if(!err) done(null, user);
         else done(err, null);
       });
@@ -53,7 +55,7 @@ app.use(express.json());//for parsing application/json
 app.use(express.urlencoded({ extended: false})); //for parsing application/x-www-form-urlencoded
 app.use(cors());
 app.use('/api', rootRouter);
-app.use('', socialAuth);
+app.use('/', socialAuth);
 
 
 app.use((req, res, next) => {

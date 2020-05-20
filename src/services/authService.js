@@ -9,8 +9,9 @@ const jwt = require('jsonwebtoken');
 
 exports.Register = (data, deviceID) => {
     return new Promise((resolve, reject) => {
-        const hash = bcrypt.hashSync(data.password, 10)
+        const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
         const gen = Math.floor(1000 + Math.random() * 9000);
+        const check = data.hasOwnProperty('token');
         const userDetails = {
             first_name: data.first_name,
             last_name: data.last_name,
@@ -20,49 +21,107 @@ exports.Register = (data, deviceID) => {
             password: hash,
             public_id: mongoose.Types.ObjectId(),
         }
-        model.findOne({ email_address: userDetails.email_address }).then(found => {
-            if (found) {
-                //when a lawyer has created a user profile but didnt complete his signup
-                if (found.status == false) {
-                    resolve({
-                        success: true,
-                        message: 'please complete your signup process',
-                        status: 200
-                    })
-                } else {
+        // model.findOne({ email_address: userDetails.email_address }).then(found => {
+        //     if (found) {
+        //         //when a lawyer has created a user profile but didnt complete his signup
+        //         if (found.status == false) {
+        //             resolve({
+        //                 success: true,
+        //                 message: 'please complete your signup process',
+        //                 status: 200
+        //             })
+        //         } else {
 
-                    resolve({ success: false, message: 'User already exists please proceed to sign in !!!', status: 400 })
-                }
+        //             resolve({ success: false, message: 'User already exists please proceed to sign in !!!', status: 400 })
+        //         }
 
-            } else {
-                model.create(userDetails).then(created => {
-                    if (created) {
-                        const user_id = created.public_id
-                        getUserDetail(user_id).then(user => {
-                            generateToken(user).then(token => {
-                                //after signup is complete the user token is updated to the user db
-                                this.DBupdateToken(user_id, token, deviceID).then(tokenUpdated => {
-                                    if (tokenUpdated) {
-                                        resolve({
-                                            success: true, data: token,
-                                            message: 'Signup almost complete, please choose part ', status: 200
-                                        })
-                                    } else {
-                                        resolve({
-                                            success: true,
-                                            message: 'could not update token ', status: 404
-                                        })
-                                    }
-                                }).catch(err => reject({ err: err, status: 401 }))
+        //     } else {
+        //         model.create(userDetails).then(created => {
+        //             if (created) {
+        //                 const user_id = created.public_id
+        //                 getUserDetail(user_id).then(user => {
+        //                     generateToken(user).then(token => {
+        //                         //after signup is complete the user token is updated to the user db
+        //                         this.DBupdateToken(user_id, token, deviceID).then(tokenUpdated => {
+        //                             if (tokenUpdated) {
+        //                                 resolve({
+        //                                     success: true, data: token,
+        //                                     message: 'Signup almost complete, please choose part ', status: 200
+        //                                 })
+        //                             } else {
+        //                                 resolve({
+        //                                     success: true,
+        //                                     message: 'could not update token ', status: 404
+        //                                 })
+        //                             }
+        //                         }).catch(err => reject({ err: err, status: 401 }))
 
-                            })
-                        }).catch(err => reject({ err: err, status: 401 }))
+        //                     })
+        //                 }).catch(err => reject({ err: err, status: 401 }))
+        if (check) {
+            // complete signup for oauth Users
+            verifyToken(data.token).then(decode => {
+                model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).exec((err, updated) => {
+                    if (err) reject({ err: err, status: 500 });
+                    if (updated) {
+                        this.DBupdateToken(decode.publicId, token, deviceID).then(tokenUpdated => {
+                            if(tokenUpdated) {
+                                resolve({ success: true, token, message: 'User updated successfully', status: 200 })
+                            } else {
+                                resolve({ success: true, message: 'Could not update token', status: 404 })
+                            }
+                        }).catch(err => reject({ err: err, status: 500 }));
                     } else {
-                        resolve({ success: false, message: 'Error registering user !!', status: 400 })
+                        resolve({ success: false, message: 'Error updating this user!!!', status: 401 })
                     }
-                }).catch(err => reject({ err: err, status: 500 }));
-            }
-        }).catch(err => reject({ err: err, status: 500 }));
+                })
+            })
+        } else {
+            model.findOne({ email_address: userDetails.email_address }).then(found => {
+                if (found) {
+                    //when a lawyer has created a user profile but didnt complete his signup
+                    if (found.status == false) {
+                        resolve({
+                            success: true,
+                            message: 'please complete your signup process',
+                            status: 200
+                        })
+                    } else {
+                        resolve({ success: false, message: 'User already exists please proceed to sign in !!!', status: 400 })
+                    }
+                } else {
+                    model.create(userDetails).then(created => {
+                        if (created) {
+                            const user_id = created.public_id
+                            getUserDetail(user_id).then(user => {
+                                generateToken(user).then(token => {
+                                    //after signup is complete the user token is updated to the user db
+                                    this.DBupdateToken(user_id, token, deviceID).then(tokenUpdated => {
+                                        if (tokenUpdated) {
+                                            resolve({
+                                                success: true, data: token,
+                                                message: 'Signup almost complete, please choose part ', status: 200
+                                            })
+                                        } else {
+                                            resolve({
+                                                success: true,
+                                                message: 'could not update token ', status: 404
+                                            })
+                                        }
+                                    }).catch(err => reject({ err: err, status: 401 }))
+                                    // resolve({
+                                    //     success: true, data: token,
+                                    //     message: 'Signup almost complete, please choose part ', status: 200
+                                    // })
+                                })
+                            }).catch(err => reject({ err: err, status: 401 }))
+                        } else {
+                            resolve({ success: false, message: 'Error registering user !!', status: 400 })
+                        }
+                    }).catch(err => reject({ err: err, status: 500 }));
+                }
+            }).catch(err => reject({ err: err, status: 500 }));
+        }
     })
 }
 
@@ -328,6 +387,8 @@ function getUserDetail(Id) {
             .then(data => {
                 var specificUserDetail = {
                     email_address: data.email_address,
+                    first_name: data.first_name,
+                    last_name: data.last_name,
                     fullname: data.first_name + ' ' + data.last_name,
                     phone: data.phone_number,
                     publicId: data.public_id,

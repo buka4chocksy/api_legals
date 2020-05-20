@@ -4,7 +4,6 @@ const schema = mongoose.Schema;
 const userSchema = new schema({
     first_name: { type: String },
     last_name: { type: String },
-    oauthID: { type: String },
     name: { type: String },
     email_address: { type: String, unique: true },
     phone_number: { type: String },
@@ -19,7 +18,11 @@ const userSchema = new schema({
     token: [{
         tokenID: {type: String, default: null},
         deviceID: {type: String, default: null}
-    }]
+    }],
+    oauth: {
+        provider: {type: String, enum: ['google', 'linkedin']},
+        oauthID: {type: String}
+    }
 })
 
 module.exports = mongoose.model('users', userSchema);
