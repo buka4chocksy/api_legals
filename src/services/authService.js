@@ -6,7 +6,7 @@ const secret = process.env.Secret
 const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
-exports.Register = (data) => {
+exports.Register = (data, deviceID) => {
     return new Promise((resolve, reject) => {
         const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
         const gen = Math.floor(1000 + Math.random() * 9000);
@@ -26,7 +26,13 @@ exports.Register = (data) => {
                 model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).exec((err, updated) => {
                     if (err) reject({ err: err, status: 500 });
                     if (updated) {
-                        resolve({ success: true, message: 'User updated successfully', status: 200 })
+                        this.DBupdateToken(decode.publicId, token, deviceID).then(tokenUpdated => {
+                            if(tokenUpdated) {
+                                resolve({ success: true, token, message: 'User updated successfully', status: 200 })
+                            } else {
+                                resolve({ success: true, message: 'Could not update token', status: 404 })
+                            }
+                        }).catch(err => reject({ err: err, status: 500 }));
                     } else {
                         resolve({ success: false, message: 'Error updating this user!!!', status: 401 })
                     }
