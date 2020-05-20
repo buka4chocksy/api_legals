@@ -6,6 +6,7 @@ const schema = Joi.object().keys({
     email_address: [Joi.string().email({ minDomainSegments: 2 }).optional(), Joi.allow(null)],
     phone_number: Joi.string().required().max(11),
     oauthID: [Joi.string().optional(), Joi.allow(null)],
+    deviceID: [Joi.string().optional(), Joi.allow(null)],
     token: [Joi.string().optional(), Joi.allow(null)],
     password: [Joi.string().max(50).optional(), Joi.allow(null)],
 })
