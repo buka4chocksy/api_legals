@@ -328,8 +328,8 @@ function getUserDetail(Id) {
             .then(data => {
                 var specificUserDetail = {
                     email_address: data.email_address,
-                    first_name = data.first_name,
-                    last_name = data.last_name,
+                    first_name: data.first_name,
+                    last_name: data.last_name,
                     fullname: data.first_name + ' ' + data.last_name,
                     phone: data.phone_number,
                     publicId: data.public_id,
