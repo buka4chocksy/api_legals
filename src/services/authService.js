@@ -21,43 +21,6 @@ exports.Register = (data, deviceID) => {
             password: hash,
             public_id: mongoose.Types.ObjectId(),
         }
-        // model.findOne({ email_address: userDetails.email_address }).then(found => {
-        //     if (found) {
-        //         //when a lawyer has created a user profile but didnt complete his signup
-        //         if (found.status == false) {
-        //             resolve({
-        //                 success: true,
-        //                 message: 'please complete your signup process',
-        //                 status: 200
-        //             })
-        //         } else {
-
-        //             resolve({ success: false, message: 'User already exists please proceed to sign in !!!', status: 400 })
-        //         }
-
-        //     } else {
-        //         model.create(userDetails).then(created => {
-        //             if (created) {
-        //                 const user_id = created.public_id
-        //                 getUserDetail(user_id).then(user => {
-        //                     generateToken(user).then(token => {
-        //                         //after signup is complete the user token is updated to the user db
-        //                         this.DBupdateToken(user_id, token, deviceID).then(tokenUpdated => {
-        //                             if (tokenUpdated) {
-        //                                 resolve({
-        //                                     success: true, data: token,
-        //                                     message: 'Signup almost complete, please choose part ', status: 200
-        //                                 })
-        //                             } else {
-        //                                 resolve({
-        //                                     success: true,
-        //                                     message: 'could not update token ', status: 404
-        //                                 })
-        //                             }
-        //                         }).catch(err => reject({ err: err, status: 401 }))
-
-        //                     })
-        //                 }).catch(err => reject({ err: err, status: 401 }))
         if (check) {
             // complete signup for oauth Users
             verifyToken(data.token).then(decode => {
@@ -109,10 +72,6 @@ exports.Register = (data, deviceID) => {
                                             })
                                         }
                                     }).catch(err => reject({ err: err, status: 401 }))
-                                    // resolve({
-                                    //     success: true, data: token,
-                                    //     message: 'Signup almost complete, please choose part ', status: 200
-                                    // })
                                 })
                             }).catch(err => reject({ err: err, status: 401 }))
                         } else {
