@@ -9,6 +9,7 @@ exports.createPannic = (data,id,usertype)=>{
             }else{
                 //while creating pannic as client front end will have to pick the usertype data from front end 
                 //but as a lawyer the usertype will come from the database
+                console.log(data.user_type , 'kgkgkgkgk')
                 const details ={
                     next_of_kin:data.next_of_kin,
                     country_code:data.country_code,
@@ -23,7 +24,7 @@ exports.createPannic = (data,id,usertype)=>{
                     if(created){
                         if(data.user_type === 'client'){
                             user.findOneAndUpdate({public_id:id}, {user_type:data.user_type}).exec((err , result)=>{
-                                if(err)reject(err);
+                                if(err)reject({err: err , status:500});
                                 if(result){
                                     resolve({success:true , message:'pannic alert details created successfully', status:200}) 
                                 }else{
@@ -36,7 +37,7 @@ exports.createPannic = (data,id,usertype)=>{
                     }else{
                         resolve({success:false , message:' error encountered while creating pannic alert details', status:400})   
                     }
-                }).catch(err => reject(err));
+                }).catch(err => reject({err: err , status:500}))
             }
         })
     })
