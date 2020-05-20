@@ -7,7 +7,7 @@ const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
 
-exports.Register = (data) => {
+exports.Register = (data , deviceID) => {
     return new Promise((resolve, reject) => {
         const hash = bcrypt.hashSync(data.password, 10)
         const gen = Math.floor(1000 + Math.random() * 9000);
@@ -41,10 +41,20 @@ exports.Register = (data) => {
                         getUserDetail(user_id).then(user => {
                             generateToken(user).then(token => {
                                 //after signup is complete the user token is updated to the user db
-                                resolve({
-                                    success: true, data: token,
-                                    message: 'Signup almost complete, please choose part ', status: 200
-                                })
+                                this.DBupdateToken(user_id , token,deviceID).then(tokenUpdated =>{
+                                    if(tokenUpdated){
+                                        resolve({
+                                            success: true, data: token,
+                                            message: 'Signup almost complete, please choose part ', status: 200
+                                        })
+                                    }else{
+                                        resolve({
+                                            success: true,
+                                            message: 'could not update token ', status: 404
+                                        })
+                                    }
+                                }).catch(err => reject({ err: err, status: 401 }))
+
                             })
                         }).catch(err => reject({ err: err, status: 401 }))
                     } else {
