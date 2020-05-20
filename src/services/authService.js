@@ -27,7 +27,7 @@ exports.Register = (data, deviceID) => {
                 model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).exec((err, updated) => {
                     if (err) reject({ err: err, status: 500 });
                     if (updated) {
-                        this.DBupdateToken(decode.publicId, token, deviceID).then(tokenUpdated => {
+                        this.DBupdateToken(decode.publicId, data.token, deviceID).then(tokenUpdated => {
                             if(tokenUpdated) {
                                 resolve({ success: true, token, message: 'User updated successfully', status: 200 })
                             } else {
