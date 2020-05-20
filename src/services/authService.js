@@ -10,7 +10,7 @@ exports.Register = (data) => {
     return new Promise((resolve, reject) => {
         const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
         const gen = Math.floor(1000 + Math.random() * 9000);
-        const check = data.hasOwnProperty('oauthID');
+        const check = data.hasOwnProperty('token');
         const userDetails = {
             first_name: data.first_name,
             last_name: data.last_name,
@@ -22,13 +22,15 @@ exports.Register = (data) => {
         }
         if (check) {
             // complete signup for oauth Users
-            model.findOneAndUpdate({ "oauth.oauthID": data.oauthID }, { phone_number: data.phone_number }).exec((err, updated) => {
-                if (err) reject({ err: err, status: 500 });
-                if (updated) {
-                    resolve({ success: true, message: 'User updated successfully', status: 200 })
-                } else {
-                    resolve({ success: false, message: 'Error updating this user!!!', status: 401 })
-                }
+            verifyToken(data.token).then(decode => {
+                model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).exec((err, updated) => {
+                    if (err) reject({ err: err, status: 500 });
+                    if (updated) {
+                        resolve({ success: true, message: 'User updated successfully', status: 200 })
+                    } else {
+                        resolve({ success: false, message: 'Error updating this user!!!', status: 401 })
+                    }
+                })
             })
         } else {
             model.findOne({ email_address: userDetails.email_address }).then(found => {
