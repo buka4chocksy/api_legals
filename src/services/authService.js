@@ -59,13 +59,13 @@ exports.Register = (data, deviceID) => {
                             return ({ success: false, message: 'Error registering user !!', status: 400 })
                         }
                         const user_id = created.public_id;
-                        return getUserDetail(user_id).then(user => {
+                        return getUserDetail(user_id).then(user => { // Q starts
                             return generateToken(user);
                         })
                         .then(token => {
                             return DBupdateToken(user_id, token, deviceID)
                         })
-                        .catch(err => reject({ err: err, status: 401 }))
+                        .catch(err => reject({ err: err, status: 401 })) // Q Ends
                         .then(tokemUpdated => {
                             if(tokemUpdated) {
                                 return ({
@@ -81,7 +81,7 @@ exports.Register = (data, deviceID) => {
                         }).catch(err => reject({ err: err, status: 500 }))
                     }).catch(err => reject({ err: err, status: 500 }))
                 }
-            }).catch(err => reject({ err: err, status: 500 }));
+            }).catch(err => reject({ err: err, status: 500 })); // Q
         }
 }
 
