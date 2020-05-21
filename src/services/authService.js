@@ -65,7 +65,7 @@ exports.Register = (data, deviceID) => {
                         .then(token => {
                             return DBupdateToken(user_id, token, deviceID)
                         })
-                        .catch(err => {return { err: err, status: 401 }}) // Q Ends
+                        .catch(err => {return { err: err, status: 500 }}) // Q Ends
                         .then(tokenUpdated => {
                             if(tokenUpdated) {
                                 return ({
