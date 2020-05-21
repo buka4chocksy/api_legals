@@ -14,7 +14,7 @@ exports.createPannic = (data,id,usertype)=>{
                     next_of_kin:data.next_of_kin,
                     country_code:data.country_code,
                     phone_number:data.phone_number,
-                    email_address:data.email,
+                    email_address:data.email_address,
                     relationship:data.relationship,
                     alert:data.user_type.toLowerCase() !== 'lawyer'? 'no' : 'yes',
                     user_type:data.user_type == '' ? usertype : data.user_type ,

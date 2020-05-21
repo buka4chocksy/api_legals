@@ -51,7 +51,7 @@ exports.Register = (data, deviceID) => {
                             status: 200
                         })
                     } else {
-                        return ({ success: false, message: 'User already exits please proceed to sign in !!!' })
+                        return ({ success: false, message: 'User already exits please proceed to sign in !!!', status: 404 })
                     }
                 } else {
                     return model.create(userDetails).then(created => {
@@ -65,11 +65,11 @@ exports.Register = (data, deviceID) => {
                         .then(token => {
                             return DBupdateToken(user_id, token, deviceID)
                         })
-                        .catch(err => reject({ err: err, status: 401 })) // Q Ends
-                        .then(tokemUpdated => {
-                            if(tokemUpdated) {
+                        .catch(err => {return { err: err, status: 401 }}) // Q Ends
+                        .then(tokenUpdated => {
+                            if(tokenUpdated) {
                                 return ({
-                                    success: true, data: token,
+                                    success: true, token: tokenUpdated.token,
                                     message: 'Signup almost complete, please choose part ', status: 200
                                 })
                             } else {
@@ -78,10 +78,10 @@ exports.Register = (data, deviceID) => {
                                     message: 'could not update token ', status: 404
                                 })
                             }
-                        }).catch(err => reject({ err: err, status: 500 }))
-                    }).catch(err => reject({ err: err, status: 500 }))
+                        }).catch(err => {return { err: err, status: 500 }})
+                    }).catch(err => {return { err: err, status: 500 }})
                 }
-            }).catch(err => reject({ err: err, status: 500 })); // Q
+            }).catch(err => {return { err: err, status: 500 }}); // Q
         }
 }
 
@@ -292,7 +292,7 @@ function DBupdateToken(id, tokenID, deviceID) {
                 model.findOneAndUpdate({ public_id: id }, { $push: { token: details.token } }).exec((err, updated) => {
                     if (err) reject({ success: false, err: 'err1', status: 500 });
                     else if (updated) {
-                        resolve({ success: true, message: 'token details updated !!', status: 200 })
+                        resolve({ success: true, message: 'token details updated !!', status: 200, token: tokenID })
                     } else {
                         resolve({ success: false, message: 'Error updating token ', status: 400 })
                     }
