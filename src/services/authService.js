@@ -7,10 +7,10 @@ const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
 
-exports.Register = (data, deviceID) => {
+exports.Register = (data, deviceID, token) => {
         const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
         const gen = Math.floor(1000 + Math.random() * 9000);
-        const check = data.hasOwnProperty('token');
+        const check = token;
         const userDetails = {
             first_name: data.first_name,
             last_name: data.last_name,
@@ -21,7 +21,7 @@ exports.Register = (data, deviceID) => {
             public_id: mongoose.Types.ObjectId(),
         }
         if (check) {
-            return verifyToken(data.token).then(decode => {
+            return verifyToken(token).then(decode => {
                 return model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).then(updated => {
                     if(!updated) {
                         throw new Error('Error updating this user!!!');
@@ -31,12 +31,12 @@ exports.Register = (data, deviceID) => {
             })
             .catch(err => ({ success: false, message: err.message, status: 401 }))
             .then(({decode, updated}) => {
-                return DBupdateToken(decode.publicId, data.token, deviceID);
+                return DBupdateToken(decode.publicId, token, deviceID);
             })
             .catch(err => reject({err: err, status: 500}))
             .then((tokenUpdated ={}) => {
                 if (tokenUpdated.success) {
-                    return { success: true, token: data.token, message: 'User updated successfully', status: 200 };
+                    return { success: true, message: 'User updated successfully', status: 200 };
                 } else {
                     return { success: true, message: 'Could not update token', status: 404 };
                 }

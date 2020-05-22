@@ -3,8 +3,9 @@ const cloudinary = require('../middlewares/cloudinary');
 module.exports = function authController() {
 
     this.Register = (req, res, next) => {
-        const device = req.body.deviceID || req.query.deviceID || req.headers['device-id'] || null;
-        service.Register(req.body, device).then(data => {
+        const device = req.body.deviceID || req.query.deviceID || req.headers['device-id'];
+        const token = req.body.token || req.query.token || req.headers['token'];
+        service.Register(req.body, device, token).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }
