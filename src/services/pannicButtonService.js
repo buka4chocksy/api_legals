@@ -12,7 +12,7 @@ exports.createPannic = (data,id,usertype)=>{
                 console.log(data.user_type , 'kgkgkgkgk')
                 const details ={
                     next_of_kin:data.next_of_kin,
-                    country_code:data.country_code,
+                    // country_code:data.country_code,
                     phone_number:data.phone_number,
                     email_address:data.email_address,
                     relationship:data.relationship,
