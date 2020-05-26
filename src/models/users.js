@@ -21,7 +21,8 @@ const userSchema = new schema({
     }],
     oauth: {
         provider: {type: String, enum: ['google', 'linkedin']},
-        oauthID: {type: String}
+        oauthID: {type: String},
+        status: false
     }
 })
 

@@ -26,6 +26,7 @@ module.exports = function () {
                         last_name: activeUser.last_name,
                         email_address: activeUser.email_address
                     }
+                    if(req.user.oauth.status === true) res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
                     res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
                 })
             })
