@@ -9,7 +9,7 @@ module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken
         if (user) {
             if(user.oauth.status === false) {
                 user.oauth.status = true;
-                console.log('LOGIN USER: ', user)
+                console.log('LOGIN USER DETAILS: ', user)
                 done(null, user);
             }
         } else {
