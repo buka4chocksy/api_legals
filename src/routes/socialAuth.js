@@ -17,7 +17,7 @@ module.exports = function () {
     router.get('/auth/linkedin/callback',
         passport.authenticate('linkedin', { failureRedirect: '/error' }),
         (req, res) => {
-            console.log('checking linkedin user: ', req.user)
+            // console.log('checking linkedin user: ', req.user)
             authService.getUserDetail(req.user.public_id).then(activeUser => {
                 authService.generateToken(activeUser).then(token => {
                     const response = {
