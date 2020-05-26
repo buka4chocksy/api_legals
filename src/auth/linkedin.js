@@ -7,11 +7,7 @@ module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken
     User.findOne({ 'oauth.oauthID': profile.id }, (err, user) => {
         if (err) console.log(err);
         if (user) {
-            console.log('LOGIN USER DETAILS: ', user)
-            // if(user.oauth.status === false) {
-            //     user.oauth.status = true;
                 done(null, user);
-            // }
         } else {
             const user = new User;
             user.first_name = profile.displayName.split(" ")[0]
