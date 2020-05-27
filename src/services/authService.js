@@ -355,9 +355,9 @@ function getUserDetail(Id) {
                     first_name: data.first_name,
                     last_name: data.last_name,
                     fullname: data.first_name + ' ' + data.last_name,
-                    phone: data.phone_number,
+                    phone_number: data.phone_number,
                     publicId: data.public_id,
-                    userType: data.user_type,
+                    user_type: data.user_type,
                     status: data.status,
                     image_url: data.image_url
                 };

@@ -11,7 +11,7 @@ const userSchema = new schema({
     image_id: { type: String, default: '' },
     status_code: { type: Number },
     password: { type: String },
-    user_type: { type: String },
+    user_type: { type: String, lowercase: true },
     status: { type: Boolean, default: false },
     public_id: { type: mongoose.SchemaTypes.ObjectId },
     created_at: { type: Date, default: Date.now },
