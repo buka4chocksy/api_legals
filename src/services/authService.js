@@ -150,7 +150,7 @@ exports.verifyUser = (email, option) => {
 exports.acceptTerms = (data, id) => {
     return new Promise((resolve, reject) => {
         if (data.accept == 'accept') {
-            const usertype = data.user_type == 'client' ? 'client' : 'lawyer'
+            const usertype = data.user_type;
             model.findOneAndUpdate({ public_id: id }, { status: true, user_type: usertype }).exec((err, updated) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updated) {
