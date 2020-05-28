@@ -7,10 +7,10 @@ const client = require('../models/client');
 const jwt = require('jsonwebtoken');
 
 
-exports.Register = (data, deviceID) => {
+exports.Register = (data, deviceID, token) => {
         const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
         const gen = Math.floor(1000 + Math.random() * 9000);
-        const check = data.hasOwnProperty('token');
+        const check = token;
         const userDetails = {
             first_name: data.first_name,
             last_name: data.last_name,
@@ -21,7 +21,7 @@ exports.Register = (data, deviceID) => {
             public_id: mongoose.Types.ObjectId(),
         }
         if (check) {
-            return verifyToken(data.token).then(decode => {
+            return verifyToken(token).then(decode => {
                 return model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).then(updated => {
                     if(!updated) {
                         throw new Error('Error updating this user!!!');
@@ -31,12 +31,12 @@ exports.Register = (data, deviceID) => {
             })
             .catch(err => ({ success: false, message: err.message, status: 401 }))
             .then(({decode, updated}) => {
-                return DBupdateToken(decode.publicId, data.token, deviceID);
+                return DBupdateToken(decode.publicId, token, deviceID);
             })
             .catch(err => reject({err: err, status: 500}))
             .then((tokenUpdated ={}) => {
                 if (tokenUpdated.success) {
-                    return { success: true, token: data.token, message: 'User updated successfully', status: 200 };
+                    return { success: true, message: 'User updated successfully', status: 200 };
                 } else {
                     return { success: true, message: 'Could not update token', status: 404 };
                 }
@@ -65,7 +65,7 @@ exports.Register = (data, deviceID) => {
                         .then(token => {
                             return DBupdateToken(user_id, token, deviceID)
                         })
-                        .catch(err => {return { err: err, status: 401 }}) // Q Ends
+                        .catch(err => {return { err: err, status: 500 }}) // Q Ends
                         .then(tokenUpdated => {
                             if(tokenUpdated) {
                                 return ({
@@ -150,9 +150,7 @@ exports.verifyUser = (email, option) => {
 exports.acceptTerms = (data, id) => {
     return new Promise((resolve, reject) => {
         if (data.accept == 'accept') {
-            console.log( data.user_type , 'see this')
-
-            const usertype = data.user_type == 'client' ? 'client' : 'lawyer'
+            const usertype = data.user_type;
             model.findOneAndUpdate({ public_id: id }, { status: true, user_type: usertype }).exec((err, updated) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updated) {
@@ -382,9 +380,9 @@ function getUserDetail(Id) {
                     first_name: data.first_name,
                     last_name: data.last_name,
                     fullname: data.first_name + ' ' + data.last_name,
-                    phone: data.phone_number,
+                    phone_number: data.phone_number,
                     publicId: data.public_id,
-                    userType: data.user_type,
+                    user_type: data.user_type,
                     status: data.status,
                     image_url: data.image_url
                 };
