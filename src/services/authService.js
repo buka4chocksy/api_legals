@@ -150,11 +150,13 @@ exports.verifyUser = (email, option) => {
 exports.acceptTerms = (data, id) => {
     return new Promise((resolve, reject) => {
         if (data.accept == 'accept') {
+            console.log( data.user_type , 'see this')
+
             const usertype = data.user_type == 'client' ? 'client' : 'lawyer'
             model.findOneAndUpdate({ public_id: id }, { status: true, user_type: usertype }).exec((err, updated) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updated) {
-                    if (data.user_type == 'client') {
+                    if (data.user_type === 'client') {
                         model.findOne({ public_id: id }).then(user => {
                             const clientData = {
                                 first_name: user.first_name,
@@ -271,25 +273,52 @@ exports.changePassword = (id, data) => {
     })
 }
 
+// function DBupdateToken(id, tokenID, deviceID) {
+//     return new Promise((resolve, reject) => {
+//         let details = {
+//             token: [{
+//                 tokenID: tokenID,
+//                 deviceID: deviceID
+//             }]
+//         }
+//         model.findOne({ public_id: id }).exec((err, found) => {
+
+//             if (err) return reject({ success: false, err: err, status: 500 });
+//             let existing = found.token
+
+//             let reesult = existing.filter(a => a.tokenID === tokenID && a.deviceID === deviceID ? a : null)
+
+//             if (reesult.length > 0) {
+//                 resolve({ success: false, message: 'token already exists', status: 400 })
+//             } else {
+//                 model.findOneAndUpdate({ public_id: id }, { $push: { token: details.token } }).exec((err, updated) => {
+//                     if (err) reject({ success: false, err: 'err1', status: 500 });
+//                     else if (updated) {
+//                         resolve({ success: true, message: 'token details updated !!', status: 200, token: tokenID })
+//                     } else {
+//                         resolve({ success: false, message: 'Error updating token ', status: 400 })
+//                     }
+
+//                 })
+//             }
+
+//         })
+
+//     })
+// }
+
 function DBupdateToken(id, tokenID, deviceID) {
     return new Promise((resolve, reject) => {
         let details = {
-            token: [{
+            token: {
                 tokenID: tokenID,
                 deviceID: deviceID
-            }]
+            }
         }
         model.findOne({ public_id: id }).exec((err, found) => {
 
-            if (err) return reject({ success: false, err: err, status: 500 });
-            let existing = found.token
-
-            let reesult = existing.filter(a => a.tokenID === tokenID && a.deviceID === deviceID ? a : null)
-
-            if (reesult.length > 0) {
-                resolve({ success: false, message: 'token already exists', status: 400 })
-            } else {
-                model.findOneAndUpdate({ public_id: id }, { $push: { token: details.token } }).exec((err, updated) => {
+            if (err) return reject({ success: false, err: err, status: 500 })
+                model.findOneAndUpdate({ public_id: id }, { $set: { token: details.token } }).exec((err, updated) => {
                     if (err) reject({ success: false, err: 'err1', status: 500 });
                     else if (updated) {
                         resolve({ success: true, message: 'token details updated !!', status: 200, token: tokenID })
@@ -298,13 +327,11 @@ function DBupdateToken(id, tokenID, deviceID) {
                     }
 
                 })
-            }
 
         })
 
     })
 }
-
 exports.DBupdateToken = DBupdateToken
 
 exports.refreshToken = (token, device) => {
@@ -371,7 +398,7 @@ exports.getUserDetail = getUserDetail
 //generate token
 function generateToken(data = {}) {
     return new Promise((resolve, reject) => {
-        jwt.sign({ ...data }, secret, { expiresIn: "20 mins" }, function (err, token) {
+        jwt.sign({ ...data }, secret, { expiresIn: "56 mins" }, function (err, token) {
             if (err) {
                 reject(err);
             } else {
