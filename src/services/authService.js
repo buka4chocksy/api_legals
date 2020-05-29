@@ -283,7 +283,7 @@ function DBupdateToken(id, tokenID, deviceID) {
 
             if (err) return reject({ success: false, err: err, status: 500 })
                 model.findOneAndUpdate({ public_id: id }, { $set: { token: details.token } }).exec((err, updated) => {
-                    if (err) reject({ success: false, err: 'err1', status: 500 });
+                    if (err) reject({ success: false, err: err, status: 500 });
                     else if (updated) {
                         resolve({ success: true, message: 'token details updated !!', status: 200, token: tokenID })
                     } else {
