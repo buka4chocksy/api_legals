@@ -1,5 +1,7 @@
 const model = require('../models/client');
 const user = require('../models/users');
+let jsonPatch = require('fast-json-patch')
+
 //profile picture update
 exports.profilePicture = (id, data) => {
     return new Promise((resolve, reject) => {
@@ -19,23 +21,41 @@ exports.profilePicture = (id, data) => {
 }
 
 //update client edit profile
+// exports.editClientProfile = (id, data) => {
+//     return new Promise((resolve, reject) => {
+//         const details = {
+//             gender: data.gender,
+//             country: data.country,
+//             occupation:data.occupation,
+//             state_of_origin: data.state_of_origin
+//         }
+//         model.findOneAndUpdate({ public_id: id }, details).exec((err, update) => {
+//             console.log(details ,'hmmmmmwwwwww---',id , err)
+
+//             if (err) reject({err: err , status:500});
+//             if (update) {
+//                 resolve({ success: true, message: 'client Profile updated !!!', status:200 })
+//             } else {
+//                 resolve({ success: false, message: 'error updating client profile!!!' , status:400})
+//             }
+//         })
+//     })
+// }
+
 exports.editClientProfile = (id, data) => {
     return new Promise((resolve, reject) => {
-        const details = {
-            gender: data.gender,
-            country: data.country,
-            occupation:data.occupation,
-            state_of_origin: data.state_of_origin
-        }
-        model.findOneAndUpdate({ public_id: id }, details).exec((err, update) => {
-            console.log(details ,'hmmmmmwwwwww---',id , err)
-
-            if (err) reject({err: err , status:500});
-            if (update) {
-                resolve({ success: true, message: 'client Profile updated !!!', status:200 })
-            } else {
-                resolve({ success: false, message: 'error updating client profile!!!' , status:400})
+        model.findOne({ public_id: id }).exec((err, found) => {
+            if (err) reject({ err: err, status: 500 });
+            if(!found){
+                resolve({ success: true, message: 'client profile not updated',  status: 200 })
+            }else{
+                var updateProfile =  jsonPatch.applyPatch(found.toObject(), data);
+                model.findOneAndUpdate({public_id:id}, updateProfile.newDocument, {upsert:true , new:true}).exec((err , updated)=>{
+                    if (err) reject({ err: err, status: 500 });
+                    resolve({ success: true, message: 'client profile updated successfully', status: 200 })
+                })
             }
+
         })
     })
 }

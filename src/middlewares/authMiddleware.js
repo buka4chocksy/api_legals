@@ -33,7 +33,7 @@ exports.authenticate = function(req,res , next){
     const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
     if(token ){
         authVerify.verifyToken(token).then(decode =>{
-            model.findOne({token:{$elemMatch:{tokenID:token , deviceID:device}}}).then(exist =>{
+            model.findOne({$and:[{public_id:decode.publicId },{ "token.tokenID":token },{ "token.deviceID":device}]} ).then(exist =>{
                 if(exist){
                     model.findOne({public_id:decode.publicId}).then(data =>{
                         if(data == null){
@@ -58,4 +58,3 @@ exports.authenticate = function(req,res , next){
         }).catch(err => {res.status(401).send({success: false, message: "Invalid token", data: err})})
     }
 }
-

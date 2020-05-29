@@ -15,10 +15,10 @@ const userSchema = new schema({
     status: { type: Boolean, default: false },
     public_id: { type: mongoose.SchemaTypes.ObjectId },
     created_at: { type: Date, default: Date.now },
-    token: [{
+    token: {
         tokenID: {type: String, default: null},
         deviceID: {type: String, default: null}
-    }],
+    },
     oauth: {
         provider: {type: String, enum: ['google', 'linkedin']},
         oauthID: {type: String},
