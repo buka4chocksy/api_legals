@@ -24,10 +24,10 @@ module.exports = function () {
                         first_name: activeUser.first_name,
                         last_name: activeUser.last_name,
                         email_address: activeUser.email_address,
-                        // user_type: activeUser.user_type
+                        user_type: activeUser.user_type
                     }
                     console.log('response sent to client: ', response)
-                    // if(req.user.oauth.status === true) res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
+                    if(req.user.oauth.status === true) res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
                     res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
                 })
             })
