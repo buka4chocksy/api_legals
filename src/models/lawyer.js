@@ -7,7 +7,7 @@ const lawyerSchema = new schema({
     phone_number: { type: String, required: true },
     image_url: { type: String, default: '' },
     image_id: { type: String, default: '' },  
-    user_type: { type: String, required: true },
+    user_type: { type: String, required: true, lowercase: true },
     public_id: { type: mongoose.SchemaTypes.ObjectId },
     enrollment_number: { type: String, default: '' },
     practice_area: [{
