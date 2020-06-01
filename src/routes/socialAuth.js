@@ -13,7 +13,7 @@ module.exports = function () {
         }
     );
     // Linkedin Auth
-    router.get('/auth/linkedin', passport.authenticate('linkedin'))
+    router.get('/auth/linkedin', passport.authenticate('signup'))
     router.get('/auth/linkedin/callback',
         passport.authenticate('signup', { failureRedirect: '/error' }),
         (req, res) => {
