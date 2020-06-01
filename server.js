@@ -32,30 +32,22 @@ app.use(session({
 // Register Google Passport strategy
 passport.use(GoogleStrategy);
 
-// Signup Linkedin Passport strategy
-passport.use(LinkedinSignup);
-
 // Signin Linkedin Passport strategy
-passport.use(LinkedinSignin);
+passport.use("signin", LinkedinSignin);
+
+// Signup Linkedin Passport strategy
+passport.use("signup",LinkedinSignup);
 
 // serialize and deserialize
-passport.serializeUser(function (user, done) {
-  console.log('serializing user: ', user._id)
+passport.serializeUser(function(user, done) {
   done(null, user._id);
 });
-
-passport.deserializeUser(function (id, done) {
-  console.log('deserializing user: ', id)
-  User.findById(id, function (err, user) {
-    if (err) done(err, null);
-    if (!user) done(null, { user: null })
-    else {
-      done(null, user);
-    }
-  });
+passport.deserializeUser(function(id, done) {
+  User.findById(id, function(err, user){
+      if(!err) done(null, user);
+      else done(err, null);
+    });
 });
-
-
 
 app.use(compression());
 app.use(morgan('dev'));

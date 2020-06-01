@@ -15,7 +15,7 @@ module.exports = function () {
     // Linkedin Auth
     router.get('/auth/linkedin', passport.authenticate('linkedin'))
     router.get('/auth/linkedin/callback',
-        passport.authenticate('linkedin', { failureRedirect: '/error' }),
+        passport.authenticate('signup', { failureRedirect: '/error' }),
         (req, res) => {
             authService.getUserDetail(req.user.public_id).then(activeUser => {
                 authService.generateToken(activeUser).then(token => {
@@ -31,14 +31,16 @@ module.exports = function () {
                     res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
                 })
             })
+            res.send("in passport signup")
         })
 
 
         // LinkedIn Login
-        router.get('/auth/linkedin/login', passport.authenticate('linkedin'));
+        router.get('/auth/linkedin/login', passport.authenticate('signin'));
         router.get('/auth/linkedin/callback/login',
-        passport.authenticate('linkedin', { failureRedirect: '/error' }),
+        passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
+            res.send("In passport login")
             const response = req.user;
             console.log('Response on Login: '. response)
             res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
