@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const passport = require('passport');
+const passportLogin = require('passport');
 const authService = require('../services/authService');
 
 module.exports = function () {
@@ -32,5 +33,17 @@ module.exports = function () {
                 })
             })
         })
+
+
+        // LinkedIn Login
+        router.get('/auth/linkedin/login', passportLogin.authenticate('linkedin'));
+        router.get('/auth/linkedin/callback/login',
+        passport.authenticate('linkedin', { failureRedirect: '/error' }),
+        (req, res) => {
+            const response = req.user;
+            console.log('Response on Login: '. response)
+            res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
+        })
+
     return router;
 }
