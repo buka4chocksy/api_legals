@@ -42,7 +42,7 @@ passport.use(LinkedinSignin);
 passport.serializeUser(function (user, done) {
   console.log('serializing user: ', user)
   if (!user._id) {
-    done(null, false)
+    done(null, user._id)
   } else {
     done(null, user._id);
   }

@@ -35,7 +35,7 @@ const LinkedinSignin = new LinkedInStrategy(linkedinLogin, async(accessToken, re
         if (err) console.log(err);
         if(!user) {
             const userNull = {
-                _id: null,
+                _id: false,
                 first_name: null,
                 last_name: null
             }
