@@ -32,7 +32,7 @@ const LinkedinSignup = new LinkedInStrategy(linkedin, async (accessToken, refres
 
 const LinkedinSignin = new LinkedInStrategy(linkedinLogin, async(accessToken, refreshToken, profile, done) => {
     User.findOne({'oauth.oauthID': profile.id}, (err, user) => {
-        console.log('reached here...')
+        console.log('reached here...', user)
         if (err) console.log(err);
         if(!user) {
             done(null, user)
