@@ -39,7 +39,6 @@ module.exports = function () {
         router.get('/auth/linkedin/callback/login',
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
-            res.send("In passport login")
             const response = req.user;
             console.log('Response on Login: '. response)
             res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
