@@ -27,7 +27,6 @@ module.exports = function () {
                         user_type: activeUser.user_type
                     }
                     console.log('response sent to client: ', response)
-                    if(req.user.oauth.status === true) res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
                     res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
                 })
             })
