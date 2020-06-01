@@ -34,12 +34,7 @@ const LinkedinSignin = new LinkedInStrategy(linkedinLogin, async(accessToken, re
     User.findOne({'oauth.oauthID': profile.id}, (err, user) => {
         if (err) console.log(err);
         if(!user) {
-            const userNull = {
-                _id: 273783883747412223309,
-                first_name: null,
-                last_name: null
-            }
-            done(null, userNull)
+            done(null, user)
         } else {
             done(null, user);
         }
