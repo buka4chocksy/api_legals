@@ -40,6 +40,7 @@ passport.use("signup",LinkedinSignup);
 
 // serialize and deserialize
 passport.serializeUser(function(user, done) {
+  console.log('serialize user: ', user)
   done(null, user._id);
 });
 passport.deserializeUser(function(id, done) {
