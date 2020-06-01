@@ -38,7 +38,7 @@ module.exports = function () {
         // LinkedIn Login
         router.get('/auth/linkedin/login', passportLogin.authenticate('linkedin'));
         router.get('/auth/linkedin/callback/login',
-        passport.authenticate('linkedin', { failureRedirect: '/error' }),
+        passportLogin.authenticate('linkedin', { failureRedirect: '/error' }),
         (req, res) => {
             const response = req.user;
             console.log('Response on Login: '. response)
