@@ -40,23 +40,19 @@ passport.use(LinkedinSignin);
 
 // serialize and deserialize
 passport.serializeUser(function (user, done) {
-  console.log('serializing user: ', user)
-  if (!user._id) {
-    done(null, user._id)
-  } else {
+  console.log('serializing user: ', user._id)
     done(null, user._id);
-  }
 });
 
 passport.deserializeUser(function (id, done) {
   console.log('deserializing user: ', id)
-  if (id) {
     User.findById(id, function (err, user) {
-      if (!err) done(null, user);
-      else done(err, null);
+      if (err) done(err, null);
+      if(!user) done(null, {user: null})
+      else {
+        done(null, user);
+      }
     });
-  } else {
-    done(null, false)
   }
 });
 
