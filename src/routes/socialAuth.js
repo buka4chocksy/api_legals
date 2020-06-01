@@ -31,7 +31,6 @@ module.exports = function () {
                     res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
                 })
             })
-            res.send("in passport signup")
         })
 
 
