@@ -40,6 +40,7 @@ passport.use(LinkedinSignin);
 
 // serialize and deserialize
 passport.serializeUser(function(user, done) {
+  console.log('serializing user: ',user)
     done(null, user._id);
   });
 passport.deserializeUser(function(id, done) {
@@ -48,6 +49,8 @@ passport.deserializeUser(function(id, done) {
         else done(err, null);
       });
   });
+
+
 
 app.use(compression());
 app.use(morgan('dev'));
