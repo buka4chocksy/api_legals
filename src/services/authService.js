@@ -1,11 +1,10 @@
 const model = require('../models/users');
 const bcrypt = require('bcryptjs')
 const mongoose = require('mongoose');
-// const mailer = require('../middlewares/mailer');
+const mailer = require('../middlewares/mailer');
 const secret = process.env.Secret
 const client = require('../models/client');
 const jwt = require('jsonwebtoken');
-
 
 exports.Register = (data, deviceID, token) => {
         const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
@@ -241,7 +240,32 @@ exports.userLogin = (email_address, password) => {
     })
 }
 
+exports.sendPasswordChangeToken = (data)=>{
+    return new Promise((resolve , reject)=>{
+        const gen = Math.floor(1000 + Math.random() * 9000);
+        model.findOne({email_address:data.email_address}).exec((err , exists)=>{
+            if(err) reject({err:err , status:500})
+            if(exists){
+                model.findOneAndUpdate({email_address:data.email_address}, {status_code:gen}).exec((err , updated)=>{
+                    if(err) reject({err:err , status:500})
+                    if(updated){
+                        mailer.forgortPasswordMailer(data.email_address , gen , function(err , sent){
+                         if(err) reject({err:err , status:500}) 
+                         if(sent){
+                            resolve({ success: true, message: 'proceed to verifying the token !!!', status: 200 })
+                         }else{
+                            resolve({ success: false , message: 'Error verifying your email!!!', status: 400 })
+                         }
+                        })
+                    }
+                })
+            }else{
+                resolve({ success: false, message: 'user does not exists !!!', status: 404 })
 
+            }
+        })
+    })
+}
 
 //user password change
 exports.changePassword = (id, data) => {
@@ -268,6 +292,29 @@ exports.changePassword = (id, data) => {
                 resolve({ success: false, message: 'user does not exists !!!', status: 404 })
             }
         }).catch(err => reject({ err: err, status: 500 }));
+    })
+}
+
+exports.ChangeforgotPassword = (data)=>{
+    return new Promise((resolve , reject)=>{
+        model.findOne({status_code:data.status_code}).exec((err , found)=>{
+            if(err) reject({err:err , status:500})
+            if(found){
+                let userEmail = found.email_address
+                let newpassword = bcrypt.hashSync(data.password, 10)
+                model.findOneAndUpdate({email_address:userEmail},{password:newpassword}).exec((err , updated)=>{
+                    if(err) reject({err:err , status:500})
+                    if(updated){
+                        resolve({ success: true, message: 'user password has been changed successfully!!!', status: 200 })
+                    }else{
+                        resolve({ success: false, message: 'Error changing password !!!', status: 404 })
+
+                    }
+                })
+            }else{
+                resolve({ success: false, message: 'Invalid token inserted !!!', status: 404 })
+            }
+        })
     })
 }
 
@@ -300,29 +347,23 @@ exports.DBupdateToken = DBupdateToken
 
 exports.refreshToken = (token, device) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ token: { $elemMatch: { tokenID: token, deviceID: device } } }).exec((err, result) => {
+        model.findOne({ $and:[{"token.tokenID":token},{"token.deviceID":device}] }).exec((err, result) => {
             if (err) reject({ success: false, err: err, status: 500 });
             if (!result) {
                 resolve({ success: false, message: 'user does not exist', status: 400 })
             } else {
-                // console.log(result , 'wereewwwww')
-                let specificToken = result.token
-                let tokenResult = specificToken.filter(a => a.tokenID === token && a.deviceID === device ? a : null)
-                if (tokenResult !== null) {
-                    let userId = result.public_id
-
-                    getUserDetail(userId).then(activeUser => {
+                let specificUser = result.public_id
+                console.log(specificUser , 'see user')
+                if (specificUser !== null) {
+                    getUserDetail(specificUser).then(activeUser => {
                         generateToken(activeUser).then(token => {
-                            tokenResult[0].tokenID = token;
-                            result.save((err, saved) => {
-                                if (err) reject({ err: err, status: 400, message: 'Error saving token' })
-                                resolve({
-                                    success: true, token: token,
-                                    message: 'refresh token generated  !!!',
-                                    status: 200
-                                })
-                            })
-
+                           DBupdateToken(specificUser,token,device).then(update =>{
+                               if(update){
+                                   resolve({success:true , status:200 , token:token , message:"user token updated"})
+                               }else{
+                                   resolve({success:false , status:400 , message:'error updating user token'})
+                               }
+                           })
                         }).catch(err => reject({ err: err, status: 500 }))
                     }).catch(err => reject({ err: err, status: 500 }))
                 } else {
@@ -333,7 +374,6 @@ exports.refreshToken = (token, device) => {
         })
     })
 }
-
 
 //get user details
 function getUserDetail(Id) {
