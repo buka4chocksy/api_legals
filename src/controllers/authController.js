@@ -30,6 +30,16 @@ module.exports = function authController() {
         }).catch(err => res.status(err.status).send(err));
     }
 
+    this.passwordToken = (req, res) => {
+        service.sendPasswordChangeToken(req.body).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+    this.ChangeforgotPassword = (req, res) => {
+        service.ChangeforgotPassword(req.body).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
 
     this.changePassword = (req, res) => {
         const data = {
