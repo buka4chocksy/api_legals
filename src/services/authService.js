@@ -1,9 +1,9 @@
-const model = require('../models/users');
+const model = require('../models/auth/users');
 const bcrypt = require('bcryptjs')
 const mongoose = require('mongoose');
 const mailer = require('../middlewares/mailer');
 const secret = process.env.Secret
-const client = require('../models/client');
+const client = require('../models/client/client');
 const jwt = require('jsonwebtoken');
 
 exports.Register = (data, deviceID, token) => {
