@@ -1,4 +1,4 @@
-const model = require('../models/jurisdiction');
+const model = require('../models/lawyer/jurisdiction');
 
 //create jurisdiction
 exports.create = (data) => {
