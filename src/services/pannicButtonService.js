@@ -1,5 +1,5 @@
-const model = require('../models/pannicButton');
-const user = require('../models/users');
+const model = require('../models/lawyer/pannicButton');
+const user = require('../models/auth/users');
 exports.createPannic = (data,id,usertype)=>{
     return new Promise((resolve , reject)=>{
         model.findOne({public_id:id}).exec((err , exists)=>{
