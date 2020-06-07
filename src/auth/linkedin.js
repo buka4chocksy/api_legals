@@ -1,6 +1,6 @@
 const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
 const { linkedin } = require('../utils/config')
-const User = require('../models/users');
+const User = require('../models/auth/users');
 const mongoose = require('mongoose')
 
 module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken, profile, done) => {
