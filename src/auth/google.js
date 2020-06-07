@@ -1,6 +1,6 @@
 const GoogleStrategy = require('passport-google-oauth20');
 const { google } = require('../utils/config');
-const User = require('../models/users');
+const User = require('../models/auth/users');
 
 module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
     User.findOne({ 'oauth.oauthID': profile.id }, (err, user) => {
