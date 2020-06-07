@@ -1,5 +1,5 @@
-const model = require('../models/lawyer');
-const user = require('../models/users')
+const model = require('../models/lawyer/lawyer');
+const user = require('../models/auth/users')
 const authService = require('../services/authService')
 let jsonPatch = require('fast-json-patch')
 
