@@ -1,5 +1,5 @@
 const authVerify = require('../services/authService')
-const model = require('../models/users')
+const model = require('../models/auth/users')
     //Logic fot authentication goes in here    
 
 exports.authenticate1 = function(req,res,next){
