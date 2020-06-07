@@ -1,5 +1,5 @@
-const model = require('../models/client');
-const user = require('../models/users');
+const model = require('../models/client/client');
+const user = require('../models/auth/users');
 let jsonPatch = require('fast-json-patch')
 
 //profile picture update
