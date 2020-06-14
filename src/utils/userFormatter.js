@@ -1,5 +1,5 @@
-const lawyer = require('../models/lawyer');
-const client = require('../models/client');
+const lawyer = require('../models/lawyer/lawyer');
+const client = require('../models/client/client');
 
 exports.getLawyerId = (id)=>{
     return new Promise((resolve , reject)=>[
