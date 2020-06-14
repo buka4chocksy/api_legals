@@ -9,9 +9,6 @@ const lawFirmSchema = new schema({
     contact_phone_number:[{
         phone_number:{type:String , require:true}
     }],
-    practice_area: [{
-        practice_area_id: { type: mongoose.SchemaTypes.ObjectId, ref: 'practiceArea', autopopulate: true }
-    }],
     location: [{
         country_Id: { type:  mongoose.SchemaTypes.ObjectId, ref: 'jurisdiction', autopopulate: true },
         state_Id: { type:  mongoose.SchemaTypes.ObjectId, ref: 'jurisdiction', autopopulate: true },
