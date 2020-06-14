@@ -209,7 +209,7 @@ exports.searchLawyer = function (option) {
         model.find({
             $or: [{ first_name: { $regex: option.search, $options: 'i' } }, { last_name: { $regex: option.search, $options: 'i' } },
             { email_address: { $regex: option.search, $options: 'i' } }]
-        }, { _id: 0, __v: 0, password: 0, status_code: 0 })
+        }, {  __v: 0, password: 0, status_code: 0 })
             .populate({ path: "practice_area.practice_area_id", model: 'practiceArea', select: { _id: 0, __v: 0 } })
             .populate({ path: "jurisdiction.jurisdiction_id", model: 'jurisdiction', select: { _id: 0, __v: 0 } })
             .exec((err, found) => {
