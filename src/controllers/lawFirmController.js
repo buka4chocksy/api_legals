@@ -49,7 +49,44 @@ module.exports = function lawFirmController() {
             );
     }
 
+    this.addlocation = (req, res) => {
+        service.addLocation(req.auth.publicId, req.query.firmId , req.body)
+            .then(data => {
+                res.status(data.status).send(data);
+            }).catch(err =>{
+                console.log("eeror fro", err)
+                res.status(err.status).send(err)
+            }
+            );
+    }
 
+    this.addLawyerToLawfirm = (req,res) =>{
+        service.addlawFirmLawyer(req.auth.publicId , req.query.firmId ,req.body).then(data => {
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
+    }
+    this.addPracticeAreaTolawFirm = (req,res) =>{
+        service.addFirmPracticeArea(req.body ,req.query.firmId).then(data => {
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
+    }
+    this.getLawfirmLawyers = (req,res) =>{
+        service.getFirmLawyers(req.query.firmId ).then(data => {
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
+    }
+
+    this.getLawfirmAdmin = (req,res) =>{
+        service.getFirmAdmins(req.query.firmId ).then(data => {
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
+    }
+
+    this.getSinglelawfirm = (req,res)=>{
+        service.getSinglelawfirm(req.query.firmId).then(data => {
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
+    }
     this.getLawfirmList = (req, res) => {
         service.lawFirmList(req.params.pagenumber, req.params.pagesize).then(data => {
             res.status(data.status).send(data);
