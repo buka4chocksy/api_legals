@@ -1,4 +1,4 @@
-const model = require('../models/practiceArea');
+const model = require('../models/practicearea/practiceArea');
 
 //create practicearea
 exports.create = (data) => {
