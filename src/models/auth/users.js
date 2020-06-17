@@ -10,15 +10,13 @@ const userSchema = new schema({
     image_url: { type: String, default: '' },
     image_id: { type: String, default: '' },
     status_code: { type: Number },
+    softDelete:{type:Boolean , default: false },
     password: { type: String },
     user_type: { type: String, lowercase: true },
+    softDelete:{type:Boolean , default: false },
     status: { type: Boolean, default: false },
     public_id: { type: mongoose.SchemaTypes.ObjectId },
     created_at: { type: Date, default: Date.now },
-    token: {
-        tokenID: {type: String, default: null},
-        deviceID: {type: String, default: null}
-    },
     oauth: {
         provider: {type: String, enum: ['google', 'linkedin']},
         oauthID: {type: String},

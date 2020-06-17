@@ -1,4 +1,4 @@
-const model = require('../models/matter');
+const model = require('../models/lawyer/matter');
 const userFormatter = require('../utils/userFormatter');
 exports.getLaywer = (options, userId, image) => {
     return new Promise((resolve, reject) => {

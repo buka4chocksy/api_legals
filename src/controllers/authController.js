@@ -18,7 +18,9 @@ module.exports = function authController() {
     }
 
     this.loginUser = (req, res) => {
-        service.userLogin(req.body.email_address, req.body.password).then(data => {
+        const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
+
+        service.userLogin(req.body.email_address, req.body.password , device).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }
@@ -30,6 +32,16 @@ module.exports = function authController() {
         }).catch(err => res.status(err.status).send(err));
     }
 
+    this.passwordToken = (req, res) => {
+        service.sendPasswordChangeToken(req.body).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+    this.ChangeforgotPassword = (req, res) => {
+        service.ChangeforgotPassword(req.body).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
 
     this.changePassword = (req, res) => {
         const data = {
@@ -50,10 +62,9 @@ module.exports = function authController() {
     }
 
     this.refreshToken = (req,res)=>{
-        const token = req.body.token || req.query.token || req.headers['x-access-token']
         const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
 
-        service.refreshToken(token , device).then(data => {
+        service.refreshToken(device).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }

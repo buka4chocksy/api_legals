@@ -7,6 +7,7 @@ const clientSchema = new schema({
     phone_number: { type: String, required: true },
     image_url: { type: String, default: '' },
     image_id: { type: String, default: '' },
+    softDelete:{type:Boolean , default: false },
     gender: { type: String , default:''},
     occupation:{type:String ,default:''},
     country:{type:String ,default:''},
