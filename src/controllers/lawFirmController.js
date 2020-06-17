@@ -119,4 +119,10 @@ module.exports = function lawFirmController() {
         }).catch(err => res.status(err.status).send(err))
     }
 
+    this.deleteLawfirm = (req, res)=>{
+        service.deleteLawfirm(req.query.firmId , req.auth.publicId).then(data =>{
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
+    }
+
 }
