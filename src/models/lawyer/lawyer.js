@@ -37,6 +37,7 @@ const lawyerSchema = new schema({
     }],
     country: { type: String, default: '' },
     state_of_origin: { type: String, default: '' },
+    softDelete:{type:Boolean , default: false },
     gender: { type: String, default: '' }
 
 })
