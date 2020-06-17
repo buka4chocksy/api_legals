@@ -6,6 +6,7 @@ const lawFirmSchema = new schema({
     image_url: { type: String, default: '' },
     image_id: { type: String, default: '' },
     website_url: { type: String, default: '' },
+    softDelete:{type:Boolean , default: false },
     contact_phone_number:[{
         phone_number:{type:String , require:true}
     }],
