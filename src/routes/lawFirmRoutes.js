@@ -17,6 +17,7 @@ module.exports = function () {
     router.get('/firm_lawyers', middleware.authenticate , lawFirmCtrl.getLawfirmLawyers)
     router.get('/firm_Admin', middleware.authenticate , lawFirmCtrl.getLawfirmAdmin)
     router.get('/search', middleware.authenticate , lawFirmCtrl.searchLawFirm)
+    router.put('/delete_firm', middleware.authenticate , lawFirmCtrl.deleteLawfirm)
     router.post('/updateLocation', middleware.authenticate, lawFirmCtrl.addlocation)
     router.post('/addMorePracticearea', middleware.authenticate, lawFirmCtrl.addPracticeAreaTolawFirm)
     return router;
