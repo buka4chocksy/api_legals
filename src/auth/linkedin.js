@@ -19,7 +19,6 @@ const LinkedinSignup = new LinkedInStrategy(linkedin, async (accessToken, refres
             user.public_id = mongoose.Types.ObjectId();
             user.save().then(created => {
                 if (created) {
-                    console.log('Linkedin User created successfully!')
                     done(null, created)
                 }
             }).catch(err => {
