@@ -7,7 +7,9 @@ var storage = multer.diskStorage({
         //Sets destination for fileType
         if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
             callback(null, './uploads/images/');
-        } else {
+        } else if(file.mimetype === 'audio/mpeg'){
+            callback(null, './uploads/audio/');
+        }else{
             callback(null, './uploads/pdfs/');
         }
     },
@@ -21,7 +23,9 @@ var fileFilter = function (req, file, callback) {
     console.log("filter for multer", file);
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'application/pdf' || file.mimetype === 'application/msword') {
         callback(null, true);
-    } else {
+    } else if(file.mimetype === 'audio/mpeg' ){
+        callback(null, true);
+    }else{
         callback(new Error('Image upload failed. Supports only jpeg, png, doc and pdf files'), false);
     }
 }
