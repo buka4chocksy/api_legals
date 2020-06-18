@@ -338,7 +338,7 @@ function DBupdateToken(id, tokenID, deviceID) {
         userToken.findOne({ $and: [{ userId: id }, { deviceID: deviceID }] }).exec((err, found) => {
             if (err) reject({ success: false, err: err, status: 500 });
             if (found) {
-                userToken.findOneAndUpdate({ deviceID: deviceID }, { tokenID: tokenID }).exec((err, updated) => {
+                userToken.findOneAndUpdate({$and:[{deviceID: deviceID,  userId:id }] }, { tokenID: tokenID }).exec((err, updated) => {
                     if (err) reject({ success: false, err: err, status: 500 });
                     if (updated) {
                         resolve({ success: true, message: 'User token updated successfully', status: 200 })
