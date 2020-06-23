@@ -349,7 +349,7 @@ function DBupdateToken(id, tokenID, deviceID) {
             }else{
                 userToken.create(details).then(created =>{
                     if(created){
-                        resolve({ success: true, message: 'User token created  successfully', status: 200 })  
+                        resolve({ success: true, message: 'User token created  successfully', status: 200, token: tokenID })  
                     }else{
                         resolve({ success: false , message: 'Error creating user token', status: 400 })
                     }
