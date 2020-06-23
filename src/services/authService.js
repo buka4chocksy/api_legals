@@ -154,7 +154,7 @@ exports.acceptTerms = (data, id) => {
             model.findOneAndUpdate({ public_id: id }, { status: true, user_type: usertype }).exec((err, updated) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updated) {
-                    if (data.user_type === 'client') {
+                    if (data.user_type.toLowerCase() === 'client') {
                         model.findOne({ public_id: id }).then(user => {
                             const clientData = {
                                 first_name: user.first_name,
@@ -168,7 +168,6 @@ exports.acceptTerms = (data, id) => {
                                 if (created) {
                                     getUserDetail(id).then(activeUser => {
                                         generateToken(activeUser).then(token => {
-
                                             resolve({
                                                 success: true, data: { activeUser, token: token },
                                                 message: 'authentication successfull !!!',
@@ -182,7 +181,6 @@ exports.acceptTerms = (data, id) => {
                             }).catch(err => reject({ err: err, status: 500 }))
                         }).catch(err => reject({ err: err, status: 500 }))
                     } else {
-
                         getUserDetail(id).then(activeUser => {
                             generateToken(activeUser).then(token => {
                                 resolve({
