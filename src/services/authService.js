@@ -6,7 +6,6 @@ const secret = process.env.Secret
 const userToken = require('../models/auth/userToken');
 const client = require('../models/client/client');
 const jwt = require('jsonwebtoken');
-
 exports.Register = (data, deviceID, token) => {
     const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
     const gen = Math.floor(1000 + Math.random() * 9000);
@@ -63,6 +62,7 @@ exports.Register = (data, deviceID, token) => {
                         return generateToken(user);
                     })
                         .then(token => {
+
                             return DBupdateToken(user_id, token, deviceID)
                         })
                         .catch(err => { return { err: err, status: 500 } }) // Q Ends
@@ -341,7 +341,7 @@ function DBupdateToken(id, tokenID, deviceID) {
                 userToken.findOneAndUpdate({$and:[{deviceID: deviceID,  userId:id }] }, { tokenID: tokenID }).exec((err, updated) => {
                     if (err) reject({ success: false, err: err, status: 500 });
                     if (updated) {
-                        resolve({ success: true, message: 'User token updated successfully', status: 200 })
+                        resolve({ success: true, message: 'User token updated successfully', status: 200  , data:tokenID})
                     } else {
                         resolve({ success: false, message: 'Error updating user token !!!' })
                     }
@@ -349,7 +349,7 @@ function DBupdateToken(id, tokenID, deviceID) {
             }else{
                 userToken.create(details).then(created =>{
                     if(created){
-                        resolve({ success: true, message: 'User token created  successfully', status: 200 })  
+                        resolve({ success: true, message: 'User token created  successfully', status: 200  , token:tokenID})  
                     }else{
                         resolve({ success: false , message: 'Error creating user token', status: 400 })
                     }
