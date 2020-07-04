@@ -4,7 +4,7 @@
   "description": "Genesys product development boiler plate for application development",
   "main": "server.js",
   "scripts": {
-    "test": "Set DEBUG=* && nodemon ./bin/www",
+    "debug": "Set DEBUG=* && nodemon ./bin/www",
     "start": "nodemon ./bin/www",
     "dev": "nodemon ./bin/www"
   },

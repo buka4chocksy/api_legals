@@ -21,26 +21,7 @@ exports.Register = (data, deviceID, token) => {
         public_id: mongoose.Types.ObjectId(),
     }
     if (check) {
-        return verifyToken(token).then(decode => {
-            return model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).then(updated => {
-                if (!updated) {
-                    throw new Error('Error updating this user!!!');
-                }
-                return ({ decode, updated })
-            })
-        })
-            .catch(err => ({ success: false, message: err.message, status: 401 }))
-            .then(({ decode, updated }) => {
-                return DBupdateToken(decode.publicId, token, deviceID);
-            })
-            .catch(err => reject({ err: err, status: 500 }))
-            .then((tokenUpdated = {}) => {
-                if (tokenUpdated.success) {
-                    return { success: true, message: 'User updated successfully', status: 200 };
-                } else {
-                    return { success: true, message: 'Could not update token', status: 404 };
-                }
-            })
+        return UpdateCreatedRegistrationDetails(token, data.phone_number);
     } else {
         return model.findOne({ email_address: userDetails.email_address }).then(found => {
             if (found) {
@@ -51,12 +32,13 @@ exports.Register = (data, deviceID, token) => {
                         status: 200
                     })
                 } else {
-                    return ({ success: false, message: 'User already exits please proceed to sign in !!!', status: 404 })
+                    return ({ success: false, message: 'User already exits', status: 409 })
                 }
             } else {
                 return model.create(userDetails).then(created => {
                     if (!created) {
-                        return ({ success: false, message: 'Error registering user !!', status: 400 })
+                         //log error message
+                        return ({ success: false, message: 'Error registering user', status: 400 })
                     }
                     const user_id = created.public_id;
                     return getUserDetail(user_id).then(user => { // Q starts
@@ -84,6 +66,35 @@ exports.Register = (data, deviceID, token) => {
         }).catch(err => { return { err: err, status: 500 } }); // Q
     }
 }
+
+
+
+const UpdateCreatedRegistrationDetails = (token, phone_number) => {
+  return  verifyToken(token).then(decode => {
+        return model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number })
+        .then(updated => {
+            if (!updated) {
+                // throw new Error('Error updating this user!!!');
+                //create logger here
+                return { success: false, message: 'User updated successfully', status: 500 }
+            }
+            return ({ decode, updated })
+        })
+    }).catch(err => ({ success: false, message: err.message, status: 401 }))
+        .then(({ decode, updated }) => {
+            return DBupdateToken(decode.publicId, token, deviceID);
+        })
+        .catch(err => reject({ err: err, status: 500 }))
+        .then((tokenUpdated = {}) => {
+            if (tokenUpdated.success) {
+                return { success: true, message: 'User updated successfully', status: 200 };
+            } else {
+                return { success: true, message: 'Could not update token', status: 404 };
+            }
+        })
+}
+
+
 
 //user verification 
 exports.verifyUser = (email, option) => {
