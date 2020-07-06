@@ -16,6 +16,6 @@ module.exports = (router) => {
     router.use('/client', clientRoutes());
     router.use('/matter', matter());
     router.use('/recommendation',recommendationRoutes());
-    router.use('/pannicAlert', pannicAlert())
+    router.use('/pannic_alert', pannicAlert())
     return router;
 }
