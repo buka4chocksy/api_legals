@@ -1,6 +1,10 @@
-const model = require('../models/lawyer/pannicButton');
+const model = require('../models/panic/panicAlert');
 const user = require('../models/auth/users');
-exports.createPannic = (data,id,usertype)=>{
+var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
+var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
+var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
+
+exports.createPanic = (data,id,usertype)=>{
     return new Promise((resolve , reject)=>{
         model.findOne({public_id:id}).exec((err , exists)=>{
             if(err)reject({err: err , status:500});
@@ -43,7 +47,7 @@ exports.createPannic = (data,id,usertype)=>{
     })
 }
 
-exports.getAllPannicAlerts = ()=>{
+exports.getAllPanicAlerts = ()=>{
     return new Promise((resolve, reject)=>{
     model.find({}).exec((err, found)=>{
         if(err)reject({err: err , status:500});
@@ -56,7 +60,7 @@ exports.getAllPannicAlerts = ()=>{
     })
 }
 
-exports.getPannicAlertById = (id)=>{
+exports.getPanicAlertById = (id)=>{
     return new Promise((resolve , reject)=>{
         model.findOne({public_id:id}).exec((err , found)=>{
             if(err)reject({err: err , status:500});
@@ -65,6 +69,20 @@ exports.getPannicAlertById = (id)=>{
             }else{
                 resolve({success:false ,message:'panic alert detail not found for this user' , status:404})
             }
+        })
+    })
+}
+
+exports.getUser = (id) => {
+    return new Promise((resolve , reject)=>{
+        user.findOne({public_id: id}).exec((err , found)=>{
+            if(err)reject({err: err , status:500});
+
+            if(!found){
+               reject({message: "User does not exist"}) 
+            }
+            
+            resolve(found)
         })
     })
 }

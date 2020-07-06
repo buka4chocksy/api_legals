@@ -4,7 +4,7 @@ const jurisdictionRoutes = require('./jurisdictionRoutes');
 const lawyerRoutes = require('./lawyerRoutes');
 const lawFirmRoutes = require('./lawFirmRoutes');
 const clientRoutes = require('./clientRoutes');
-const pannicAlert = require('./pannicRoutes');
+const pannicAlert = require('./panicRoutes');
 const recommendationRoutes  = require('./recommendationRoutes');
 const matter = require('./matterRoutes');
 module.exports = (router) => {

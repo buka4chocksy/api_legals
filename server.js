@@ -54,6 +54,8 @@ app.use(bodyparser.json());
 app.use(express.json());//for parsing application/json
 app.use(express.urlencoded({ extended: false})); //for parsing application/x-www-form-urlencoded
 app.use(cors());
+app.set('allRiderSockets', {});
+app.set('allUserSockets', {});
 app.use('/api', rootRouter);
 app.use('/', socialAuth);
 
