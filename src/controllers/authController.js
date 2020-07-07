@@ -5,13 +5,23 @@ module.exports = function authController() {
     this.Register = (req, res, next) => {
         const device = req.body.deviceID || req.query.deviceID || req.headers['device-id'];
         const token = req.body.token || req.query.token || req.headers['x-access-token'];
-        service.Register(req.body, device, token).then(data => {
+        service.Register(req.body, token, res).then(data => {
             res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(err));
+        }).catch(err => {
+            res.status(err.status).send(err)
+        });
+    }
+
+    this.UpdatePhonenumberForOAuthRegistration = (req, res, next) => {
+        const {publicid} = req.params;
+        service.updatePhonenumberForOAuthRegistration(publicid, req.body.phone_number).then(result => {
+            res.status(result.status).send(result)
+        }).catch(error => {
+            next(error);
+        })
     }
 
     this.verifyUser = (req, res) => {
-    
         service.verifyUser(req.auth.email ,req.body).then(data => {
             res.status(200).send(data)
         }).catch(err => res.status(500).send(err));
@@ -27,7 +37,7 @@ module.exports = function authController() {
 
 
     this.terms = (req, res) => {
-        service.acceptTerms(req.body, req.auth.publicId).then(data => {
+        service.acceptTerms(req.body, req.params.publicid).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }

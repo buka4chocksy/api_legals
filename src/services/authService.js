@@ -6,29 +6,26 @@ const secret = process.env.Secret
 const userToken = require('../models/auth/userToken');
 const client = require('../models/client/client');
 const jwt = require('jsonwebtoken');
-exports.Register = (data, deviceID, token) => {
-    const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
-    const gen = Math.floor(1000 + Math.random() * 9000);
-    const check = token;
+const {setRequestHeader} = require('../utils/responseFormatter');
+exports.Register = (data, deviceID, res) => {
     const userDetails = {
         first_name: data.first_name,
         last_name: data.last_name,
         email_address: data.email_address,
         phone_number: data.phone_number,
-        status_code: gen,
-        password: hash,
-        public_id: mongoose.Types.ObjectId(),
+        password: data.password,
     }
-    if (check) {
-        return UpdateCreatedRegistrationDetails(token, data.phone_number);
-    } else {
-        return model.findOne({ email_address: userDetails.email_address }).then(found => {
+        return model.findOne({ email_address: userDetails.email_address })
+        .then(found => {
             if (found) {
+                setRequestHeader(res,found.public_id,"POST", `/auth/${found.public_id}`)
                 if (found.status == false) {
+                    //set the response header to the next place to continue
                     return ({
                         success: true,
-                        message: 'please complete your signup process',
-                        status: 200
+                        message: 'complete signup process',
+                        status: 200,
+                        data : found.public_id
                     })
                 } else {
                     return ({ success: false, message: 'User already exits', status: 409 })
@@ -39,39 +36,39 @@ exports.Register = (data, deviceID, token) => {
                          //log error message
                         return ({ success: false, message: 'Error registering user', status: 400 })
                     }
-                    const user_id = created.public_id;
-                    return getUserDetail(user_id).then(user => { // Q starts
-                        return generateToken(user);
+                    setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
+                    return ({
+                        success: true,
+                        message: 'Signup almost complete, please choose part ', status: 200, data :created.public_id
                     })
-                        .then(token => {
-
-                            return DBupdateToken(user_id, token, deviceID)
-                        })
-                        .catch(err => { return { err: err, status: 500 } }) // Q Ends
-                        .then(tokenUpdated => {
-                            if (tokenUpdated) {
-                                return ({
-                                    success: true, token: tokenUpdated.token,
-                                    message: 'Signup almost complete, please choose part ', status: 200
-                                })
-                            } else {
-                                return ({
-                                    success: true,
-                                    message: 'could not update token ', status: 404
-                                })
-                            }
-                        }).catch(err => { return { err: err, status: 500 } })
-                }).catch(err => { return { err: err, status: 500 } })
+                }).catch(err => { 
+                    return { err: err, status: 500 } 
+                })
             }
-        }).catch(err => { return { err: err, status: 500 } }); // Q
-    }
+        }).catch(err => {
+            return { err: err, status: 500 } 
+        });
+    
+}
+
+exports.updatePhonenumberForOAuthRegistration = (publicId, phonenumber) => {
+    console.log("public id check", publicId, phonenumber);
+    return  model.findOneAndUpdate({ public_id: publicId }, { phone_number: phonenumber })
+    .then(updated => {
+        if (!updated) {
+            // throw new Error('Error updating this user!!!');
+            //create logger here
+            return { success: false, message: 'current user not found', status: 404 }
+        }
+        return {success: false, message: 'phone number updated', status: 200, data : publicId}
+    })
 }
 
 
-
 const UpdateCreatedRegistrationDetails = (token, phone_number) => {
-  return  verifyToken(token).then(decode => {
-        return model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number })
+    return  verifyToken(token).then(decode => {
+        console.log("in here", decode)
+        return model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: phone_number })
         .then(updated => {
             if (!updated) {
                 // throw new Error('Error updating this user!!!');
@@ -82,9 +79,10 @@ const UpdateCreatedRegistrationDetails = (token, phone_number) => {
         })
     }).catch(err => ({ success: false, message: err.message, status: 401 }))
         .then(({ decode, updated }) => {
+            console.log("check error")
             return DBupdateToken(decode.publicId, token, deviceID);
         })
-        .catch(err => reject({ err: err, status: 500 }))
+        .catch(err => Promise.reject({ err: err, status: 500 }))
         .then((tokenUpdated = {}) => {
             if (tokenUpdated.success) {
                 return { success: true, message: 'User updated successfully', status: 200 };
@@ -160,52 +158,57 @@ exports.verifyUser = (email, option) => {
 
 exports.acceptTerms = (data, id) => {
     return new Promise((resolve, reject) => {
+        console.log("data check", data);
         if (data.accept == 'accept') {
             const usertype = data.user_type;
-            model.findOneAndUpdate({ public_id: id }, { status: true, user_type: usertype }).exec((err, updated) => {
+            const dataForUpdate = { status: true, user_type: usertype }
+            usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
+            console.log("data for update", dataForUpdate);
+            model.findOneAndUpdate({ public_id: id,is_complete : false, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
+                console.log("errro check", err, updatedUser);
                 if (err) reject({ err: err, status: 500 });
-                if (updated) {
-                    if (data.user_type === 'client') {
-                        model.findOne({ public_id: id }).then(user => {
-                            const clientData = {
-                                first_name: user.first_name,
-                                last_name: user.last_name,
-                                email_address: user.email_address,
-                                phone_number: user.phone_number,
-                                user_type: data.user_type,
-                                public_id: user.public_id
-                            }
-                            client.create(clientData).then(created => {
-                                if (created) {
-                                    getUserDetail(id).then(activeUser => {
-                                        generateToken(activeUser).then(token => {
-
+                if (updatedUser) {
+                    const clientData = {
+                        first_name: updatedUser.first_name,
+                        last_name: updatedUser.last_name,
+                        email_address: updatedUser.email_address,
+                        phone_number: updatedUser.phone_number,
+                        user_type: updatedUser.user_type,
+                        public_id: updatedUser.public_id,
+                        phone_number : updatedUser.phone_number
+                    }
+                    if (data.user_type === 'client' || data.user_type === 'student') {
+                            client.create(clientData).then(createdUser => {
+                                console.log("creating client", createdUser);
+                                if (createdUser) {
+                                        generateToken(createdUser).then(token => {
                                             resolve({
-                                                success: true, data: { activeUser, token: token },
-                                                message: 'authentication successfull !!!',
-                                                status: 200
+                                                success: true, data: { userDetails : {...clientData}, token: token },
+                                                message: 'registration complete',
+                                                status: 201
                                             })
-                                        }).catch(err => reject({ err: err, status: 500 }))
-                                    }).catch(err => reject({ err: err, status: 500 }))
+                                        }).catch(err => {
+                                            console.log("error creating", err);
+                                            reject({ err: err, status: 500 })
+                                        })
                                 } else {
                                     resolve({ success: false, message: 'Error creating user', status: 401 })
                                 }
                             }).catch(err => reject({ err: err, status: 500 }))
-                        }).catch(err => reject({ err: err, status: 500 }))
                     } else {
-
-                        getUserDetail(id).then(activeUser => {
-                            generateToken(activeUser).then(token => {
-                                resolve({
-                                    success: true, data: { activeUser, token: token },
-                                    message: 'authentication successfull !!!',
-                                    status: 200
-                                })
-                            }).catch(err => reject({ err: err, status: 500 }))
-                        }).catch(err => reject({ err: err, status: 500 }))
+                        resolve({success : true, status : 201, data : updatedUser.public_id});
+                        // getUserDetail(id).then(activeUser => {
+                        //     generateToken(activeUser).then(token => {
+                        //         resolve({
+                        //             success: true, data: { activeUser, token: token },
+                        //             message: 'authentication successfull !!!',
+                        //             status: 200
+                        //         })
+                        //     }).catch(err => reject({ err: err, status: 500 }))
+                        // }).catch(err => reject({ err: err, status: 500 }))
                     }
                 } else {
-                    resolve({ success: false, message: 'Error updating user policy!!!', status: 401 })
+                    resolve({ success: false, message: 'could not accept terms. make sure you have added a valid phone number', status: 404 })
                 }
             })
         } else {
@@ -397,7 +400,7 @@ exports.refreshToken = (device) => {
 }
 
 //get user details
-function getUserDetail(Id) {
+function getUserDetail(data) {
     return new Promise((resolve, reject) => {
 
         model.findOne({ public_id: Id }, { _id: 0, __v: 0 })
@@ -423,7 +426,7 @@ exports.getUserDetail = getUserDetail
 //generate token
 function generateToken(data = {}) {
     return new Promise((resolve, reject) => {
-        jwt.sign({ ...data }, secret, { expiresIn: "56 mins" }, function (err, token) {
+        jwt.sign({ ...data }, secret, { expiresIn: 60*60 }, function (err, token) {
             if (err) {
                 reject(err);
             } else {

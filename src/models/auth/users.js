@@ -1,5 +1,6 @@
-
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+
 const schema = mongoose.Schema;
 const userSchema = new schema({
     first_name: { type: String },
@@ -9,19 +10,31 @@ const userSchema = new schema({
     phone_number: { type: String },
     image_url: { type: String, default: '' },
     image_id: { type: String, default: '' },
-    status_code: { type: Number },
+    status_code: { type: Number, default :  Math.floor(1000 + Math.random() * 9000) },
     softDelete:{type:Boolean , default: false },
     password: { type: String },
-    user_type: { type: String, lowercase: true },
+    user_type: { type: String, lowercase: true, enum:["lawyer", "client", "student"] },
     softDelete:{type:Boolean , default: false },
-    status: { type: Boolean, default: false },
-    public_id: { type: mongoose.SchemaTypes.ObjectId },
-    created_at: { type: Date, default: Date.now },
+    status: { type: Boolean, default: true },
+    public_id: { type: mongoose.SchemaTypes.ObjectId, default : mongoose.Types.ObjectId() },
+    terms_accepted : {type : Boolean, default : null},
+    is_complete : {type : Boolean, default : false},
     oauth: {
         provider: {type: String, enum: ['google', 'linkedin']},
         oauthID: {type: String},
         status: false
     }
+}, {timestamps : true})
+
+userSchema.pre('save', function() {
+    if(this.password){
+     this.password =    bcrypt.hashSync(this.password, 10)
+    }
 })
+
+userSchema.method.comparePassword = function(){
+    console.log("comparing password");
+}
+
 
 module.exports = mongoose.model('users', userSchema);

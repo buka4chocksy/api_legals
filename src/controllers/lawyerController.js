@@ -2,18 +2,14 @@ const service = require('../services/lawyerService')
 const cloudinary = require('../middlewares/cloudinary');
 module.exports = function lawyerController() {
     this.completeLawyerRegistration = async(req, res) => {
-        const requestDetails = {
-            image: req.file != null && req.file !== undefined ? req.file.path : null
-        };
-
-        if (req.image !== null && req.file !== undefined) {
-            await cloudinary.uploadToCloud(requestDetails.image).then(img => {
-                requestDetails.imageUrl = img.url;
-                requestDetails.imageID = img.ID;
-                return requestDetails;
-            });
-        }
-        service.completelawyerRegisteration(req.auth.publicId, req.body , requestDetails).then(data => {
+        // if (req.image !== null && req.file !== undefined) {
+        //     await cloudinary.uploadToCloud(requestDetails.image).then(img => {
+        //         requestDetails.imageUrl = img.url;
+        //         requestDetails.imageID = img.ID;
+        //         return requestDetails;
+        //     });
+        // }
+        service.completelawyerRegisteration(req.params.publicid, req.body ,req.file).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }
