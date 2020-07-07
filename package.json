@@ -46,6 +46,7 @@
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-linkedin-oauth2": "^2.0.0",
+    "uuid": "^8.2.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {}

@@ -1,12 +1,11 @@
 const model = require('../models/auth/users');
 const bcrypt = require('bcryptjs')
-const mongoose = require('mongoose');
 const mailer = require('../middlewares/mailer');
-const secret = process.env.Secret
 const userToken = require('../models/auth/userToken');
 const client = require('../models/client/client');
-const jwt = require('jsonwebtoken');
+const {generateToken,verifyToken, generateTokenSync }  = require('../utils/jwtUtils');
 const {setRequestHeader} = require('../utils/responseFormatter');
+const uuid = require('uuid').v4;
 exports.Register = (data, deviceID, res) => {
     const userDetails = {
         first_name: data.first_name,
@@ -39,7 +38,7 @@ exports.Register = (data, deviceID, res) => {
                     setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
                     return ({
                         success: true,
-                        message: 'Signup almost complete, please choose part ', status: 200, data :created.public_id
+                        message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
                     })
                 }).catch(err => { 
                     return { err: err, status: 500 } 
@@ -158,12 +157,10 @@ exports.verifyUser = (email, option) => {
 
 exports.acceptTerms = (data, id) => {
     return new Promise((resolve, reject) => {
-        console.log("data check", data);
         if (data.accept == 'accept') {
             const usertype = data.user_type;
             const dataForUpdate = { status: true, user_type: usertype }
             usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
-            console.log("data for update", dataForUpdate);
             model.findOneAndUpdate({ public_id: id,is_complete : false, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
                 console.log("errro check", err, updatedUser);
                 if (err) reject({ err: err, status: 500 });
@@ -197,15 +194,6 @@ exports.acceptTerms = (data, id) => {
                             }).catch(err => reject({ err: err, status: 500 }))
                     } else {
                         resolve({success : true, status : 201, data : updatedUser.public_id});
-                        // getUserDetail(id).then(activeUser => {
-                        //     generateToken(activeUser).then(token => {
-                        //         resolve({
-                        //             success: true, data: { activeUser, token: token },
-                        //             message: 'authentication successfull !!!',
-                        //             status: 200
-                        //         })
-                        //     }).catch(err => reject({ err: err, status: 500 }))
-                        // }).catch(err => reject({ err: err, status: 500 }))
                     }
                 } else {
                     resolve({ success: false, message: 'could not accept terms. make sure you have added a valid phone number', status: 404 })
@@ -217,11 +205,10 @@ exports.acceptTerms = (data, id) => {
     })
 }
 
-exports.userLogin = (email_address, password, deviceID) => {
+exports.userLogin = (email_address, password, deviceID, ipaddress) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ email_address: email_address }, { _id: 0, __v: 0, }).then(user => {
+        model.findOne({ email_address: email_address }, { __v: 0, }).then(user => {
             if (user) {
-
                 if (user.status !== true) {
                     resolve({
                         success: false,
@@ -230,24 +217,31 @@ exports.userLogin = (email_address, password, deviceID) => {
                     })
 
                 } else {
-                    const comparePassword = bcrypt.compareSync(password, user.password)
-                    if (comparePassword) {
-                        getUserDetail(user.public_id).then(activeUser => {
-                            generateToken(activeUser).then(token => {
-                                DBupdateToken(user.public_id, token, deviceID).then(updated => {
-                                    if (updated) {
-                                        resolve({
-                                            success: true, data: { activeUser, token: token },
-                                            message: 'authentication successfull !!!',
+                    const validPassword = user.comparePassword(password);
+                    if (validPassword) {
+                        let activeUser = {
+                            email_address : email_address,
+                            phone_number : user.phone_number,
+                            public_id : user.public_id
+                        }
+                        let userDetails = {
+                            ...activeUser, 
+                            first_name: user.first_name,
+                            last_name: user.last_name,
+                            user_type: user.user_type,
+                            image_url: user.image_url
+                        }
+                                generateUserAuthenticationResponse(activeUser, user._id, ipaddress, true).then(result => {
+                                    console.log("result check", result);
+                                     resolve({
+                                        success: true, 
+                                        data: { userDetails ,authDetails : result.data },
+                                            message: 'authentication successful',
                                             status: 200
-                                        })
-                                    } else {
-                                        resolve({ success: false, message: "Error encountered while logging in !!!" })
-                                    }
-                                }).catch(err => reject({ err: err, status: 500 }))
-
-                            }).catch(err => reject({ err: err, status: 500 }))
-                        }).catch(err => reject({ err: err, status: 500 }))
+                                    })
+                                }).catch(error => {
+                                    console.log("logger check", error);
+                                })                        
                     } else {
                         resolve({ success: false, message: 'incorrect email or password ', status: 400 })
                     }
@@ -257,6 +251,7 @@ exports.userLogin = (email_address, password, deviceID) => {
                 resolve({ success: false, message: 'user does not exist !!!', status: 404 })
             }
         }).catch(err => {
+            console.log("err chec", err);
             reject({ err: err, status: 500 })
         })
     })
@@ -341,12 +336,13 @@ exports.ChangeforgotPassword = (data) => {
 }
 
 
-function DBupdateToken(id, tokenID, deviceID) {
+function DBupdateToken(id, tokenID, deviceID, ip_address) {
     return new Promise((resolve, reject) => {
             let  details = {
                 userId:id,
                 tokenID: tokenID,
-                deviceID: deviceID
+                deviceID: deviceID,
+                ip_address : ip_address
             }
         
         userToken.findOne({ $and: [{ userId: id }, { deviceID: deviceID }] }).exec((err, found) => {
@@ -423,35 +419,50 @@ function getUserDetail(data) {
 }
 exports.getUserDetail = getUserDetail
 
-//generate token
-function generateToken(data = {}) {
-    return new Promise((resolve, reject) => {
-        jwt.sign({ ...data }, secret, { expiresIn: 60*60 }, function (err, token) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(token);
-            }
-        });
-    });
+
+
+const generateUserAuthenticationResponse = (userData, userId, ipaddress,  islogin = true) => {
+    let accessToken  = generateTokenSync(userData);
+    var expiryTime = new Date();
+    expiryTime = expiryTime.setUTCDate(expiryTime.getDate() + 7);
+    
+    var dataForSave = {
+        user: userId,
+        phone_number: userData.phone_number,
+        public_id: userData.public_id,
+        access_token: accessToken,
+        expiry_time: expiryTime,
+        callback_token: uuid(),
+        ip_address : ipaddress,
+        $inc: { refresh_count: 1 }
+    };
+        // islogin && delete dataForSave["$inc"];
+
+    return addOrUpdateUserAuthenticationToken(dataForSave, userId)
 }
 
-exports.generateToken = generateToken;
-
-//verify user token
-function verifyToken(token = "") {
-    return new Promise((resolve, reject) => {
-        jwt.verify(token.replace("Bearer", ""), secret, function (
-            err,
-            decodedToken
-        ) {
-            if (err) {
-                reject({ message: 'Token has expired', status: 400 });
-            } else {
-                resolve(decodedToken);
-            }
-        });
-    });
+const addOrUpdateUserAuthenticationToken = (refreshDetail, userId) => {
+    return new Promise((resolve, reject) => 
+         userToken.findOneAndUpdate({ user: userId }, refreshDetail, {
+        select: {
+            user: 0,
+            refresh_count: 0, __v: 0,
+            is_browser: 0,
+            device_id: 0,
+            soft_delete : 0
+        }, new: true, upsert: true
+    }).exec((err, result) => {
+        if (err) { resolve({ status: 401, success: false, data: null, message: 'Could not authenticate user' }); }
+        else {
+            resolve({
+                success: true, data: {
+                    ...result.toObject()
+                }, message: 'Authentication successful'
+            });
+        }
+    }))
 }
 
-exports.verifyToken = verifyToken
+
+
+

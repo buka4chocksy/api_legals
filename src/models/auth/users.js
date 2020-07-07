@@ -24,7 +24,7 @@ const userSchema = new schema({
         oauthID: {type: String},
         status: false
     }
-}, {timestamps : true})
+}, {timestamps : true, toObject : {getters : true}})
 
 userSchema.pre('save', function() {
     if(this.password){
@@ -32,8 +32,9 @@ userSchema.pre('save', function() {
     }
 })
 
-userSchema.method.comparePassword = function(){
-    console.log("comparing password");
+userSchema.methods.comparePassword = function(password){
+    console.log("comparing password", password);
+    return  bcrypt.compareSync(password, this.password)
 }
 
 

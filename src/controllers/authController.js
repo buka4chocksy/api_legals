@@ -28,9 +28,11 @@ module.exports = function authController() {
     }
 
     this.loginUser = (req, res) => {
+        const clientIp = req.connection.remoteAddress.includes("::") ? `[${req.connection.remoteAddress}]` : req.connection.remoteAddress;
         const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
+        console.log("check login", clientIp);
 
-        service.userLogin(req.body.email_address, req.body.password , device).then(data => {
+        service.userLogin(req.body.email_address, req.body.password ,device, clientIp).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }

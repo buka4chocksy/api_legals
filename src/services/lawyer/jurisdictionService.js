@@ -18,7 +18,7 @@ const addlawyerJurisdiction =  (publicId, jurisdictionData = {}, file) => {
              };
         if(file){
             //save to cloudinary first
-          var cloudResult =   await uploadToCloud(file.path);
+          var cloudResult =   await uploadToCloud(file.path, "lawyercerts");
             dataToSave.certicicate = [{
                 certicicate_url: cloudResult.url, 
                 certicicate_secure_url : cloudResult.secure_url,
@@ -49,7 +49,7 @@ const getalawyerJurisdiction = (publicId) => {
     })
 };
 
-const updateUserPracticeArea = (publicId,jurisdictionId, patchUpdateData) => {
+const updateLawyerJurisdiction = (publicId,jurisdictionId, patchUpdateData) => {
     return  JurisdictionModel.findOne({_id : jurisdictionId, public_id : publicId}).exec((err, founJurisdiction) =>{
           if(err || !founJurisdiction){
               return Promise.resolve({ success: false, message: 'jurisdiction not found', status: 404 });
@@ -80,5 +80,5 @@ const updateUserPracticeArea = (publicId,jurisdictionId, patchUpdateData) => {
   }
 
   module.exports = {
-    addlawyerJurisdiction, getalawyerJurisdiction, updateUserPracticeArea, DeleteJurisdictionFile, AddJurisditionFile
+    addlawyerJurisdiction, getalawyerJurisdiction, updateLawyerJurisdiction, DeleteJurisdictionFile, AddJurisditionFile
   }

@@ -17,7 +17,7 @@ uploadToCloud = async (filename, folder = "public") => {
 
 
 
-deleteFromCloud = function (publicID) {
+deleteFromCloud = function (fileId) {
     return cloudinary.uploader.destroy(publicID, function (result) {
         return Promise.resolve(result);
     });
