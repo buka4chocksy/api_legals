@@ -1,6 +1,7 @@
 const nextOfKinModel = require('../models/panic/nextOfKin');
 const user = require('../models/auth/users');
 const panicModel = require('../models/panic/panicHistory')
+const deactivatePanicModel = require('..models/panic/deactivatedPanic')
 var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
@@ -88,7 +89,7 @@ exports.getUser = (id) => {
     })
 }
 
-exports.createPanicAlert = (panicDetails){
+exports.createPanicAlert = (panicDetails)=>{
     return new Promise((resolve , reject)=>{
         panicModel.create({public_id: id}).then(created =>{
             resolve()
@@ -106,12 +107,40 @@ exports.getNextOfKin = (id) => {
     })
 }
 
-exports.updatePanicAlert = (alertDetails) => {
+exports.updateAlertOnMongo = (alertDetails) => {
     return new Promise((resolve , reject)=>{
         panicModel.findOneAndUpdate({public_id: alertDetails.id}, { $set: { ...alertDetails } }, {new: true}).exec((err , completed)=>{
             if(err)reject({err: err , status:500});
             
             resolve(completed)
+        })
+    })
+}
+
+exports.closeAlert = (alertDetails) => {
+    return new Promise((resolve , reject)=>{
+        panicModel.findOneAndUpdate({alert_id: alertDetails.alert_id}, { $set: { resolved: true } }, {new: true}).exec((err , completed)=>{
+            if(err)reject({err: err , status:500});
+            
+            resolve(completed)
+        })
+    })
+}
+
+exports.declareHoax = (alertDetails) => {
+    return new Promise((resolve , reject)=>{
+        panicModel.findOne({public_id: alertDetails.id}).exec((err , result)=>{
+            if(err)reject({err: err , status:500});
+            
+            user.findOneAndUpdate({public_id: result.client_id}, { $inc: { hoax: 1 } },{new: true})
+            .aggregate([{
+                $project: { blocked: { $cond: { if: { $gt: [ "$hoax", 1 ] }, then: true, else: false }} }
+            }])
+            .exec((err , completed)=>{
+                if(err)reject({err: err , status:500});
+                
+                resolve(result)
+            })
         })
     })
 }
@@ -125,6 +154,90 @@ exports.fetchAllUnresolved = (data) => {
     })
 }
 
+exports.deactivateAlert = (deactivationDetails) => {
+    return new Promise((resolve, reject) => {
+        user.findOne({ public_id: deactivationDetails.public_id })
+            .select({ "__v": 0,  })
+            .exec((err, currentUser) => {
+                if (err || !currentUser) {
+                    reject({ message: "User not found", statusCode: 404, data: null })
+                } else {
+                    var validPassword = currentUser.comparePassword(deactivationDetails.password);
+                    if (validPassword) {
+                        deleteStoredAlertDetails(deactivationDetails.alert_id)
+
+                        deactivatePanicModel.create(deactivationDetails)
+                            .then(result => {
+                                resolve({ message: "Deactivation successful", data: null });
+                            }).catch(error => {
+                                //use the error logger here
+                                console.error(error)
+                                reject({message : "Something went wrong", data : null, statusCode : 500})
+                            })
+                    } else {
+                        reject({ message: "Invalid user credentials", statusCode: 400, data: null });
+                    }
+                }
+            })
+    })
+}
+
+const deleteStoredAlertDetails = (alert_id) => {
+    redis.del(alert_id, (err, result) => {
+        redis.lrem("alert_ids", 1, uniqueid, (error, result) => {
+            if(error){
+                console.error(error)
+            }
+        })
+    })
+}
+
+const getExistingRequests = () => {
+    return new Promise((resolve, reject) => {
+        redis.lrange("alert_ids", 0, -1, (err, result) => {
+            err ? reject(err) : resolve(result)
+        });
+    });
+};
+
+const getExistingRequestsDetails = async(result) => {
+    var PromisesToResolve = result.map(data => {
+        return getAllFromRedis(data);
+    });
+
+    return Promise.all(PromisesToResolve).then(result => {
+        return result;
+    });
+};
+
+function getAllFromRedis(id) {
+    return new Promise((resolve, reject) => {
+        redis.hgetall([id], (err, result) => {
+            err ? resolve({}) : resolve(result)
+        });
+    });
+}
+
+exports.fetchExistingAlerts = () => {
+    return new Promise((resolve, reject) => {
+        getExistingRequests()
+            .then((result) => {
+                getExistingRequestsDetails(result)
+                    .then((final) => {
+                        resolve(final)
+                    })
+                    .catch((error) => {
+                        //Logger.error(error)
+                        reject(error)
+                    })
+            })
+            .catch((error) => {
+                //Logger.error(error)
+                reject(error)
+            })
+    });
+};
+
 exports.storeAlertDetails = (alertDetails) => {
     try {
         redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
@@ -133,9 +246,20 @@ exports.storeAlertDetails = (alertDetails) => {
         alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", 
         alertDetails.status, "client_state", client_state, "client_country", client_country)
 
-        redis.expire(alertDetails.uniqueid, 259200)
+        redis.expire(alertDetails.alert_id, 259200)
 
-        redis.lpush("uniqueids", alertDetails.alert_id)
+        redis.lpush("alert_ids", alertDetails.alert_id)
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+exports.updateAlertOnRedis = (alertDetails) => {
+    try {
+        redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "lawyer_img_url", alertDetails.lawyer_img_url, "lawyer_name", alertDetails.lawyer_name, "lawyer_phonenumber", alertDetails.lawyer_phonenumber, "lawyer_email", alertDetails.lawyer_email, 
+        "lawyer_id", alertDetails.lawyer_id, "lawyer_latitude", 
+        alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "status", 
+        alertDetails.status)
     } catch (error) {
         console.log(error)
     }

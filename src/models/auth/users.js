@@ -1,6 +1,8 @@
 
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs')
 const schema = mongoose.Schema;
+
 const userSchema = new schema({
     first_name: { type: String },
     last_name: { type: String },
@@ -11,6 +13,8 @@ const userSchema = new schema({
     image_id: { type: String, default: '' },
     status_code: { type: Number },
     softDelete:{type:Boolean , default: false },
+    blocked: {type:Boolean , default: false},
+    hoax_alert: {type: Number, default: 0},
     password: { type: String },
     user_type: { type: String, lowercase: true },
     softDelete:{type:Boolean , default: false },
@@ -23,5 +27,11 @@ const userSchema = new schema({
         status: false
     }
 })
+
+userSchema.methods.comparePassword = function(password) {
+    var result = bcrypt.compareSync(password, this.password);
+    return result;
+}
+
 
 module.exports = mongoose.model('users', userSchema);

@@ -8,6 +8,16 @@ exports.getNearbyLawyers = (distance, public_id) => {
     return distances
 }
 
+exports.getNearbyClients = (distance, public_id) => {
+    var distances = []
+
+    if (distance < 2000) {
+        distances.push({ distance, public_id })
+    }
+
+    return distances
+}
+
 exports.sortNearbyDistance = (distances) => {
     var sortResult = distances.sort((current, next) => {
         return current.distance - next.distance

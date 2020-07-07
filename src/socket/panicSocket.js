@@ -1,6 +1,7 @@
 var socket = require('socket.io');
 var panicService = require('../services/panicService');
 var uuidv4 = require('uuid').v4;
+var { getNearbyClients, getNearbyLawyers, sortNearbyDistance, calculateDistance} = require('../utils/calculatorUtil')
 // const Logger = require('../../bin/config/logger');
 
 var allSockets = {}
@@ -58,7 +59,7 @@ function panicSocket(server) {
 
                         Object.entries(allSockets.lawyers).forEach(([key, value]) => {
                             if (value.available === true) {
-                                var distance = calculateDistance(data.panic_initiation_latitude, data.panic_initiation_latitude, value.lawyer_latitude, value.lawyer_longitude)
+                                var distance = calculateDistance(data.panic_initiation_latitude, data.panic_initiation_longitude, value.lawyer_latitude, value.lawyer_longitude)
                                 distanceArray = getNearbyLawyers(distance, value.public_id);
                             }
                         });
@@ -87,7 +88,9 @@ function panicSocket(server) {
 
             socket.on('accept_alert', (data) => {
                 data.status = "accepted"
-                panicService.updatePanicAlert(data).then((updated)=>{
+                panicService.updateAlertOnRedis(data)
+
+                panicService.updateAlertOnMongo(data).then((updated)=>{
                     //UPDATE THE HMSET HERE and set a new field accepted to true OR staus=accepted
                     allSockets.users[data.client_id].socket_address &&
                         io.of('/panic').to(`${allSockets.users[data.client_id].socket_address}`).emit('alert_accepted', { message: "A lawyer is coming to your aid", data: updated });
@@ -98,10 +101,10 @@ function panicSocket(server) {
             socket.on('send_message', (data) => {
                 panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
                     if(data.public_id === alertDetails.client_id){
-                        alertDetails.lawyer_id &&
+                        allSockets.users[data.lawyer_id].socket_address &&
                         io.of('/panic').to(`${allSockets.users[data.lawyer_id].socket_address}`).emit('recieve_message', { message: "You got a new message", data: alertDetails });
                     }else{
-                        alertDetails.client_id &&
+                        allSockets.users[data.client_id].socket_address &&
                         io.of('/panic').to(`${allSockets.users[data.client_id].socket_address}`).emit('recieve_message', { message: "You got a new message", data: alertDetails });
                     }
                 }).catch((error)=>{console.log(error)})
@@ -109,15 +112,40 @@ function panicSocket(server) {
                 //like Canyou talk? Where are you? or any other custom messages
             })
 
-            socket.on('deactivate_alert', (data) => {
-                //delete from redis
-                //first confirm the password, then store the alert details and the reason for deactivation in a seperate model
-                //delete from redis
-            })
-
             socket.on('close_alert', (data) => {
                 //check if the lawyer ticked a)assisted b)not able to assist c)hoax
-                //if assited, tick the aert as completed
+                if(data.lawyer_response === "assisted"){
+                    panicService.closeAlert(data).then((result)=>{
+                        allSockets.lawyers[data.lawyer_id].socket_address &&
+                        io.of('/panic').to(`${allSockets.users[data.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: null });
+                    }).catch((error)=>{console.log(error)})
+                }else if (data.lawyer_response === "unassisted"){
+                    panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
+                        var sortedDistanceArray = [],
+                        distanceArray = []
+
+                        Object.entries(allSockets.lawyers).forEach(([key, value]) => {
+                            if (value.available === true) {
+                                var distance = calculateDistance(alertDetails.panic_initiation_latitude, alertDetails.panic_initiation_longitude, value.lawyer_latitude, value.lawyer_longitude)
+                                distanceArray = getNearbyLawyers(distance, value.public_id);
+                            }
+                        });
+
+                        sortedDistanceArray = sortNearbyDistance(distanceArray);
+
+                        for (i = 0; i < sortedDistanceArray.length; i++) {
+                            //ridersContacted.push(sortedDistanceArray[i].rider.riderid)
+                            allSockets.lawyers[sortedDistanceArray[i].public_id].socket_address &&
+                                io.of('/panic').to(`${allSockets.lawyers[sortedDistanceArray[i].public_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", alertDetails });
+                        }
+                    }).catch((error)=>{console.log(error)})
+                }else{
+                    panicService.declareHoax(data).then((result)=>{
+                        allSockets.users[result.client_id].socket_address &&
+                        io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('alert_closed', { message: "Your alert was declared a hoax, do you want to appeal against this?", data: null });
+                    }).catch((error)=>{console.log(error)})
+                }
+                //if assited, tick the alert as completed
                 //if not assited, find other nearby lawyers and emit the alert to them
                 /*if hoax, store in hoax model, increment the client numbers of hoax alert, if its up to 2, block him for one week, the emit to the 
                     cilent so that he/she can appeal and only th admin can revert the number of hoax and unblock
@@ -140,9 +168,8 @@ function panicSocket(server) {
                 })
                 .catch((error) => {
                     console.error(error)
-
                     // allSockets.riders[data.riderid] &&
-                    //     io.of('/rider').to(`${allSockets.riders[data.riderid].ridersocketid}`).emit('error_message', { message: 'Failed to stored rider position' });
+                    // io.of('/rider').to(`${allSockets.riders[data.riderid].ridersocketid}`).emit('error_message', { message: 'Failed to stored rider position' });
                 });
             });
 
@@ -156,6 +183,43 @@ function panicSocket(server) {
                     }).catch((error)=>{console.log(error)})
                 }).catch((error)=>{console.log(error)})
             });
+
+            socket.on('find_panics', (data)=>{
+                //fetch available panics and emit to lawyer
+                var sortedDistanceArray = [],
+                    distanceArray = [],
+                    distances = [];
+
+                panicService.fetchExistingAlerts()
+                    .then((oldDispatchArray) => {
+                        if(oldDispatchArray.length > 0){
+                            oldDispatchArray.map((oldDispatchObject) => {
+                                if (oldDispatchObject.hasOwnProperty("userlongitude")) {
+                                    var distance = calculateDistance(data.lawyer_latitude, data.lawyer_longitude, oldDispatchObject.panic_initiation_latitude, oldDispatchObject.panic_initiation_longitude);
+                                    distanceArray = getNearbyClients(distance, distances, oldDispatchObject);
+                                }
+                            });
+
+                            if (distanceArray.length > 0) {
+                                var userRequests = [];
+                                    sortedDistanceArray = sortNearbyDistance(distanceArray);
+
+                                for (i = 0; i < sortedDistanceArray.length; i++) {
+                                    //get full user details and then push
+                                    userRequests.push(sortedDistanceArray[i].client);
+
+                                    allSockets.clients[sortedDistanceArray[i].public_id].socket_address &&
+                                        io.of('/panic').to(`${allSockets.clients[sortedDistanceArray[i].public_id].socket_address}`).emit('older_alerts', { message: "Help! Help!! Help!!!", data });
+                                }
+                            }
+                        }
+                    })
+                    .catch((error) => {
+                        console.error(error)
+                        allSockets.riders[data.riderid] &&
+                            io.of('/rider').to(`${allSockets.riders[data.riderid].ridersocketid}`).emit('error_message', { message: "Failed to fetch existing alerts, please try again", data: null });
+                    })
+            })
 
             socket.on('disconnect', (data) => {
                 allSockets.removeRiderSocket(data.riderid)
