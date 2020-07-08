@@ -1,7 +1,8 @@
 const nextOfKinModel = require('../models/panic/nextOfKin');
 const user = require('../models/auth/users');
 const panicModel = require('../models/panic/panicHistory')
-const deactivatePanicModel = require('..models/panic/deactivatedPanic')
+const deactivatePanicModel = require('../models/panic/deactivatedPanic')
+var Redis = require('ioredis');
 var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);

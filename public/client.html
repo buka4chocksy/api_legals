@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+
+<body>
+    <div id="mario-chat">
+        <input id="username" type="text" placeholder="name" value="Emma" />
+        <input id="phone" type="text" placeholder="phone" value="+2348163549871" />
+        <input id="lat" type="number" placeholder="lat" value="6.3910178" />
+        <input id="long" type="number" placeholder="long" value="7.5340073" />
+        <select id="deliverytype">
+                    <option value="instant">instant</option>
+                    <option value="sameday">sameday</option>
+                    <option value="scheduled">scheduled</option>
+                </select>
+
+        <button id="useronline" type="button">USER ONLINE</button>
+        <button id="request" type="button">REQUEST</button>
+        <button id="crequest" type="button">CANCEL REQUEST</button>
+        <button id="changeposition" type="button">CHANGE POSITION</button>
+        <button id="sock" type="button">update socket</button>
+
+        <hr/>
+        <input id="dispatchid" type="text" placeholder="dispatch id" />
+        <!-- <button id="ongoing" type="button">Ongoing</button> -->
+        <button id="cash" type="button">PAY CASH</button>
+        <button id="online" type="button">PAY ON</button>
+        <button id="requestriderposition" type="button">GET RIDER LOCATION</button>
+        <button id="confirmreceived" type="button">CONFIRM RECEIVED</button>
+        <button id="fetchall" type="button">FETCH ALL</button>
+        <button id="fetchone" type="button">FETCH ONE</button>
+        <button id="canceldispatch" type="button">CANCEL DISPATCH</button>
+
+        <script src="/user.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+</body>
+
+</html>

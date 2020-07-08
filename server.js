@@ -46,6 +46,7 @@ passport.deserializeUser(function(id, done) {
       });
   });
 
+app.use(express.static("public"));
 app.use(compression());
 app.use(morgan('dev'));
 app.use(express.static("public"));
@@ -58,7 +59,12 @@ app.set('allRiderSockets', {});
 app.set('allUserSockets', {});
 app.use('/api', rootRouter);
 app.use('/', socialAuth);
-
+app.get("/lawyer", (req, res) => {
+  return res.sendFile(__dirname + "/public/lawyer.html");
+})
+app.get("/client", (req, res) => {
+  return res.sendFile(__dirname + "/public/client.html");
+})
 
 app.use((req, res, next) => {
     const error = new Error('Not found');
