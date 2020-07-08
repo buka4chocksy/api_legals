@@ -6,8 +6,13 @@ require('dotenv').config();
 const compression = require('compression');
 const router = express.Router();
 const rootRouter  = require('./src/routes/index.js')(router);
+const socialAuth = require('./src/routes/socialAuth')(router);
 const cors = require('cors');
-const dbConfiguration = require('./bin/config/db');
+// const dbConfiguration = require('./bin/config/db');
+const passport = require('passport');
+const session = require('express-session');
+const GoogleStrategy = require('./src/auth/google');
+const LinkedinStrategy = require('./src/auth/linkedin');
 /**
  * Middlewares go here for the application.
  * if it gets to cumbersome then we can move to seperate file
@@ -15,7 +20,31 @@ const dbConfiguration = require('./bin/config/db');
  * 
  */
 
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(session({
+    secret: 'keyboard cat',
+    resave: true,
+    saveUninitialized: true
+  }));
 
+// Register Google Passport strategy
+passport.use(GoogleStrategy);
+
+// Register Linkedin Passport strategy
+passport.use(LinkedinStrategy);
+
+// serialize and deserialize
+passport.serializeUser(function(user, done) {
+    done(null, user._id);
+  });
+passport.deserializeUser(function(id, done) {
+    User.findById(id, function(err, user){
+        if(!err) done(null, user);
+        else done(err, null);
+      });
+  });
 
 app.use(compression());
 app.use(morgan('dev'));
@@ -26,6 +55,7 @@ app.use(express.json());//for parsing application/json
 app.use(express.urlencoded({ extended: false})); //for parsing application/x-www-form-urlencoded
 app.use(cors());
 app.use('/api', rootRouter);
+app.use('/', socialAuth);
 
 
 app.use((req, res, next) => {
@@ -41,7 +71,7 @@ app.use((error, req, res, next) => {
             }
     })
 })
-dbConfiguration()
+// dbConfiguration()
 
 app.all('*', (req, res) => res.status(200).send({message : 'server is live'}));
 

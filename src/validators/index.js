@@ -1,20 +1,12 @@
-var Joi = require('joi');
-module.exports = (schema) => (req, res, next) => {
-    var result = validate(req.body, schema);
-		if (result){
-			res.status(500).send(result);
-		} else {
-			next();
-		}
-    next();
-}
+const Joi = require('@hapi/joi');
 
- function validate(data, schema) {
-        var result = Joi.validate(data, schema);
-        if (result.error == null) {
-            return;
-        } else {
-            return result.error.details.map(error => error.message);
-        }
+module.exports = function validate(data, schema) {
+    return new Promise((resolve, reject) => {
+        Joi.validate(data, schema).then(result => {
+           resolve();
+       }).catch(error => {
+           reject(error.details.map(error => error.message));
+       });
+
+    })
 }
-    
