@@ -8,27 +8,39 @@ module.exports = function authController() {
         console.log(req.body)
         service.Register(req.body, device, token).then(data => {
             res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(err));
+        }).catch(err => {
+            res.status(err.status).send(err)
+        });
+    }
+
+    this.UpdatePhonenumberForOAuthRegistration = (req, res, next) => {
+        const {publicid} = req.params;
+        service.updatePhonenumberForOAuthRegistration(publicid, req.body.phone_number).then(result => {
+            res.status(result.status).send(result)
+        }).catch(error => {
+            next(error);
+        })
     }
 
     this.verifyUser = (req, res) => {
-    
         service.verifyUser(req.auth.email ,req.body).then(data => {
             res.status(200).send(data)
         }).catch(err => res.status(500).send(err));
     }
 
     this.loginUser = (req, res) => {
+        const clientIp = req.connection.remoteAddress.includes("::") ? `[${req.connection.remoteAddress}]` : req.connection.remoteAddress;
         const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
+        console.log("check login", clientIp);
 
-        service.userLogin(req.body.email_address, req.body.password , device).then(data => {
+        service.userLogin(req.body.email_address, req.body.password ,device, clientIp).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }
 
 
     this.terms = (req, res) => {
-        service.acceptTerms(req.body, req.auth.publicId).then(data => {
+        service.acceptTerms(req.body, req.params.publicid).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }

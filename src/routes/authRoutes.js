@@ -8,8 +8,9 @@ const validatorHandler = require('../middlewares/errorHandlerMiddleware');
 module.exports = function () {
     const authCtrl = new authController()
     router.post('/register', validatorHandler.schemaValidatorHandler(userValidator.schema), authCtrl.Register)
+    router.put('/oauth/addphonenumber/:publicid',validatorHandler.schemaValidatorHandler(userValidator.PhoneNumberSchema), authCtrl.UpdatePhonenumberForOAuthRegistration)
     router.put('/verify',middleware.authenticate, authCtrl.verifyUser)
-    router.post('/terms',middleware.authenticate, authCtrl.terms )
+    router.post('/terms/:publicid', authCtrl.terms )
     router.post('/authenticate', authCtrl.loginUser)
     router.post('/password_change_token', authCtrl.passwordToken)
     router.put('/forgot_password_change', authCtrl.ChangeforgotPassword)

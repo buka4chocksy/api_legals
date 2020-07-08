@@ -1,9 +1,12 @@
 const model = require('../models/lawyer/lawyer');
 const user = require('../models/auth/users')
-const authService = require('./authService')
-let jsonPatch = require('fast-json-patch')
+const authService = require('../services/authService')
+const jsonPatch = require('fast-json-patch')
+const {addlawyerJurisdiction} = require('./lawyer/jurisdictionService');
+const {addLawyerPracticeArea}  = require('./lawyer/practiceAreaService');
 
-exports.completelawyerRegisteration = (publicId, data, detail) => {
+
+exports.completelawyerRegisteration = (publicId, data, file) => {
     return new Promise((resolve, reject) => {
         user.findOne({ public_id: publicId }).exec((err, got) => {
             if (err) reject(err)
@@ -13,54 +16,35 @@ exports.completelawyerRegisteration = (publicId, data, detail) => {
                     last_name: got.last_name,
                     email_address: got.email_address,
                     phone_number: got.phone_number,
-                    public_id: publicId,
-                    enrollment_number: data.enrollment_number,
-                    user_type: data.user_type,
-                    practice_area: [{
-                        practice_area_id: data.practice_area
-                    }],
-                    jurisdiction: [{
-                        jurisdiction_id: data.jurisdiction
-                    }],
-                    law_certificates: [{
-                        image_url: detail.imageUrl
-                    }]
-
+                    public_id: publicId
                 }
                 model.findOne({ public_id: publicId }).exec((err, exists) => {
-                    if (err) reject({ err: err, status: 500 })
+                    if (err) reject({success: true,  err: err, status: 500, data : null, message : "something went wrong" })
                     if (exists) {
-                        resolve({ success: true, message: 'lawyer details already exists , please proceed to upload certificate', status: 400 })
+                        resolve({ success: true, message: 'lawyer already exists, please upload certificate', status: 400 })
                     } else {
                         model.create(details).then(created => {
                             if (created) {
-                                user.findOneAndUpdate({ public_id: publicId }, { user_type: details.user_type }).exec((err, verified) => {
-                                    if (err) reject({ err: err, status: 500 });
-                                    if (verified) {
-
-                                        resolve({
-                                            success: true,
-                                            message: 'please accept the terms and conditon!!!',
-                                            status: 200
-                                        })
-
-                                    } else {
-                                        resolve({ success: false, message: 'Error encountered while completing lawyer signup', status: 400 })
-                                    }
-                                })
-                            } else {
-                                resolve({ success: true, message: 'Error encountered while adding lawyer details', status: 400 })
+                                //add the lawyer practice area
+                                addLawyerPracticeArea(publicId, data.practice_area);
+                                //add the lawyer jurisdictions
+                                addlawyerJurisdiction(publicId,{jurisdiction_id :  data.jurisdiction_id,enrollment_number : data.enrollment_number}, file)
+                                //update user type in User collection for the lawyer
+                                user.findOneAndUpdate({ public_id: publicId }, { user_type: details.user_type })
+                                resolve({
+                                    success: true,
+                                    message: 'please accept the terms and conditon',
+                                    status: 201,
+                                    data : publicId
+                                });
                             }
-                        }).catch(err => reject({ err: err, status: 500 }))
+                        }).catch(err =>reject({ err: err, status: 500 }))
                     }
                 })
-
             } else {
-                resolve({ success: true, message: 'lawyer does not exist', status: 404 })
+                resolve({ success: true, message: 'user does not exist', status: 404 })
             }
         })
-
-
     })
 }
 
