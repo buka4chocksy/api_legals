@@ -39,7 +39,9 @@ module.exports = function authController() {
 
 
     this.terms = (req, res) => {
-        service.acceptTerms(req.body, req.params.publicid).then(data => {
+        const clientIp = req.connection.remoteAddress.includes("::") ? `[${req.connection.remoteAddress}]` : req.connection.remoteAddress;
+
+        service.acceptTerms(req.body, req.params.publicid, clientIp).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }
