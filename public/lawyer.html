@@ -6,61 +6,23 @@
     <title>Page Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
-    <link href="/style.css" rel="stylesheet" />
 </head>
 <body>
-        <input id="ridername1" type="text" placeholder="name" value="Cheks"/>
-        <input id="phone1" type="text" placeholder="phone" value="+2348138570888" />
-        <input id="lat1" type="number" placeholder="lat" value="6.3910178"/>
-        <input id="long1" type="number" placeholder="long" value="7.5340073"/>
-        <select id="riderid">
-            <option value="9DQe47ZT">9DQe47ZT</option>
+        <select id="lawyer_id">
+            <option value="5f0527038b0e1139d62e3366">5f0527038b0e1139d62e3366</option>
             <option value="XuLde9EO">XuLde9EO</option>
             <option value="mercedes">ezWU0BVI</option>
             <option value="audi">fPye4l0R</option>
         </select>
-        <!-- <input id="job" type="number" placeholder="number of accepted requests" /> -->
-        <select id="deliverytype">
-            <option value="instant">instant</option>
-            <option value="sameday">sameday</option>
-            <option value="scheduled">scheduled</option>
-        </select>
-        <button id="online" type="button">ONLINE</button>
-        <button id="available" type="button">Available</button>
-        <button id="sock" type="button">update socket</button>
+        <input id="alert_id" type="number" placeholder="alert_id" value=""/>
         <hr>
+        <button id="lawyer_online" type="button">LAWYER_ONLINE</button>
+        <button id="accept_alert" type="button">ACCEPT_ALERT</button>
+        <button id="send_message" type="button">SEND_MESSAGE</button>
+        <button id="close_alert" type="button">CLOSE_ALERT</button>
+        <button id="update_position" type="button">UPDATE_POSITION</button>
 
-        
-
-        <button id="unavailable" type="button">Unavailable</button>
-        <hr>
-
-        <input id="ridername2" type="text" placeholder="name" />
-        <input id="phone2" type="text" placeholder="phone" />
-        <input id="lat2" type="number" placeholder="lat" />
-        <input id="long2" type="number" placeholder="long" />
-        <button id="update" type="button">Update location</button>
-        <hr>
-
-        <input id="sockid" type="text" placeholder="unique id" />
-        <button id="accept" type="button">Accept User</button>
-        <hr>
-        <button id="reject" type="button">Reject User</button>
-
-        <input id="dispatchid" type="text" placeholder="dispatch id" />
-        <button id="dispatched" type="button">dispatch complete</button>
-
-        <!-- <button id="locationUpdateId" type="button">Location Update</button> -->
-        <button id="cancel" type="button">Cancel</button>
-        <button id="enroute" type="button">ENROUTE</button>
-        <button id="arrived" type="button">ARRIVED</button>
-        <button id="received" type="button">RECEIVED</button>
-        <button id="confirm" type="button">CONFIRM PAY</button>
-        <button id="fetchall" type="button">FETCH ALL</button>
-        <button id="fetchone" type="button">FETCH ONE</button>
-        <button id="position" type="button">SEND POSITION</button>
-
-     <script src="/rider.js"></script>
+     <script src="/lawyer.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script>
 

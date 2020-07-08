@@ -1,6 +1,8 @@
 const nextOfKinModel = require('../models/panic/nextOfKin');
 const user = require('../models/auth/users');
 const panicModel = require('../models/panic/panicHistory')
+const client = require('../models/client/client')
+const lawyer = require('../models/lawyer/lawyer')
 const deactivatePanicModel = require('../models/panic/deactivatedPanic')
 var Redis = require('ioredis');
 var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
@@ -78,21 +80,56 @@ exports.getPanicAlertById = (id)=>{
 
 exports.getUser = (id) => {
     return new Promise((resolve , reject)=>{
-        user.findOne({public_id: id}).exec((err , found)=>{
+        user.findOne({public_id: id}).exec((err , foundUser)=>{
             if(err)reject({err: err , status:500});
 
-            if(!found){
+            console.log("FOUND USER", foundUser, foundUser.user_type)
+
+            if(!foundUser){
                reject({message: "User does not exist"}) 
             }
             
-            resolve(found)
+            //re-write to use aggregate
+            if(foundUser.user_type === "lawyer"){
+                lawyer.findOne({public_id: id}).exec((err , found)=>{
+                    if(err)reject({err: err , status:500});
+
+                    console.log("FOUND", found)
+
+                    if(!found){
+                       reject({message: "Lawyer does not exist"}) 
+                    }
+
+                    // foundUser.client_country = found.state_of_origin
+                    // foundUser.client_state = found.country 
+                    
+                    resolve(foundUser)
+                })
+            }
+            
+            if(foundUser.user_type === "client"){
+                client.findOne({public_id: id}).exec((err , found)=>{
+                    if(err)reject({err: err , status:500});
+
+                    console.log("FOUND", found)
+
+                    if(!found){
+                       reject({message: "Client does not exist"}) 
+                    }
+
+                    foundUser.client_country = found.state_of_origin
+                    foundUser.client_state = found.country 
+                    
+                    resolve(foundUser)
+                })
+            }
         })
     })
 }
 
 exports.createPanicAlert = (panicDetails)=>{
     return new Promise((resolve , reject)=>{
-        panicModel.create({public_id: id}).then(created =>{
+        panicModel.create(panicDetails).then(created => {
             resolve()
         }).catch(error => console.log(error))
     })

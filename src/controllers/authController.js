@@ -2,18 +2,19 @@ const service = require('../services/authService')
 const cloudinary = require('../middlewares/cloudinary');
 module.exports = function authController() {
 
-    this.Register = (req, res, next) => {
-        const device = req.body.deviceID || req.query.deviceID || req.headers['device-id'];
+    this.register = (req, res, next) => {
+        //const device = req.body.deviceID || req.query.deviceID || req.headers['device-id'];
         const token = req.body.token || req.query.token || req.headers['x-access-token'];
         console.log(req.body)
-        service.Register(req.body, device, token).then(data => {
+        service.Register(req.body, token).then(data => {
             res.status(data.status).send(data)
         }).catch(err => {
+            console.log(err)
             res.status(err.status).send(err)
         });
     }
 
-    this.UpdatePhonenumberForOAuthRegistration = (req, res, next) => {
+    this.updatePhonenumberForOAuthRegistration = (req, res, next) => {
         const {publicid} = req.params;
         service.updatePhonenumberForOAuthRegistration(publicid, req.body.phone_number).then(result => {
             res.status(result.status).send(result)
