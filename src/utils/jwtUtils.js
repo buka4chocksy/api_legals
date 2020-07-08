@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const secret = process.env.Secret
+const secret = process.env.JWT_SECRET
 
 //generate token
 function generateToken(data = {}) {
@@ -36,6 +36,17 @@ function verifyToken(token = "") {
     });
 }
 
+const verifyTokenSync = (token= "") => {
+    try{
+        let result = jwt.verify(token, secret);
+        return result;
+    }catch(err){
+        return new Error("jwt malformed")
+    }
+}
+
+
+
 module.exports = {
-    verifyToken, generateToken, generateTokenSync
+    verifyToken, generateToken, generateTokenSync, verifyTokenSync
 }
