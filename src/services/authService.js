@@ -27,7 +27,7 @@ exports.Register = (data, deviceID, res) => {
                         data : found.public_id
                     })
                 } else {
-                    return ({ success: false, message: 'User already exits', status: 409 })
+                    return ({ success: false, message: 'User already exits, try authenticating to continue', status: 409  })
                 }
             } else {
                 return model.create(userDetails).then(created => {
@@ -166,7 +166,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
                         resolve({success : true, status : 201, data : updatedUser.public_id});
                     }
                 } else {
-                    resolve({ success: false, message: 'could not accept terms. make sure you have added a valid phone number', status: 404 })
+                    resolve({ success: false, message: 'could not accept terms. make sure you have added a valid phone number or you have already accepted our tems of service', status: 404 })
                 }
             })
         } else {
