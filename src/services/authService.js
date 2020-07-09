@@ -132,26 +132,6 @@ exports.acceptTerms = (data, id, ipaddress) => {
             usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
             model.findOneAndUpdate({ public_id: id,is_complete : false, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
                 if (err) reject({ err: err, status: 500 });
-<<<<<<< HEAD
-                if (updated) {
-                    if (data.user_type.toLowerCase() === 'client') {
-                        model.findOne({ public_id: id }).then(user => {
-                            const clientData = {
-                                first_name: user.first_name,
-                                last_name: user.last_name,
-                                email_address: user.email_address,
-                                phone_number: user.phone_number,
-                                user_type: data.user_type,
-                                public_id: user.public_id
-                            }
-                            client.create(clientData).then(created => {
-                                if (created) {
-                                    getUserDetail(id).then(activeUser => {
-                                        generateToken(activeUser).then(token => {
-                                            resolve({
-                                                success: true, data: { activeUser, token: token },
-                                                message: 'authentication successfull !!!',
-=======
                 if (updatedUser) {
                     let jwtTokenDetails = {
                         email_address: updatedUser.email_address,
@@ -173,7 +153,6 @@ exports.acceptTerms = (data, id, ipaddress) => {
                                             success: true, 
                                             data: { userDetails ,authDetails : result.data },
                                                 message: 'registration complete',
->>>>>>> 659636ab2a1fea6bc404f95a624f476cd04d192f
                                                 status: 200
                                         })
                                     }).catch(error => {
@@ -184,19 +163,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
                                 }
                             }).catch(err => reject({ err: err, status: 500 }))
                     } else {
-<<<<<<< HEAD
-                        getUserDetail(id).then(activeUser => {
-                            generateToken(activeUser).then(token => {
-                                resolve({
-                                    success: true, data: { activeUser, token: token },
-                                    message: 'authentication successfull !!!',
-                                    status: 200
-                                })
-                            }).catch(err => reject({ err: err, status: 500 }))
-                        }).catch(err => reject({ err: err, status: 500 }))
-=======
                         resolve({success : true, status : 201, data : updatedUser.public_id});
->>>>>>> 659636ab2a1fea6bc404f95a624f476cd04d192f
                     }
                 } else {
                     resolve({ success: false, message: 'could not accept terms. make sure you have added a valid phone number or you have already accepted our tems of service', status: 404 })
@@ -344,11 +311,7 @@ function DBupdateToken(id, tokenID, deviceID, ip_address) {
             }else{
                 userToken.create(details).then(created =>{
                     if(created){
-<<<<<<< HEAD
-                        resolve({ success: true, message: 'User token created  successfully', status: 200, token: tokenID })  
-=======
                         resolve({ success: true, message: 'User token created  successfully', status: 200  , token:tokenID})  
->>>>>>> 659636ab2a1fea6bc404f95a624f476cd04d192f
                     }else{
                         resolve({ success: false , message: 'Error creating user token', status: 400 })
                     }
