@@ -1,8 +1,9 @@
 const GoogleStrategy = require('passport-google-oauth20');
 const { google } = require('../utils/config');
 const User = require('../models/auth/users');
+const { profile } = require('winston');
 
-module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
+const GoogleStrategySignup = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
     User.findOne({ 'oauth.oauthID': profile.id }, (err, user) => {
         if (err) console.log(err);
         if (user) {
@@ -26,3 +27,19 @@ module.exports = new GoogleStrategy(google, async (accessToken, refreshToken, pr
         }
     })
 })
+
+const GoogleStrategySignin = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
+    User.findOne({ 'oauth.oauthID': profile.id }, (err, user) => {
+        console.log(' Google reached here...', user)
+        if (err) console.log(err);
+        if (user) {
+            done(null, user)
+        } else {
+            done(null, user);
+        }
+    })
+})
+
+module.exports = {
+    GoogleStrategySignup, GoogleStrategySignin
+}

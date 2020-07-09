@@ -4,16 +4,37 @@ const authService = require('../services/authService');
 const { generateToken } = require('../utils/jwtUtils');
 
 module.exports = function () {
-    // google auth
-    router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+    // Google sign-up
+    router.get('/auth/google', passport.authenticate('google-signup', { scope: ['profile', 'email'] }));
     router.get('/auth/google/callback',
-        passport.authenticate('google', { failureRedirect: '/error' }),
+        passport.authenticate('google-signup', { failureRedirect: '/error' }),
         (req, res) => {
             console.log('checking google request: ', req.user)
-            res.redirect('lawyerpp://signup?user=' + JSON.stringify(req.user))
+            authService.getUserDetail(req.user.public_id).then(activeUser => {
+                generateToken(activeUser).then(token => {
+                    const response = {
+                        token: token,
+                        first_name: activeUser.first_name,
+                        last_name: activeUser.last_name,
+                        email_address: activeUser.email_address
+                    }
+                    console.log('response sent to client: ', response)
+                    res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
+                })
+            })
         }
     );
-    // Linkedin Auth
+
+    // Google sign-in
+    router.get('/auth/google', passport.authenticate('google-signin', { scope: ['profile', 'email'] }));
+    router.get('/auth/google/callback/login',
+        passport.authenticate('google-signin', { failureRedirect: '/error' }),
+        (req, res) => {
+            console.log('checking google-sign-in: ', req.user)
+            res.redirect('lawyerpp://login?user=' + JSON.stringify(req.user))
+        })
+
+    // Linkedin sign-up
     router.get('/auth/linkedin', passport.authenticate('signup'))
     router.get('/auth/linkedin/callback',
         passport.authenticate('signup', { failureRedirect: '/error' }),
@@ -33,13 +54,13 @@ module.exports = function () {
         })
 
 
-        // LinkedIn Login
-        router.get('/auth/linkedin/login', passport.authenticate('signin'));
-        router.get('/auth/linkedin/callback/login',
+    // LinkedIn sign-in
+    router.get('/auth/linkedin/login', passport.authenticate('signin'));
+    router.get('/auth/linkedin/callback/login',
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
             const response = req.user;
-            console.log('Response on Login: '. response)
+            console.log('Response on Login: '.response)
             res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
         })
 

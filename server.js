@@ -11,7 +11,7 @@ const cors = require('cors');
 // const dbConfiguration = require('./bin/config/db');
 const passport = require('passport');
 const session = require('express-session');
-const GoogleStrategy = require('./src/auth/google');
+const { GoogleStrategySignup, GoogleStrategySignin } = require('./src/auth/google');
 const { LinkedinSignup, LinkedinSignin } = require('./src/auth/linkedin');
 /**
  * Middlewares go here for the application.
@@ -30,7 +30,10 @@ app.use(session({
 }));
 
 // Register Google Passport strategy
-passport.use(GoogleStrategy);
+passport.use("google-signup", GoogleStrategySignup);
+
+// Signin Google Passport strategy
+passport.use("google-signin", GoogleStrategySignin)
 
 // Signin Linkedin Passport strategy
 passport.use("signin", LinkedinSignin);
