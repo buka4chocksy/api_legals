@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Page Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
+</head>
+
+<body>
+    <div id="mario-chat">
+        <select id="client_id">
+            <option value="5f051ee6fa7b3b33a7a99f0d">5f051ee6fa7b3b33a7a99f0d</option>
+            <option value="sameday">sameday</option>
+            <option value="scheduled">scheduled</option>
+        </select>
+        <input id="alert_id" type="text" placeholder="alert_id" value="" />
+        <hr>
+        <button id="client_online" type="button">CLIENT ONLINE</button>
+        <button id="panic_alert" type="button">PANIC_ALERT</button>
+        <button id="get_position" type="button">GET_POSITION</button>
+        <button id="send_message" type="button">SEND_MESSAGE</button>
+
+        <script src="/client.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+</body>
+
+</html>

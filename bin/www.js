@@ -11,6 +11,7 @@ var fs = require('fs');
 var http = require('http');
 var https  = require('https')
 var dbConfiguration = require('./config/db');
+var initSocket = require('../src/socket').initSocket
 var port = normalizePort(process.env.PORT || '8080');
 var serverType = process.env.servertype;
 app.set('port', port);
@@ -33,6 +34,8 @@ if (serverType === 'https') {
     server = http.createServer(app);
 }
 
+// global.connectedSocket = {};
+initSocket(server);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -104,5 +107,6 @@ function onListening() {
     var bind = typeof addr === 'string' ?
         'pipe ' + addr :
         'port ' + addr.port;
+        console.table(addr)
     // logger.default.info('Listening on ' + bind);
 }
