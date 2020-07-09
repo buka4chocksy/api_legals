@@ -14,7 +14,7 @@ lawyer_online.addEventListener('click', function() {
         lawyer_id: lawyer_id.value,
         lawyer_latitude: 6.3910178,
         lawyer_longitude: 7.5340073,
-        usertype: "lawyer"
+        user_type: "lawyer"
     })
 
     socket.emit('find_panics', {
@@ -25,7 +25,8 @@ lawyer_online.addEventListener('click', function() {
 })
 
 accept_alert.addEventListener('click', function() {
-    userSocket.emit('accept_alert', {
+    console.log(alert_id.value)
+    socket.emit('accept_alert', {
         lawyer_id: lawyer_id.value,
         lawyer_latitude: 6.3910178,
         lawyer_longitude: 7.5340073,
@@ -34,8 +35,10 @@ accept_alert.addEventListener('click', function() {
 })
 
 send_message.addEventListener('click', function() {
+    console.log("sent message")
     socket.emit('send_message', {
         lawyer_id: lawyer_id.value,
+        alert_id: alert_id.value,
         message: "What's going on client?!"
     })
 })

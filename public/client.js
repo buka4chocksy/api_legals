@@ -13,7 +13,7 @@ client_online.addEventListener('click', function() {
         client_id: client_id.value,
         panic_initiation_latitude: 6.3910178,
         panic_initiation_longitude: 7.5340073,
-        usertype: "client"
+        user_type: "client"
     })
 })
 
@@ -28,6 +28,7 @@ panic_alert.addEventListener('click', function() {
 send_message.addEventListener('click', function() {
     socket.emit('send_message', {
         client_id: client_id.value,
+        alert_id: alert_id.value,
         message: "haloooo"
     })
 })

@@ -9,7 +9,7 @@ var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 
-exports.createPanic = (data,id,usertype)=>{
+exports.createPanic = (data,id,user_type)=>{
     return new Promise((resolve , reject)=>{
         nextOfKinModel.findOne({public_id:id}).exec((err , exists)=>{
             if(err)reject({err: err , status:500});
@@ -26,7 +26,7 @@ exports.createPanic = (data,id,usertype)=>{
                     email_address:data.email_address,
                     relationship:data.relationship,
                     alert:data.user_type.toLowerCase() !== 'lawyer'? 'no' : 'yes',
-                    user_type:data.user_type == '' ? usertype : data.user_type ,
+                    user_type:data.user_type == '' ? user_type : data.user_type ,
                     public_id:id
                 }
                 nextOfKinModel.create(details).then(created =>{
@@ -83,7 +83,7 @@ exports.getUser = (id) => {
         user.findOne({public_id: id}).exec((err , foundUser)=>{
             if(err)reject({err: err , status:500});
 
-            console.log("FOUND USER", foundUser, foundUser.user_type)
+            // console.log("FOUND USER", foundUser, foundUser.user_type)
 
             if(!foundUser){
                reject({message: "User does not exist"}) 
@@ -94,7 +94,7 @@ exports.getUser = (id) => {
                 lawyer.findOne({public_id: id}).exec((err , found)=>{
                     if(err)reject({err: err , status:500});
 
-                    console.log("FOUND", found)
+                    // console.log("FOUND", found)
 
                     if(!found){
                        reject({message: "Lawyer does not exist"}) 
@@ -111,7 +111,7 @@ exports.getUser = (id) => {
                 client.findOne({public_id: id}).exec((err , found)=>{
                     if(err)reject({err: err , status:500});
 
-                    console.log("FOUND", found)
+                    // console.log("FOUND", found)
 
                     if(!found){
                        reject({message: "Client does not exist"}) 
@@ -137,7 +137,7 @@ exports.createPanicAlert = (panicDetails)=>{
 
 exports.getNextOfKin = (id) => {
     return new Promise((resolve , reject)=>{
-        nextOfKinModel.find({public_id: id}).exec((err , found)=>{
+        nextOfKinModel.find({public_id: id}).exec((error , found)=>{
             if(error)reject(error)
             
             resolve(found)
@@ -282,7 +282,7 @@ exports.storeAlertDetails = (alertDetails) => {
         "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, 
         "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
         alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", 
-        alertDetails.status, "client_state", client_state, "client_country", client_country)
+        alertDetails.status, "client_state", alertDetails.client_state, "client_country", alertDetails.client_country)
 
         redis.expire(alertDetails.alert_id, 259200)
 
@@ -293,11 +293,15 @@ exports.storeAlertDetails = (alertDetails) => {
 }
 
 exports.updateAlertOnRedis = (alertDetails) => {
+    console.log("I UPDATED THE ALERT DETAILS")
     try {
         redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "lawyer_img_url", alertDetails.lawyer_img_url, "lawyer_name", alertDetails.lawyer_name, "lawyer_phonenumber", alertDetails.lawyer_phonenumber, "lawyer_email", alertDetails.lawyer_email, 
         "lawyer_id", alertDetails.lawyer_id, "lawyer_latitude", 
-        alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "status", 
-        alertDetails.status)
+        alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
+        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, 
+        "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
+        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", 
+        alertDetails.status, "client_state", alertDetails.client_state, "client_country", alertDetails.client_country)
     } catch (error) {
         console.log(error)
     }

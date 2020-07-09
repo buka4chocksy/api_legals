@@ -11,6 +11,7 @@ uploadToCloud = async (filename, folder = "public") => {
         var result = await   cloudinary.uploader.upload(filename,{folder : `/lawyerpp/${cloudinaryPath}/${folder}/`, return_delete_token : true, resource_type : "auto"})
         return result;
     }catch(err){
+        console.log("ERRORR",err)
         return null;
     }
 };
@@ -18,7 +19,8 @@ uploadToCloud = async (filename, folder = "public") => {
 
 
 deleteFromCloud = function (fileId) {
-    return cloudinary.uploader.destroy(publicID, function (result) {
+    return cloudinary.uploader.destroy(fileId, function (result) {
+        //console.log("HERE S THE ERROR", err)
         return Promise.resolve(result);
     });
 };

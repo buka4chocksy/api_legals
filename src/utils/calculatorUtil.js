@@ -1,18 +1,18 @@
-exports.getNearbyLawyers = (distance, public_id) => {
+exports.getNearbyLawyers = (distance, lawyer_id) => {
     var distances = []
 
     if (distance < 2000) {
-        distances.push({ distance, public_id })
+        distances.push({ distance, lawyer_id })
     }
 
     return distances
 }
 
-exports.getNearbyClients = (distance, public_id) => {
+exports.getNearbyClients = (distance, client) => {
     var distances = []
 
     if (distance < 2000) {
-        distances.push({ distance, public_id })
+        distances.push({ distance, ...client })
     }
 
     return distances
@@ -22,7 +22,7 @@ exports.sortNearbyDistance = (distances) => {
     var sortResult = distances.sort((current, next) => {
         return current.distance - next.distance
     })
-    sortResult.distance = undefined
+    // sortResult.distance = undefined
     return sortResult
 }
 
