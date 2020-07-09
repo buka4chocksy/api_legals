@@ -24,8 +24,7 @@ module.exports = function () {
                         token: token,
                         first_name: activeUser.first_name,
                         last_name: activeUser.last_name,
-                        email_address: activeUser.email_address,
-                        user_type: activeUser.user_type
+                        email_address: activeUser.email_address
                     }
                     console.log('response sent to client: ', response)
                     res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
