@@ -9,24 +9,21 @@ module.exports = function () {
     router.get('/auth/google/callback',
         passport.authenticate('google-signup', { failureRedirect: '/error' }),
         (req, res) => {
-            console.log('checking google request: ', req.user)
             authService.getUserDetail(req.user.public_id).then(activeUser => {
-                generateToken(activeUser).then(token => {
-                    const response = {
-                        token: token,
-                        first_name: activeUser.first_name,
-                        last_name: activeUser.last_name,
-                        email_address: activeUser.email_address
-                    }
-                    console.log('response sent to client: ', response)
-                    res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
-                })
+                const response = {
+                    public_id: req.user.public_id,
+                    first_name: activeUser.first_name,
+                    last_name: activeUser.last_name,
+                    email_address: activeUser.email_address
+                }
+                console.log('response sent to client: ', response)
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
             })
         }
     );
 
     // Google sign-in
-    router.get('/auth/google', passport.authenticate('google-signin', { scope: ['profile', 'email'] }));
+    router.get('/auth/google/login', passport.authenticate('google-signin', { scope: ['profile', 'email'] }));
     router.get('/auth/google/callback/login',
         passport.authenticate('google-signin', { failureRedirect: '/error' }),
         (req, res) => {
@@ -40,16 +37,14 @@ module.exports = function () {
         passport.authenticate('signup', { failureRedirect: '/error' }),
         (req, res) => {
             authService.getUserDetail(req.user.public_id).then(activeUser => {
-                generateToken(activeUser).then(token => {
-                    const response = {
-                        token: token,
-                        first_name: activeUser.first_name,
-                        last_name: activeUser.last_name,
-                        email_address: activeUser.email_address
-                    }
-                    console.log('response sent to client: ', response)
-                    res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
-                })
+                const response = {
+                    public_id: req.user.public_id,
+                    first_name: activeUser.first_name,
+                    last_name: activeUser.last_name,
+                    email_address: activeUser.email_address
+                }
+                console.log('response sent to client: ', response)
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
             })
         })
 
@@ -60,7 +55,7 @@ module.exports = function () {
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
             const response = req.user;
-            console.log('Response on Login: '.response)
+            console.log('Response on Login: '.req.user)
             res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
         })
 
