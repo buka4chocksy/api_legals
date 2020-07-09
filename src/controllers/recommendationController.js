@@ -1,4 +1,4 @@
-const service = require('../services/recommendation');
+const service = require('../services/recommendationService');
 
 module.exports = function recommendationController(){
 

@@ -4,7 +4,7 @@ const jurisdictionRoutes = require('./jurisdictionRoutes');
 const lawyerRoutes = require('./lawyerRoutes');
 const lawFirmRoutes = require('./lawFirmRoutes');
 const clientRoutes = require('./clientRoutes');
-const pannicAlert = require('./pannicRoutes');
+const pannicAlert = require('./panicRoutes');
 const recommendationRoutes  = require('./recommendationRoutes');
 const nextOfKinRoutes = require('../routes/nextOfKinRoutes');
 const matter = require('./matterRoutes');
@@ -17,7 +17,7 @@ module.exports = (router) => {
     router.use('/client', clientRoutes());
     router.use('/matter', matter());
     router.use('/recommendation',recommendationRoutes());
-    router.use('/pannicalert', pannicAlert())
     router.use('/nextofkin', nextOfKinRoutes());
+    router.use('/pannic_alert', pannicAlert())
     return router;
 }

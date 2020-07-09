@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 
-const UserTokenScheam = new schema({
+const UserTokenSchema = new schema({
     user: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: 'users' },
     phone_number: { type: String },
     public_id: { type: String },
@@ -22,4 +22,4 @@ const UserTokenScheam = new schema({
 
 
 
-module.exports = mongoose.model('userToken', UserTokenScheam)
+module.exports = mongoose.model('userToken', UserTokenSchema)

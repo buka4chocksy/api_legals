@@ -6,7 +6,7 @@ const client = require('../models/client/client');
 const {generateToken,verifyToken, generateTokenSync }  = require('../utils/jwtUtils');
 const {setRequestHeader} = require('../utils/responseFormatter');
 const uuid = require('uuid').v4;
-exports.Register = (data, deviceID, res) => {
+exports.Register = (data, res) => {
     const userDetails = {
         first_name: data.first_name,
         last_name: data.last_name,
@@ -35,16 +35,19 @@ exports.Register = (data, deviceID, res) => {
                          //log error message
                         return ({ success: false, message: 'Error registering user', status: 400 })
                     }
+                    //what is this for?
                     setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
                     return ({
                         success: true,
                         message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
                     })
                 }).catch(err => { 
+                    console.log("2",err)
                     return { err: err, status: 500 } 
                 })
             }
         }).catch(err => {
+            console.log("1",err)
             return { err: err, status: 500 } 
         });
     

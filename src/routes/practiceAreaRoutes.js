@@ -1,11 +1,11 @@
 const router = require('express').Router()
 const practiceAreaController = require('../controllers/practiceAreaController')
 module.exports = function(){
-    const pareaCtrl = new practiceAreaController()
-    router.post('/create', pareaCtrl.create)
-    router.put('/update', pareaCtrl.update)
-    router.get('/', pareaCtrl.getAll)
-    router.get('/single',pareaCtrl.getById);
-    router.delete('/delete',pareaCtrl.delete);
+    const practiceAreaCtrl = new practiceAreaController()
+    router.post('/add', practiceAreaCtrl.addLawyerPracticeArea)
+    router.patch('/update', practiceAreaCtrl.updateUserPracticeArea)
+    router.get('/get_all', practiceAreaCtrl.getUserPracticeArea)
+    router.get('/get_one', practiceAreaCtrl.getSingleUserPracticeArea);
+    router.delete('/delete', practiceAreaCtrl.deleteUserPracticeArea);
     return router;
 }
