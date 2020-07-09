@@ -4,7 +4,7 @@ const authService = require('../services/authService');
 
 module.exports = function () {
     // google auth
-    router.get('/auth/google', passport.authenticate('google', { scope: ['profile'] }));
+    router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
     router.get('/auth/google/callback',
         passport.authenticate('google', { failureRedirect: '/error' }),
         (req, res) => {
