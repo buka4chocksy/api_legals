@@ -11,6 +11,10 @@ const schema = Joi.object().keys({
     password: [Joi.string().max(50).optional(), Joi.allow(null)],
 })
 
+const PhoneNumberSchema = Joi.object().keys({
+    phone_number : Joi.string().required()
+})
+
 module.exports = {
-    schema
+    schema, PhoneNumberSchema
 }

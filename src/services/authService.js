@@ -1,88 +1,65 @@
 const model = require('../models/auth/users');
 const bcrypt = require('bcryptjs')
-const mongoose = require('mongoose');
 const mailer = require('../middlewares/mailer');
-const secret = process.env.Secret
 const userToken = require('../models/auth/userToken');
 const client = require('../models/client/client');
-const jwt = require('jsonwebtoken');
-
-exports.Register = (data, deviceID, token) => {
-    const hash = data.password ? bcrypt.hashSync(data.password, 10) : undefined;
-    const gen = Math.floor(1000 + Math.random() * 9000);
-    const check = token;
+const {generateToken,verifyToken, generateTokenSync }  = require('../utils/jwtUtils');
+const {setRequestHeader} = require('../utils/responseFormatter');
+const uuid = require('uuid').v4;
+exports.Register = (data, deviceID, res) => {
     const userDetails = {
         first_name: data.first_name,
         last_name: data.last_name,
         email_address: data.email_address,
         phone_number: data.phone_number,
-        status_code: gen,
-        password: hash,
-        public_id: mongoose.Types.ObjectId(),
+        password: data.password,
     }
-    if (check) {
-        return verifyToken(token).then(decode => {
-            return model.findOneAndUpdate({ public_id: decode.publicId }, { phone_number: data.phone_number }).then(updated => {
-                if (!updated) {
-                    throw new Error('Error updating this user!!!');
-                }
-                return ({ decode, updated })
-            })
-        })
-            .catch(err => ({ success: false, message: err.message, status: 401 }))
-            .then(({ decode, updated }) => {
-                return DBupdateToken(decode.publicId, token, deviceID);
-            })
-            .catch(err => reject({ err: err, status: 500 }))
-            .then((tokenUpdated = {}) => {
-                if (tokenUpdated.success) {
-                    return { success: true, message: 'User updated successfully', status: 200 };
-                } else {
-                    return { success: true, message: 'Could not update token', status: 404 };
-                }
-            })
-    } else {
-        return model.findOne({ email_address: userDetails.email_address }).then(found => {
+        return model.findOne({ email_address: userDetails.email_address })
+        .then(found => {
             if (found) {
+                setRequestHeader(res,found.public_id,"POST", `/auth/${found.public_id}`)
                 if (found.status == false) {
+                    //set the response header to the next place to continue
                     return ({
                         success: true,
-                        message: 'please complete your signup process',
-                        status: 200
+                        message: 'complete signup process',
+                        status: 200,
+                        data : found.public_id
                     })
                 } else {
-                    return ({ success: false, message: 'User already exits please proceed to sign in !!!', status: 404 })
+                    return ({ success: false, message: 'User already exits, try authenticating to continue', status: 409  })
                 }
             } else {
                 return model.create(userDetails).then(created => {
                     if (!created) {
-                        return ({ success: false, message: 'Error registering user !!', status: 400 })
+                         //log error message
+                        return ({ success: false, message: 'Error registering user', status: 400 })
                     }
-                    const user_id = created.public_id;
-                    return getUserDetail(user_id).then(user => { // Q starts
-                        return generateToken(user);
+                    setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
+                    return ({
+                        success: true,
+                        message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
                     })
-                        .then(token => {
-                            return DBupdateToken(user_id, token, deviceID)
-                        })
-                        .catch(err => { return { err: err, status: 500 } }) // Q Ends
-                        .then(tokenUpdated => {
-                            if (tokenUpdated) {
-                                return ({
-                                    success: true, token: tokenUpdated.token,
-                                    message: 'Signup almost complete, please choose part ', status: 200
-                                })
-                            } else {
-                                return ({
-                                    success: true,
-                                    message: 'could not update token ', status: 404
-                                })
-                            }
-                        }).catch(err => { return { err: err, status: 500 } })
-                }).catch(err => { return { err: err, status: 500 } })
+                }).catch(err => { 
+                    return { err: err, status: 500 } 
+                })
             }
-        }).catch(err => { return { err: err, status: 500 } }); // Q
-    }
+        }).catch(err => {
+            return { err: err, status: 500 } 
+        });
+    
+}
+
+exports.updatePhonenumberForOAuthRegistration = (publicId, phonenumber) => {
+    return  model.findOneAndUpdate({ public_id: publicId }, { phone_number: phonenumber })
+    .then(updated => {
+        if (!updated) {
+            // throw new Error('Error updating this user');
+            //create logger here
+            return { success: false, message: 'current user not found', status: 404 }
+        }
+        return {success: false, message: 'phone number updated', status: 200, data : publicId}
+    })
 }
 
 //user verification 
@@ -113,14 +90,14 @@ exports.verifyUser = (email, option) => {
                                                 generateToken(activeUser).then(token => {
                                                     resolve({
                                                         success: true, data: { activeUser, token: token },
-                                                        message: 'authentication successfull !!!'
+                                                        message: 'authentication successfull '
                                                     })
                                                 }).catch(err => reject(err))
                                             }).catch(err => reject(err))
                                         } else {
                                             resolve({
                                                 success: false,
-                                                message: "Error verifying client !!!"
+                                                message: "Error verifying client "
                                             });
                                         }
                                     }).catch(err => reject(err))
@@ -128,7 +105,7 @@ exports.verifyUser = (email, option) => {
                                 } else {
                                     resolve({
                                         success: false,
-                                        message: "account verification failed !!!"
+                                        message: "account verification failed "
                                     });
                                 }
                             })
@@ -147,12 +124,15 @@ exports.verifyUser = (email, option) => {
     });
 };
 
-exports.acceptTerms = (data, id) => {
+exports.acceptTerms = (data, id, ipaddress) => {
     return new Promise((resolve, reject) => {
         if (data.accept == 'accept') {
             const usertype = data.user_type;
-            model.findOneAndUpdate({ public_id: id }, { status: true, user_type: usertype }).exec((err, updated) => {
+            const dataForUpdate = { status: true, user_type: usertype }
+            usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
+            model.findOneAndUpdate({ public_id: id,is_complete : false, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
                 if (err) reject({ err: err, status: 500 });
+<<<<<<< HEAD
                 if (updated) {
                     if (data.user_type.toLowerCase() === 'client') {
                         model.findOne({ public_id: id }).then(user => {
@@ -171,16 +151,40 @@ exports.acceptTerms = (data, id) => {
                                             resolve({
                                                 success: true, data: { activeUser, token: token },
                                                 message: 'authentication successfull !!!',
+=======
+                if (updatedUser) {
+                    let jwtTokenDetails = {
+                        email_address: updatedUser.email_address,
+                        phone_number: updatedUser.phone_number,
+                        public_id: updatedUser.public_id,
+                        user_type: updatedUser.user_type,
+                    }
+                    let userDetails = {
+                        ...jwtTokenDetails,
+                        first_name: updatedUser.first_name,
+                        last_name: updatedUser.last_name
+                    }
+                    if (data.user_type === 'client' || data.user_type === 'student') {
+                            client.create(userDetails).then(createdUser => {
+                                if (createdUser) {
+                                    //remove generate tokena and use the function that generates authentication response
+                                    generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
+                                         resolve({
+                                            success: true, 
+                                            data: { userDetails ,authDetails : result.data },
+                                                message: 'registration complete',
+>>>>>>> 659636ab2a1fea6bc404f95a624f476cd04d192f
                                                 status: 200
-                                            })
-                                        }).catch(err => reject({ err: err, status: 500 }))
-                                    }).catch(err => reject({ err: err, status: 500 }))
+                                        })
+                                    }).catch(error => {
+                                        //add logger here
+                                    }) 
                                 } else {
                                     resolve({ success: false, message: 'Error creating user', status: 401 })
                                 }
                             }).catch(err => reject({ err: err, status: 500 }))
-                        }).catch(err => reject({ err: err, status: 500 }))
                     } else {
+<<<<<<< HEAD
                         getUserDetail(id).then(activeUser => {
                             generateToken(activeUser).then(token => {
                                 resolve({
@@ -190,56 +194,49 @@ exports.acceptTerms = (data, id) => {
                                 })
                             }).catch(err => reject({ err: err, status: 500 }))
                         }).catch(err => reject({ err: err, status: 500 }))
+=======
+                        resolve({success : true, status : 201, data : updatedUser.public_id});
+>>>>>>> 659636ab2a1fea6bc404f95a624f476cd04d192f
                     }
                 } else {
-                    resolve({ success: false, message: 'Error updating user policy!!!', status: 401 })
+                    resolve({ success: false, message: 'could not accept terms. make sure you have added a valid phone number or you have already accepted our tems of service', status: 404 })
                 }
             })
         } else {
-            resolve({ success: false, message: 'Terms and policy declined !!!', status: 401 })
+            resolve({ success: false, message: 'Terms and policy declined ', status: 401 })
         }
     })
 }
 
-exports.userLogin = (email_address, password, deviceID) => {
+exports.userLogin = (email_address, password, deviceID, ipaddress) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ email_address: email_address }, { _id: 0, __v: 0, }).then(user => {
-            if (user) {
-
-                if (user.status !== true) {
-                    resolve({
-                        success: false,
-                        message: 'Sorry you have not accepted the terms and condition!!!',
-                        status: 401
-                    })
-
-                } else {
-                    const comparePassword = bcrypt.compareSync(password, user.password)
-                    if (comparePassword) {
-                        getUserDetail(user.public_id).then(activeUser => {
-                            generateToken(activeUser).then(token => {
-                                DBupdateToken(user.public_id, token, deviceID).then(updated => {
-                                    if (updated) {
-                                        resolve({
-                                            success: true, data: { activeUser, token: token },
-                                            message: 'authentication successfull !!!',
-                                            status: 200
-                                        })
-                                    } else {
-                                        resolve({ success: false, message: "Error encountered while logging in !!!" })
-                                    }
-                                }).catch(err => reject({ err: err, status: 500 }))
-
-                            }).catch(err => reject({ err: err, status: 500 }))
-                        }).catch(err => reject({ err: err, status: 500 }))
+        model.findOne({ email_address: email_address }, { __v: 0, }).then(user => {
+           if(!user) resolve({ success: false, message: 'user does not exist', status: 404 })
+           else if(user && !user.status)resolve({ success: false,message: 'Sorry you have not accepted the terms and condition',status: 401})
+            else {
+                    const validPassword = user.comparePassword(password);
+                    if (validPassword) {
+                        let jwtTokenDetails = {
+                            email_address : email_address,
+                            phone_number : user.phone_number,
+                            public_id : user.public_id,
+                            user_type: user.user_type,
+                        }
+                        let userDetails = {
+                            ...jwtTokenDetails, 
+                            first_name: user.first_name,
+                            last_name: user.last_name,     
+                            image_url: user.image_url
+                        }
+                                generateUserAuthenticationResponse(jwtTokenDetails, user._id, ipaddress, true).then(result => {
+                                     resolve({success: true,  data: { userDetails ,authDetails : result.data }, message: 'authentication successful',status: 200})
+                                }).catch(error => {
+                                    //log error here with logger
+                                })                        
                     } else {
                         resolve({ success: false, message: 'incorrect email or password ', status: 400 })
                     }
                 }
-
-            } else {
-                resolve({ success: false, message: 'user does not exist !!!', status: 404 })
-            }
         }).catch(err => {
             reject({ err: err, status: 500 })
         })
@@ -258,16 +255,15 @@ exports.sendPasswordChangeToken = (data) => {
                         mailer.forgortPasswordMailer(data.email_address, gen, function (err, sent) {
                             if (err) reject({ err: err, status: 500 })
                             if (sent) {
-                                resolve({ success: true, message: 'proceed to verifying the token !!!', status: 200 })
+                                resolve({ success: true, message: 'proceed to verifying the token ', status: 200 })
                             } else {
-                                resolve({ success: false, message: 'Error verifying your email!!!', status: 400 })
+                                resolve({ success: false, message: 'Error verifying your email', status: 400 })
                             }
                         })
                     }
                 })
             } else {
-                resolve({ success: false, message: 'user does not exists !!!', status: 404 })
-
+                resolve({ success: false, message: 'user does not exists ', status: 404 })
             }
         })
     })
@@ -292,10 +288,10 @@ exports.changePassword = (id, data) => {
                             }
                         }).catch(err => reject({ err: err, status: 500 }))
                 } else {
-                    resolve({ success: false, message: 'Invalid password inserted !!!', status: 400 })
+                    resolve({ success: false, message: 'Invalid password inserted ', status: 400 })
                 }
             } else {
-                resolve({ success: false, message: 'user does not exists !!!', status: 404 })
+                resolve({ success: false, message: 'user does not exists ', status: 404 })
             }
         }).catch(err => reject({ err: err, status: 500 }));
     })
@@ -311,43 +307,48 @@ exports.ChangeforgotPassword = (data) => {
                 model.findOneAndUpdate({ email_address: userEmail }, { password: newpassword }).exec((err, updated) => {
                     if (err) reject({ err: err, status: 500 })
                     if (updated) {
-                        resolve({ success: true, message: 'user password has been changed successfully!!!', status: 200 })
+                        resolve({ success: true, message: 'user password has been changed successfully', status: 200 })
                     } else {
-                        resolve({ success: false, message: 'Error changing password !!!', status: 404 })
+                        resolve({ success: false, message: 'Error changing password ', status: 404 })
 
                     }
                 })
             } else {
-                resolve({ success: false, message: 'Invalid token inserted !!!', status: 404 })
+                resolve({ success: false, message: 'Invalid token inserted ', status: 404 })
             }
         })
     })
 }
 
 
-function DBupdateToken(id, tokenID, deviceID) {
+function DBupdateToken(id, tokenID, deviceID, ip_address) {
     return new Promise((resolve, reject) => {
             let  details = {
                 userId:id,
                 tokenID: tokenID,
-                deviceID: deviceID
+                deviceID: deviceID,
+                ip_address : ip_address
             }
         
         userToken.findOne({ $and: [{ userId: id }, { deviceID: deviceID }] }).exec((err, found) => {
             if (err) reject({ success: false, err: err, status: 500 });
             if (found) {
-                userToken.findOneAndUpdate({ deviceID: deviceID }, { tokenID: tokenID }).exec((err, updated) => {
+                userToken.findOneAndUpdate({$and:[{deviceID: deviceID,  userId:id }] }, { tokenID: tokenID }).exec((err, updated) => {
                     if (err) reject({ success: false, err: err, status: 500 });
                     if (updated) {
-                        resolve({ success: true, message: 'User token updated successfully', status: 200 })
+                        resolve({ success: true, message: 'User token updated successfully', status: 200  , data:tokenID})
                     } else {
-                        resolve({ success: false, message: 'Error updating user token !!!' })
+                        resolve({ success: false, message: 'Error updating user token ' })
                     }
                 })
             }else{
                 userToken.create(details).then(created =>{
                     if(created){
+<<<<<<< HEAD
                         resolve({ success: true, message: 'User token created  successfully', status: 200, token: tokenID })  
+=======
+                        resolve({ success: true, message: 'User token created  successfully', status: 200  , token:tokenID})  
+>>>>>>> 659636ab2a1fea6bc404f95a624f476cd04d192f
                     }else{
                         resolve({ success: false , message: 'Error creating user token', status: 400 })
                     }
@@ -384,7 +385,7 @@ exports.refreshToken = (device) => {
 }
 
 //get user details
-function getUserDetail(Id) {
+function getUserDetail(data) {
     return new Promise((resolve, reject) => {
 
         model.findOne({ public_id: Id }, { _id: 0, __v: 0 })
@@ -407,35 +408,50 @@ function getUserDetail(Id) {
 }
 exports.getUserDetail = getUserDetail
 
-//generate token
-function generateToken(data = {}) {
-    return new Promise((resolve, reject) => {
-        jwt.sign({ ...data }, secret, { expiresIn: "56 mins" }, function (err, token) {
-            if (err) {
-                reject(err);
-            } else {
-                resolve(token);
-            }
-        });
-    });
+
+
+const generateUserAuthenticationResponse = (userData, userId, ipaddress,  islogin = true) => {
+    let accessToken  = generateTokenSync(userData);
+    var expiryTime = new Date();
+    expiryTime = expiryTime.setUTCDate(expiryTime.getDate() + 7);
+    
+    var dataForSave = {
+        user: userId,
+        phone_number: userData.phone_number,
+        public_id: userData.public_id,
+        access_token: accessToken,
+        expiry_time: expiryTime,
+        callback_token: uuid(),
+        ip_address : ipaddress,
+        $inc: { refresh_count: 1 }
+    };
+        // islogin && delete dataForSave["$inc"];
+
+    return addOrUpdateUserAuthenticationToken(dataForSave, userId)
 }
 
-exports.generateToken = generateToken;
-
-//verify user token
-function verifyToken(token = "") {
-    return new Promise((resolve, reject) => {
-        jwt.verify(token.replace("Bearer", ""), secret, function (
-            err,
-            decodedToken
-        ) {
-            if (err) {
-                reject({ message: 'Token has expired', status: 400 });
-            } else {
-                resolve(decodedToken);
-            }
-        });
-    });
+const addOrUpdateUserAuthenticationToken = (refreshDetail, userId) => {
+    return new Promise((resolve, reject) => 
+         userToken.findOneAndUpdate({ user: userId }, refreshDetail, {
+        select: {
+            user: 0,
+            refresh_count: 0, __v: 0,
+            is_browser: 0,
+            device_id: 0,
+            soft_delete : 0
+        }, new: true, upsert: true
+    }).exec((err, result) => {
+        if (err) { resolve({ status: 401, success: false, data: null, message: 'Could not authenticate user' }); }
+        else {
+            resolve({
+                success: true, data: {
+                    ...result.toObject()
+                }, message: 'Authentication successful'
+            });
+        }
+    }))
 }
 
-exports.verifyToken = verifyToken
+
+
+

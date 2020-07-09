@@ -7,7 +7,12 @@ const lawyerSchema = new schema({
     phone_number: { type: String, required: true },
     image_url: { type: String, default: '' },
     image_id: { type: String, default: '' },  
+<<<<<<< HEAD
     user_type: { type: String, required: true, lowercase: true },
+=======
+    softDelete:{type:Boolean , default: false },
+    user_type: { type: String, default : 'lawyer' },
+>>>>>>> 659636ab2a1fea6bc404f95a624f476cd04d192f
     public_id: { type: mongoose.SchemaTypes.ObjectId },
     enrollment_number: { type: String, default: '' },
     practice_area: [{
@@ -37,7 +42,6 @@ const lawyerSchema = new schema({
     }],
     country: { type: String, default: '' },
     state_of_origin: { type: String, default: '' },
-    softDelete:{type:Boolean , default: false },
     gender: { type: String, default: '' }
 
 })

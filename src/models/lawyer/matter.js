@@ -6,14 +6,17 @@ var matterSchema = new Schema({
         publicId: { type: mongoose.SchemaTypes.ObjectId }
     },
     clientid: { type: mongoose.SchemaTypes.ObjectId, ref: "client", autopopulate: true, index: true },
-    first_name: { type: String, lowercase: true },
-    last_name: { type: String, lowercase: true },
+    client_name: { type: String, lowercase: true },
     deadline: {
         type: Date, required: [true, "Time limit not provided"]
         // validate: { msg: "time limit can't be less than today", validator: validateReportDate }
     },
-    file: [{
-        url: { type: String, default: '' },
+    Imagefile: [{
+        imageUrl: { type: String, default: '' },
+        created_on: { type: Date, default: new Date() },
+    }],
+    audiofile: [{
+        audioUrl: { type: String, default: '' },
         created_on: { type: Date, default: new Date() },
     }],
     // fileId: { type: String, default: '' },
@@ -21,8 +24,8 @@ var matterSchema = new Schema({
     matter_description: { type: String, required: [true, "case instruction  not available"], lowercase: true },
     dateadded: { type: Date, required: [true, "date case was added not available"], default: new Date() },
     status: { type: mongoose.SchemaTypes.Boolean, default: null },
-    country: { type: String },
-    state: { type: String },
+    country:  { type: mongoose.SchemaTypes.ObjectId, ref: "jurisdiction", autopopulate: true },
+    state: { type: mongoose.SchemaTypes.ObjectId, ref: "jurisdiction", autopopulate: true },
     practiceArea: [{
         practiceArea_id:    { type: mongoose.SchemaTypes.ObjectId, ref: "practiceArea" }
     }],
