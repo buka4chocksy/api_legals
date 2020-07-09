@@ -5,8 +5,11 @@ const lawyerRoutes = require('./lawyerRoutes');
 const lawFirmRoutes = require('./lawFirmRoutes');
 const clientRoutes = require('./clientRoutes');
 const pannicAlert = require('./panicRoutes');
+const bioRoute = require('./bioRoutes')
 const recommendationRoutes  = require('./recommendationRoutes');
 const matter = require('./matterRoutes');
+const experienceRoute = require('./experienceRoutes')
+const educationRoute = require('./educationRoutes')
 module.exports = (router) => {
     router.use('/auth', authRoutes());
     router.use('/practice_area', practiceAreaRoutes());
@@ -17,5 +20,8 @@ module.exports = (router) => {
     router.use('/matter', matter());
     router.use('/recommendation',recommendationRoutes());
     router.use('/pannic_alert', pannicAlert())
+    router.use('/bio', bioRoute())
+    router.use('/experience', experienceRoute())
+    router.use('/education', educationRoute())
     return router;
 }
