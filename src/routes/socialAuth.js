@@ -18,17 +18,18 @@ module.exports = function () {
         passport.authenticate('signup', { failureRedirect: '/error' }),
         (req, res) => {
             authService.getUserDetail(req.user.public_id).then(activeUser => {
-                authService.generateToken(activeUser).then(token => {
-                    const response = {
-                        token: token,
-                        first_name: activeUser.first_name,
-                        last_name: activeUser.last_name,
-                        email_address: activeUser.email_address,
-                        user_type: activeUser.user_type
-                    }
-                    console.log('response sent to client: ', response)
-                    res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
-                })
+                console.log({activeUser})
+                // authService.generateToken(activeUser).then(token => {
+                //     const response = {
+                //         token: token,
+                //         first_name: activeUser.first_name,
+                //         last_name: activeUser.last_name,
+                //         email_address: activeUser.email_address,
+                //         user_type: activeUser.user_type
+                //     }
+                //     console.log('response sent to client: ', response)
+                //     res.redirect('lawyerpp://signup?user=' + JSON.stringify(response))
+                // })
             })
         })
 
