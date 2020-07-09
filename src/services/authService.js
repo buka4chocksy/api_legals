@@ -6,7 +6,7 @@ const client = require('../models/client/client');
 const {generateToken,verifyToken, generateTokenSync }  = require('../utils/jwtUtils');
 const {setRequestHeader} = require('../utils/responseFormatter');
 const uuid = require('uuid').v4;
-exports.Register = (data, deviceID, res) => {
+exports.Register = (data, res) => {
     const userDetails = {
         first_name: data.first_name,
         last_name: data.last_name,
@@ -17,8 +17,8 @@ exports.Register = (data, deviceID, res) => {
         return model.findOne({ email_address: userDetails.email_address })
         .then(found => {
             if (found) {
-                setRequestHeader(res,found.public_id,"POST", `/auth/${found.public_id}`)
-                if (found.status == false) {
+                GetNextProcessForIncompleteRegistration(found, res)
+                if (found.is_complete == false) {
                     //set the response header to the next place to continue
                     return ({
                         success: true,
@@ -35,19 +35,31 @@ exports.Register = (data, deviceID, res) => {
                          //log error message
                         return ({ success: false, message: 'Error registering user', status: 400 })
                     }
+                    //what is this for?
                     setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
                     return ({
                         success: true,
                         message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
                     })
                 }).catch(err => { 
+                    console.log("2",err)
                     return { err: err, status: 500 } 
                 })
             }
         }).catch(err => {
+            console.log("1",err)
             return { err: err, status: 500 } 
         });
-    
+}
+
+const GetNextProcessForIncompleteRegistration = (userdetails, res) => {
+    if(!userdetails.phone_number){
+        //complete oauth registration by providing phone number
+        setRequestHeader(res,userdetails.public_id,"POST", `/auth/oauth/addphonenumber/${userdetails.public_id}`, "ADD_PHONE_NUMBER")
+    }
+    else {
+        setRequestHeader(res,userdetails.public_id,"POST", `/auth/${userdetails.public_id}`, "COMPLETE_REGISTRATION")
+    }
 }
 
 exports.updatePhonenumberForOAuthRegistration = (publicId, phonenumber) => {
@@ -175,11 +187,15 @@ exports.acceptTerms = (data, id, ipaddress) => {
     })
 }
 
-exports.userLogin = (email_address, password, deviceID, ipaddress) => {
+exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
     return new Promise((resolve, reject) => {
         model.findOne({ email_address: email_address }, { __v: 0, }).then(user => {
+            console.log("errro check", user)
            if(!user) resolve({ success: false, message: 'user does not exist', status: 404 })
-           else if(user && !user.status)resolve({ success: false,message: 'Sorry you have not accepted the terms and condition',status: 401})
+           else if(user && !user.is_complete){
+            GetNextProcessForIncompleteRegistration(user, res);
+               resolve({ success: false,message: 'Sorry you have not accepted the terms and condition',status: 401})
+            }
             else {
                     const validPassword = user.comparePassword(password);
                     if (validPassword) {
@@ -205,6 +221,7 @@ exports.userLogin = (email_address, password, deviceID, ipaddress) => {
                     }
                 }
         }).catch(err => {
+            console.log("error check", err);
             reject({ err: err, status: 500 })
         })
     })

@@ -1,4 +1,4 @@
-const service = require('../services/lawFirmServices');
+const service = require('../services/lawFirmService');
 const cloudinary = require('../middlewares/cloudinary')
 module.exports = function lawFirmController() {
 
