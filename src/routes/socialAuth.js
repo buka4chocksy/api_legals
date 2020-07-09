@@ -1,6 +1,7 @@
 const router = require('express').Router()
 const passport = require('passport');
 const authService = require('../services/authService');
+const { generateToken } = require('../utils/jwtUtils');
 
 module.exports = function () {
     // google auth
@@ -18,7 +19,7 @@ module.exports = function () {
         passport.authenticate('signup', { failureRedirect: '/error' }),
         (req, res) => {
             authService.getUserDetail(req.user.public_id).then(activeUser => {
-                authService.generateToken(activeUser).then(token => {
+                generateToken(activeUser).then(token => {
                     const response = {
                         token: token,
                         first_name: activeUser.first_name,
