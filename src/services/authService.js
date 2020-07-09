@@ -188,11 +188,10 @@ exports.acceptTerms = (data, id, ipaddress) => {
 exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
     return new Promise((resolve, reject) => {
         model.findOne({ email_address: email_address }, { __v: 0, }).then(user => {
-            console.log("errro check", user)
            if(!user) resolve({ success: false, message: 'user does not exist', status: 404 })
            else if(user && !user.is_complete){
             GetNextProcessForIncompleteRegistration(user, res);
-               resolve({ success: false,message: 'Sorry you have not accepted the terms and condition',status: 401})
+               resolve({ success: false,message: 'Sorry you have not accepted the terms and condition',status: 401, data : user.public_id})
             }
             else {
                     const validPassword = user.comparePassword(password);
