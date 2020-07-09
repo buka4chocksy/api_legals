@@ -3,7 +3,7 @@ const authController = require('../controllers/authController')
 const middleware = require('../middlewares/authMiddleware');
 const multer = require('../middlewares/multer');
 const userValidator = require('../validators/userValidator');
-const validatorHandler = require('../middlewares/errorHandlerMiddleware');
+const validatorHandler = require('../middlewares/errorHandlerMiddleware'); 
 
 module.exports = function () {
     const authCtrl = new authController()

@@ -27,7 +27,7 @@ exports.Register = (data, res) => {
                         data : found.public_id
                     })
                 } else {
-                    return ({ success: false, message: 'User already exits, try authenticating to continue', status: 409  })
+                    return ({ success: false, message: 'User already exits, try authenticating to continue', status: 409, data : found.public_id  })
                 }
             } else {
                 return model.create(userDetails).then(created => {
@@ -42,12 +42,10 @@ exports.Register = (data, res) => {
                         message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
                     })
                 }).catch(err => { 
-                    console.log("2",err)
                     return { err: err, status: 500 } 
                 })
             }
         }).catch(err => {
-            console.log("1",err)
             return { err: err, status: 500 } 
         });
 }
