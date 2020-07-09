@@ -4,7 +4,7 @@ const middleware = require('../middlewares/authMiddleware');
 const multer = require('../middlewares/multer');
 module.exports = function () {
     const nextOfKinCtrl = new nextOfKinController()
-    router.post('/create', middleware.authenticate, nextOfKinCtrl.create);
+    router.post('/:publicid', nextOfKinCtrl.create);
     router.get('/',middleware.authenticate , nextOfKinCtrl.getAllNextofKinDetail  )
     router.put('/edit', middleware.authenticate , nextOfKinCtrl.update)
     router.get('/single',middleware.authenticate ,nextOfKinCtrl.getSingleNextOfKin )

@@ -2,7 +2,7 @@ const nextOfKinService = require('../services/common/nextOfKinService');
 
 module.exports = function nextOfKinController() {
     this.create =(req, res, next)=>{
-        nextOfKinService.addNextofKinDetails(req.auth.publicId ,req.auth.Id, req.body).then(data =>{
+        nextOfKinService.addNextofKinDetails(req.params.publicid,req.body).then(data =>{
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }

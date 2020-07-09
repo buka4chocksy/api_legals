@@ -2,7 +2,7 @@ const NextOfKinSchema = require('../../models/common/nextOfKin');
 const UserSchema = require('../../models/auth/users');
 let jsonPatch = require('fast-json-patch')
 
-const addNextofKinDetails = (publicId, id, nextofKinData) => {
+const addNextofKinDetails = (publicId, nextofKinData) => {
     return new Promise((resolve, reject) => {
         const details = {
             user: id,
@@ -12,14 +12,21 @@ const addNextofKinDetails = (publicId, id, nextofKinData) => {
             email_address: nextofKinData.email_address,
             relationship: nextofKinData.relationship
         };
+        UserSchema.findOne({public_id : public_id}).exec((err, foundUser) => {
+            if(err || !foundUser)resolve({ success: true, message: "user not found", status: 404 })
+            else{
+                details.user = foundUser._id
+                NextOfKinSchema.create(details).then(created => {
+                    if (created) {
+                        resolve({ success: true, message: "Next of kin created successfully", status: 200 });
+                    } else {
+                        resolve({ success: false, message: "Error creating next of kin" });
+                    }
+                }).catch(err => reject({ err: err, status: 500 }));
 
-        NextOfKinSchema.create(details).then(created => {
-            if (created) {
-                resolve({ success: true, message: "Next of kin created successfully", status: 200 });
-            } else {
-                resolve({ success: false, message: "Error creating next of kin" });
             }
-        }).catch(err => reject({ err: err, status: 500 }));
+        })
+
     });
 };
 
