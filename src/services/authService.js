@@ -7,6 +7,7 @@ const {generateToken,verifyToken, generateTokenSync }  = require('../utils/jwtUt
 const {setRequestHeader} = require('../utils/responseFormatter');
 const uuid = require('uuid').v4;
 exports.Register = (data, res) => {
+    console.log("I GOT HERE")
     const userDetails = {
         first_name: data.first_name,
         last_name: data.last_name,

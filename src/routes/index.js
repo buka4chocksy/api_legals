@@ -11,6 +11,7 @@ const nextOfKinRoutes = require('../routes/nextOfKinRoutes');
 const matter = require('./matterRoutes');
 const experienceRoute = require('./experienceRoutes')
 const educationRoute = require('./educationRoutes')
+
 module.exports = (router) => {
     router.use('/auth', authRoutes());
     router.use('/practice_area', practiceAreaRoutes());
