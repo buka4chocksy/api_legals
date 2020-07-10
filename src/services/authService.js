@@ -36,7 +36,8 @@ exports.Register = (data, res) => {
                         return ({ success: false, message: 'Error registering user', status: 400 })
                     }
                     //what is this for?
-                    setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
+                    // setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
+                    GetNextProcessForIncompleteRegistration(created,res);
                     return ({
                         success: true,
                         message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
