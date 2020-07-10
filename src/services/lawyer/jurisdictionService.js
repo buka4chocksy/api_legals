@@ -18,7 +18,8 @@ const addlawyerJurisdiction =  (jurisdictionData, file) => {
                 user: foundUser._id,
                 public_id: foundUser.public_id,
                 jurisdiction_id: jurisdictionData.jurisdiction_id,
-                enrolment_number : jurisdictionData.enrolment_number
+                enrolment_number : jurisdictionData.enrolment_number,
+                year: jurisdictionData.year
             };
 
             if(file){
