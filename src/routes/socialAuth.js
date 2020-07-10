@@ -55,7 +55,7 @@ module.exports = function () {
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
             const response = req.user;
-            console.log('Response on Login: '.req.user)
+            console.log('Response on Linkedin Login: ',req.user)
             res.redirect('lawyerpp://login?user=' + JSON.stringify(response))
         })
 
