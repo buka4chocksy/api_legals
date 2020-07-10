@@ -3,26 +3,29 @@ const UserSchema = require('../../models/auth/users');
 let jsonPatch = require('fast-json-patch')
 
 const addNextofKinDetails = (publicId, nextofKinData) => {
+    console.log(publicId)
     return new Promise((resolve, reject) => {
         const details = {
-            user: id,
             public_id: publicId,
             full_name: nextofKinData.full_name,
             phone_number: nextofKinData.phone_number,
             email_address: nextofKinData.email_address,
             relationship: nextofKinData.relationship
         };
-        UserSchema.findOne({public_id : public_id}).exec((err, foundUser) => {
-            if(err || !foundUser)resolve({ success: true, message: "user not found", status: 404 })
-            else{
+        UserSchema.findOne({public_id : details.public_id}).exec((err, foundUser) => {
+            if(err || !foundUser){
+                resolve({ success: true, message: "user not found", status: 404 })
+            }else{
                 details.user = foundUser._id
                 NextOfKinSchema.create(details).then(created => {
                     if (created) {
-                        resolve({ success: true, message: "Next of kin created successfully", status: 200 });
+                        resolve({ success: true, message: "Next of kin created successfully", status: 200, data: created });
                     } else {
                         resolve({ success: false, message: "Error creating next of kin" });
                     }
-                }).catch(err => reject({ err: err, status: 500 }));
+                }).catch(err => {
+                    reject({ err: err, status: 500 })
+                });
 
             }
         })
@@ -31,14 +34,15 @@ const addNextofKinDetails = (publicId, nextofKinData) => {
 };
 
 
-const updateNextofKinDetails = (id,publicId , data) => {
+const updateNextofKinDetails = (id, publicId , data) => {
     return new Promise((resolve, reject) => {
         NextOfKinSchema.findOne({ _id:id , public_id: publicId }).exec((err, found) => {
             if (err) reject({ err: err, status: 500 });
             if(!found){
-                resolve({ success: true, message: 'Next of kin profile not updated',  status: 200 })
+                resolve({ success: true, message: 'Next of kin profile not updated',  status: 401 })
             }else{
-                var updateProfile =  jsonPatch.applyPatch(found.toObject(), data);
+                var updateProfile =  jsonPatch.applyOperation(found.toObject(), data);
+
                 NextOfKinSchema.findOneAndUpdate({_id:id ,public_id:publicId}, updateProfile.newDocument).exec((err , updated)=>{
                     if (err) reject({ err: err, status: 500 });
                     resolve({ success: true, message: 'Next of kin profile updated successfully', status: 200 })
@@ -51,6 +55,7 @@ const updateNextofKinDetails = (id,publicId , data) => {
 
 const deleteNextofKinDetails = (publicId , id)=>{
     return new Promise((resolve , reject)=>{
+        console.log(publicId, id)
         NextOfKinSchema.findOneAndRemove({_id:id , public_id:publicId}).exec((err , deleted)=>{
             if(err)reject({err:err , status:500});
             if(!deleted){

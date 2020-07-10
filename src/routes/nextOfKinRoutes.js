@@ -6,7 +6,7 @@ module.exports = function () {
     const nextOfKinCtrl = new nextOfKinController()
     router.post('/:publicid', nextOfKinCtrl.create);
     router.get('/',middleware.authenticate , nextOfKinCtrl.getAllNextofKinDetail  )
-    router.put('/edit', middleware.authenticate , nextOfKinCtrl.update)
+    router.patch('/edit', middleware.authenticate , nextOfKinCtrl.update)
     router.get('/single',middleware.authenticate ,nextOfKinCtrl.getSingleNextOfKin )
     router.delete('/delete',middleware.authenticate ,nextOfKinCtrl.deleteNextOfKin )
     return router;
