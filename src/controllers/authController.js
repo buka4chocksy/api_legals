@@ -34,7 +34,7 @@ module.exports = function authController() {
         const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
         console.log("check login", clientIp);
 
-        service.userLogin(req.body.email_address, req.body.password ,device, clientIp).then(data => {
+        service.userLogin(req.body.email_address, req.body.password ,device, clientIp, res).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }

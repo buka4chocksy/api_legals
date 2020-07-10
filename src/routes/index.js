@@ -7,6 +7,7 @@ const clientRoutes = require('./clientRoutes');
 const pannicAlert = require('./panicRoutes');
 const bioRoute = require('./bioRoutes')
 const recommendationRoutes  = require('./recommendationRoutes');
+const nextOfKinRoutes = require('../routes/nextOfKinRoutes');
 const matter = require('./matterRoutes');
 const experienceRoute = require('./experienceRoutes')
 const educationRoute = require('./educationRoutes')
@@ -19,6 +20,7 @@ module.exports = (router) => {
     router.use('/client', clientRoutes());
     router.use('/matter', matter());
     router.use('/recommendation',recommendationRoutes());
+    router.use('/nextofkin', nextOfKinRoutes());
     router.use('/pannic_alert', pannicAlert())
     router.use('/bio', bioRoute())
     router.use('/experience', experienceRoute())
