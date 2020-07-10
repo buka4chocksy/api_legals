@@ -22,7 +22,7 @@ exports.Register = (data, res) => {
                     //set the response header to the next place to continue
                     return ({
                         success: true,
-                        message: 'complete signup process',
+                        message: 'select your user path',
                         status: 200,
                         data : found.public_id
                     })
@@ -42,6 +42,7 @@ exports.Register = (data, res) => {
                         message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
                     })
                 }).catch(err => { 
+                    console.log("error ", err)
                     return { err: err, status: 500 } 
                 })
             }
