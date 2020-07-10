@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-
+const bcrypt = require('bcryptjs')
 const schema = mongoose.Schema;
+
 const userSchema = new schema({
     first_name: { type: String },
     last_name: { type: String },
@@ -12,6 +12,8 @@ const userSchema = new schema({
     image_id: { type: String, default: '' },
     status_code: { type: Number, default :  Math.floor(1000 + Math.random() * 9000) },
     softDelete:{type:Boolean , default: false },
+    blocked: {type:Boolean , default: false},
+    hoax_alert: {type: Number, default: 0},
     password: { type: String },
     user_type: { type: String, lowercase: true, enum:["lawyer", "client", "student"] },
     softDelete:{type:Boolean , default: false },
