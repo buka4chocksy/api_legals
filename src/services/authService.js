@@ -22,7 +22,7 @@ exports.Register = (data, res) => {
                     //set the response header to the next place to continue
                     return ({
                         success: true,
-                        message: 'complete signup process',
+                        message: 'select your user path',
                         status: 200,
                         data : found.public_id
                     })
@@ -36,12 +36,14 @@ exports.Register = (data, res) => {
                         return ({ success: false, message: 'Error registering user', status: 400 })
                     }
                     //what is this for?
-                    setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
+                    // setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
+                    GetNextProcessForIncompleteRegistration(created,res);
                     return ({
                         success: true,
                         message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
                     })
                 }).catch(err => { 
+                    console.log("error ", err)
                     return { err: err, status: 500 } 
                 })
             }
@@ -362,7 +364,7 @@ exports.refreshToken = (device) => {
 }
 
 //get user details
-function getUserDetail(data) {
+function getUserDetail(Id) {
     return new Promise((resolve, reject) => {
 
         model.findOne({ public_id: Id }, { _id: 0, __v: 0 })

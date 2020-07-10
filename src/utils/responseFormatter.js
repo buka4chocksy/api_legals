@@ -8,6 +8,7 @@ const setRequestHeader = (response, resource, operation, location, nextOperation
     response.setHeader("x-resource", resource);
     response.setHeader("x-operation", operation);
     response.setHeader("x-resouce-location", location)
+    if(nextOperation)
     response.setHeader("x-next-operation", nextOperation)
 }
 
