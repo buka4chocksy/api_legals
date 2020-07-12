@@ -1,9 +1,9 @@
 const LinkedInStrategy = require('passport-linkedin-oauth2').Strategy;
-const { linkedin } = require('../utils/config')
+const { linkedin, linkedinLogin } = require('../utils/config')
 const User = require('../models/auth/users');
 const mongoose = require('mongoose')
 
-module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken, profile, done) => {
+const LinkedinSignup = new LinkedInStrategy(linkedin, async (accessToken, refreshToken, profile, done) => {
     User.findOne({ 'oauth.oauthID': profile.id }, (err, user) => {
         if (err) console.log(err);
         if (user) {
@@ -19,7 +19,6 @@ module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken
             user.public_id = mongoose.Types.ObjectId();
             user.save().then(created => {
                 if (created) {
-                    console.log('Linkedin User created successfully!')
                     done(null, created)
                 }
             }).catch(err => {
@@ -29,3 +28,20 @@ module.exports = new LinkedInStrategy(linkedin, async (accessToken, refreshToken
     })
 }
 )
+
+const LinkedinSignin = new LinkedInStrategy(linkedinLogin, async(accessToken, refreshToken, profile, done) => {
+    User.findOne({'oauth.oauthID': profile.id}, (err, user) => {
+        console.log('reached here...', user)
+        if (err) console.log(err);
+        if(user) {
+            done(null, user)
+        } else {
+            done(null, user);
+        }
+    })
+})
+
+module.exports = {
+    LinkedinSignup,
+    LinkedinSignin
+}

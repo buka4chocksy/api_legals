@@ -1,5 +1,5 @@
 var mongoose = require('mongoose');
-const db = process.env.NODE_ENV === "production" ? process.env.lawDBURL : process.env.localDB;
+const db = process.env.NODE_ENV === "production" ? process.env.lawDBURL : process.env.lawDBURL;
 
 module.exports = function init() {
     if (db) {

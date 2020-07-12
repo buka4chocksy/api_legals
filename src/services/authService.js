@@ -364,7 +364,7 @@ exports.refreshToken = (device) => {
 }
 
 //get user details
-function getUserDetail(data) {
+function getUserDetail(Id) {
     return new Promise((resolve, reject) => {
 
         model.findOne({ public_id: Id }, { _id: 0, __v: 0 })
