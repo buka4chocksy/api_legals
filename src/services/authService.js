@@ -70,7 +70,7 @@ exports.updatePhonenumberForOAuthRegistration = (publicId, phonenumber) => {
             //create logger here
             return { success: false, message: 'current user not found', status: 404 }
         }
-        return {success: false, message: 'phone number updated', status: 200, data : publicId}
+        return {success: true, message: 'phone number updated', status: 200, data : publicId}
     })
 }
 
