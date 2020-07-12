@@ -1,5 +1,5 @@
 const authRoutes = require('./authRoutes');
-const practiceAreaRoutes = require('./practiceAreaRoutes')
+const practiceAreaRoutes = require('./lawyer/lawyerPracticeAreaRoutes')
 const jurisdictionRoutes = require('./jurisdictionRoutes');
 const lawyerRoutes = require('./lawyerRoutes');
 const lawFirmRoutes = require('./lawFirmRoutes');
@@ -11,9 +11,13 @@ const nextOfKinRoutes = require('../routes/nextOfKinRoutes');
 const matter = require('./matterRoutes');
 const experienceRoute = require('./experienceRoutes')
 const educationRoute = require('./educationRoutes')
+const commonPracticeAreaRoutes = require('./common/practiceAreaRoutes');
+const commonJurisdictionRoutes = require('./common/jurisdictionRoutes');
 module.exports = (router) => {
     router.use('/auth', authRoutes());
-    router.use('/practice_area', practiceAreaRoutes());
+    router.use("/practicearea", commonPracticeAreaRoutes());
+    router.use("/jurisdiction", commonJurisdictionRoutes());
+    router.use('/lawyer/practice_area', practiceAreaRoutes());
     router.use('/jurisdiction', jurisdictionRoutes());
     router.use('/lawyer', lawyerRoutes());
     router.use('/lawfirm', lawFirmRoutes());

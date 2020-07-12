@@ -1,4 +1,4 @@
-const service = require('../services/lawyer/jurisdictionService');
+const service = require('../services/lawyer/lawyerJurisdictionService');
 
 module.exports = function practiceAreaController(){
 

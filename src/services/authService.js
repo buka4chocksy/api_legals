@@ -10,7 +10,7 @@ exports.Register = (data, res) => {
     const userDetails = {
         first_name: data.first_name,
         last_name: data.last_name,
-        email_address: data.email_address,
+        email_address: data.email_address.toLowerCase(),
         phone_number: data.phone_number,
         password: data.password,
     }
@@ -189,7 +189,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
 
 exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ email_address: email_address }, { __v: 0, }).then(user => {
+        model.findOne({ email_address: email_address.toLowerCase() }, { __v: 0, }).then(user => {
            if(!user) resolve({ success: false, message: 'user does not exist', status: 404 })
            else if(user && !user.is_complete){
             GetNextProcessForIncompleteRegistration(user, res);
