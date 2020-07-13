@@ -143,7 +143,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
             const usertype = data.user_type;
             const dataForUpdate = { status: true, user_type: usertype, is_complete : true }
             // usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
-            model.findOneAndUpdate({ public_id: id,is_complete : false, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
+            model.findOneAndUpdate({ public_id: id, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updatedUser) {
                     let jwtTokenDetails = {
@@ -157,7 +157,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
                         first_name: updatedUser.first_name,
                         last_name: updatedUser.last_name
                     }
-                    if(updatedUser.is_complete)
+
                     if (data.user_type === 'client' || data.user_type === 'student') {
                             client.create(userDetails).then(createdUser => {
                                 if (createdUser) {
