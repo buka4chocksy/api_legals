@@ -3,9 +3,9 @@ const practiceAreaController = require('../../controllers/lawyer/lawyerPracticeA
 module.exports = function(){
     const practiceAreaCtrl = new practiceAreaController()
     router.get('/', practiceAreaCtrl.getUserPracticeArea)
-    router.post('/add', practiceAreaCtrl.addLawyerPracticeArea)
-    router.patch('/update', practiceAreaCtrl.updateUserPracticeArea)
-    router.get('/get_one', practiceAreaCtrl.getSingleUserPracticeArea);
-    router.delete('/delete', practiceAreaCtrl.deleteUserPracticeArea);
+    router.post('/', practiceAreaCtrl.addLawyerPracticeArea)
+    router.patch('/id', practiceAreaCtrl.updateUserPracticeArea)
+    router.get('/:id', practiceAreaCtrl.getSingleUserPracticeArea);
+    router.delete('/:id', practiceAreaCtrl.deleteUserPracticeArea);
     return router;
 }
