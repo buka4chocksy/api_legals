@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 const panicHistory = new schema({
     alert_id: {type:String},
-    alert_type: {type:String},
+    alert_type: {type:String, enum: ['arrest', 'crime', 'medical emergency', 'accident']},
     panic_initiation_location: {type: String},
     panic_initiation_point: {type: Object},
     panic_ending_location: {type: String},

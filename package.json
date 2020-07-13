@@ -22,7 +22,7 @@
   },
   "homepage": "https://gitlab.com/genesys_development/Node_Api_Boilerplate#readme",
   "dependencies": {
-    "@hapi/joi": "^15.1.1",
+    "@hapi/joi": "^17.1.1",
     "africastalking": "^0.4.5",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
