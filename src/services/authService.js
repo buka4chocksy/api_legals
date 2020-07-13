@@ -159,23 +159,18 @@ exports.acceptTerms = (data, id, ipaddress) => {
                     }
 
                     if (data.user_type === 'client' || data.user_type === 'student') {
-                            client.create(userDetails).then(createdUser => {
-                                if (createdUser) {
-                                    //remove generate tokena and use the function that generates authentication response
-                                    generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
-                                         resolve({
-                                            success: true, 
-                                            data: { userDetails ,authDetails : result.data },
-                                                message: 'registration complete',
-                                                status: 200
-                                        })
-                                    }).catch(error => {
-                                        //add logger here
-                                    }) 
-                                } else {
-                                    resolve({ success: false, message: 'Error creating user', status: 401 })
-                                }
-                            }).catch(err => reject({ err: err, status: 500 }))
+                        createClientUser(userDetails).then(createduser => {
+                            generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
+                                resolve({
+                                   success: true, 
+                                   data: { userDetails ,authDetails : result.data },
+                                       message: 'registration complete',
+                                       status: 200
+                               })
+                           }).catch(error => {
+                               //add logger here
+                           }) 
+                        })                          
                     } else {
                         generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
                             resolve({
@@ -197,6 +192,25 @@ exports.acceptTerms = (data, id, ipaddress) => {
             resolve({ success: false, message: 'Terms and policy declined ', status: 401 })
         }
     })
+}
+
+const createClientUser = (userDetails) => {
+        return new Promise((resolve, reject) => {
+            client.create(userDetails).then(createdUser => {
+                resolve(createdUser);
+
+                    generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
+                         resolve({
+                            success: true, 
+                            data: { userDetails ,authDetails : result.data },
+                                message: 'registration complete',
+                                status: 200
+                        })
+                    }).catch(error => {
+                        //add logger here
+                    }) 
+            }).catch(err => reject({ err: err, status: 500 }))
+        })
 }
 
 exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
@@ -444,7 +458,7 @@ const addOrUpdateUserAuthenticationToken = (refreshDetail, userId) => {
 }
 
 exports.generateUserAuthenticationResponse = generateUserAuthenticationResponse;
-
+exports.createClientUser = createClientUser;
 
 
 
