@@ -1,5 +1,5 @@
 const education = require('../../models/lawyer/education');
-const { applyOperation } = require('fast-json-patch');
+const { applyOperation, applyPatch } = require('fast-json-patch');
 
 exports.createEducation = (publicId, data) => {
     return new Promise((resolve, reject) => {
@@ -26,15 +26,15 @@ exports.updateEducation = (publicId, educationId, patchUpdateData) => {
         education.findOne({ public_id: publicId, _id : educationId }).exec((err, foundEducation) => {
             if (err || !foundEducation) {
                 resolve({ success: false, message: 'Education not found', status: 404 });
-            }
-
-            let appliedPatch = applyOperation(foundEducation.toObject(), patchUpdateData);
-            education.findOneAndUpdate({ public_id: data.public_id }, appliedPatch.newDocument, { new: true }).exec((err, updatedData) => {
+            }else{
+                let appliedPatch = applyPatch(foundEducation.toObject(), patchUpdateData);
+            education.findOneAndUpdate({ public_id: publicId }, appliedPatch.newDocument, { new: true }).exec((err, updatedData) => {
                 if (err || !updatedData) {
-                    resolve({ success: false, message: 'could not update Education', status: 404, data: null });
+                    resolve({ success: false, message: 'could not update Education', status: 404, data: updatedData });
                 }
                 resolve({ success: true, message: 'Education updated', status: 200, data: updatedData });
             });
+        }
         });
     });
 };

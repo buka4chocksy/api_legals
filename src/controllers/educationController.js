@@ -11,7 +11,7 @@ module.exports =  function bioController(){
     }
 
     this.updateEducation = (req , res)=>{
-        service.updateEducation(req.auth.publicId,req.publicId.id, req.body).then(data =>{
+        service.updateEducation(req.auth.publicId,req.params.id, req.body).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
