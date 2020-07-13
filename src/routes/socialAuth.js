@@ -25,7 +25,7 @@ module.exports = function () {
     router.get('/auth/google/callback/login',
         passport.authenticate('google-signin', { failureRedirect: '/error' }),
         (req, res) => {
-            generateOAuthLoginDetails(req.user, res);
+            generateOAuthLoginDetails(req.user,req, res);
         });
 
     // Linkedin sign-up
@@ -51,14 +51,14 @@ module.exports = function () {
     router.get('/auth/linkedin/callback/login',
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
-            generateOAuthLoginDetails(req.user, res);
+            generateOAuthLoginDetails(req.user,req, res);
             res.redirect('lawyerpp://login?user=' + JSON.stringify(response));
         });
 
 
 
-    const generateOAuthLoginDetails = (userDbDetails, response) => {
-        const clientIp = req.connection.remoteAddress.includes("::") ? `[${req.connection.remoteAddress}]` : req.connection.remoteAddress;
+    const generateOAuthLoginDetails = (userDbDetails,request, response) => {
+        const clientIp = request.connection.remoteAddress.includes("::") ? `[${request.connection.remoteAddress}]` : request.connection.remoteAddress;
         let { email_address, phone_number, public_id, user_type, first_name, last_name, image_url, id } = userDbDetails;
         let jwtTokenDetails = {
             email_address: email_address,
