@@ -21,12 +21,25 @@ exports.createEducation = (publicId, data) => {
     });
 };
 
-exports.updateEducation = (publicId, educationId, patchUpdateData) => {
+exports.updateEducation = (publicId, educationId, patchUpdateData = []) => {
     return new Promise((resolve, reject) => {
         education.findOne({ public_id: publicId, _id : educationId }).exec((err, foundEducation) => {
             if (err || !foundEducation) {
                 resolve({ success: false, message: 'Education not found', status: 404 });
             }else{
+            patchUpdateData = patchUpdateData.map(x=> {
+                    if(x.hasOwnProperty('to')){
+                        x.start_year = x["to"];
+                        delete x["to"];
+                    }
+                    if(x.hasOwnProperty('from')){
+                        x.start_year = x["from"];
+                        delete x["from"]
+                    }
+
+                    return x;
+                })
+                console.log("patch data", patchUpdateData);
                 let appliedPatch = applyPatch(foundEducation.toObject(), patchUpdateData);
             education.findOneAndUpdate({ public_id: publicId }, appliedPatch.newDocument, { new: true }).exec((err, updatedData) => {
                 if (err || !updatedData) {
