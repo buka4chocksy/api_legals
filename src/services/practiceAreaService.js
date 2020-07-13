@@ -5,12 +5,12 @@ const createPracticeArea = (data) => {
     return new Promise((resolve, reject) => {
         model.findOne({ name: data.name }).then(exists => {
             if (exists) {
-                resolve({ success: false, message: 'pracitce area already exists', status:400 })
+                resolve({ success: false, message: 'pracitce area already exists', status:409 })
             } else {
                 const detail = { name: data.name }
                 model.create(detail).then(created => {
                     if (created) {
-                        resolve({ success: true, message: 'practic earea created successfully' ,status:201})
+                        resolve({ success: true, message: 'practice area created successfully' ,status:201})
                     } else {
                         resolve({ success: false, message: 'could not create practic earea' , status:400 })
                     }

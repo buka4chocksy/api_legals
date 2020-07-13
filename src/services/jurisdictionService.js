@@ -5,7 +5,7 @@ const createJurisdiction = (data) => {
     return new Promise((resolve, reject) => {
         model.findOne({ name: data.name }).then(exists => {
             if (exists) {
-                resolve({ success: false, message: 'jurisdiction already exists ', status:400})
+                resolve({ success: false, message: 'jurisdiction already exists ', status:409})
             } else {
                 const detail = { name: data.name }
                 model.create(detail).then(created => {
