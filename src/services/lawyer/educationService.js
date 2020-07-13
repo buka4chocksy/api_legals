@@ -10,9 +10,9 @@ exports.createEducation = (publicId, data) => {
             organization : data.company,
             awards : data.awards.split(",").map(x => ({name : x}))
         }
-        education.create(dataToSave).then((updated) => {
-            if (updated) {
-                resolve({ success: true, message: 'Education created', status: 201, data: null });
+        education.create(dataToSave).then((created) => {
+            if (created) {
+                resolve({ success: true, message: 'Education created', status: 201, data: created });
             }
         }).catch(error => {
             reject({ success: false, message: error, status: 500 });

@@ -141,9 +141,9 @@ exports.acceptTerms = (data, id, ipaddress) => {
     return new Promise((resolve, reject) => {
         if (data.accept == 'accept') {
             const usertype = data.user_type;
-            const dataForUpdate = { status: true, user_type: usertype, is_complete : true }
+            const dataForUpdate = { status: true, user_type: usertype, is_complete : true, terms_accepted : true }
             // usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
-            model.findOneAndUpdate({ public_id: id, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
+            model.findOneAndUpdate({ public_id: id, terms_accepted : false, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updatedUser) {
                     let jwtTokenDetails = {
@@ -161,6 +161,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
                     if (data.user_type === 'client' || data.user_type === 'student') {
                         createClientUser(userDetails).then(createduser => {
                             generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
+                               console.log("in the rsolv")
                                 resolve({
                                    success: true, 
                                    data: { userDetails ,authDetails : result.data },
@@ -169,6 +170,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
                                })
                            }).catch(error => {
                                //add logger here
+                               console.log("error", error)
                            }) 
                         })                          
                     } else {
@@ -180,6 +182,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
                                    status: 200
                            })
                        }).catch(error => {
+                           console.log("error", error)
                            //add logger here
                        }) 
                         // resolve({success : true, status : 201, data : updatedUser.public_id});
@@ -196,20 +199,10 @@ exports.acceptTerms = (data, id, ipaddress) => {
 
 const createClientUser = (userDetails) => {
         return new Promise((resolve, reject) => {
+            console.log("in aafadf")
             client.create(userDetails).then(createdUser => {
                 resolve(createdUser);
-
-                    generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
-                         resolve({
-                            success: true, 
-                            data: { userDetails ,authDetails : result.data },
-                                message: 'registration complete',
-                                status: 200
-                        })
-                    }).catch(error => {
-                        //add logger here
-                    }) 
-            }).catch(err => reject({ err: err, status: 500 }))
+            }).catch(err => console.log("in the error", err))
         })
 }
 
