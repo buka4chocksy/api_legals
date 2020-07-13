@@ -2,8 +2,8 @@ const model = require('../models/lawyer/lawyer');
 const user = require('../models/auth/users')
 const authService = require('../services/authService')
 const jsonPatch = require('fast-json-patch')
-const {addlawyerJurisdiction} = require('./lawyer/jurisdictionService');
-const {addLawyerPracticeArea}  = require('./lawyer/practiceAreaService');
+const {addlawyerJurisdiction} = require('./lawyer/lawyerJurisdictionService');
+const {addLawyerPracticeArea}  = require('./lawyer/lawyerPracticeAreaService');
 
 
 exports.completelawyerRegisteration = (publicId, data, file) => {

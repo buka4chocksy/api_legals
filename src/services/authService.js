@@ -11,7 +11,7 @@ exports.Register = (data, res) => {
     const userDetails = {
         first_name: data.first_name,
         last_name: data.last_name,
-        email_address: data.email_address,
+        email_address: data.email_address.toLowerCase(),
         phone_number: data.phone_number,
         password: data.password,
     }
@@ -23,7 +23,7 @@ exports.Register = (data, res) => {
                     //set the response header to the next place to continue
                     return ({
                         success: true,
-                        message: 'complete signup process',
+                        message: 'select your user path',
                         status: 200,
                         data : found.public_id
                     })
@@ -37,12 +37,14 @@ exports.Register = (data, res) => {
                         return ({ success: false, message: 'Error registering user', status: 400 })
                     }
                     //what is this for?
-                    setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
+                    // setRequestHeader(res,created.public_id,"POST", `/auth/${created.public_id}`)
+                    GetNextProcessForIncompleteRegistration(created,res);
                     return ({
                         success: true,
                         message: 'Signup almost complete, please choose part ', status: 201, data :created.public_id
                     })
                 }).catch(err => { 
+                    console.log("error ", err)
                     return { err: err, status: 500 } 
                 })
             }
@@ -69,7 +71,7 @@ exports.updatePhonenumberForOAuthRegistration = (publicId, phonenumber) => {
             //create logger here
             return { success: false, message: 'current user not found', status: 404 }
         }
-        return {success: false, message: 'phone number updated', status: 200, data : publicId}
+        return {success: true, message: 'phone number updated', status: 200, data : publicId}
     })
 }
 
@@ -188,7 +190,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
 
 exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ email_address: email_address }, { __v: 0, }).then(user => {
+        model.findOne({ email_address: email_address.toLowerCase() }, { __v: 0, }).then(user => {
            if(!user) resolve({ success: false, message: 'user does not exist', status: 404 })
            else if(user && !user.is_complete){
             GetNextProcessForIncompleteRegistration(user, res);
@@ -363,7 +365,7 @@ exports.refreshToken = (device) => {
 }
 
 //get user details
-function getUserDetail(data) {
+function getUserDetail(Id) {
     return new Promise((resolve, reject) => {
 
         model.findOne({ public_id: Id }, { _id: 0, __v: 0 })
