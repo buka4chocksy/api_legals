@@ -52,7 +52,6 @@ module.exports = function () {
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
             generateOAuthLoginDetails(req.user,req, res);
-           
         });
 
 
