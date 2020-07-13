@@ -52,7 +52,7 @@ module.exports = function () {
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
             generateOAuthLoginDetails(req.user,req, res);
-            res.redirect('lawyerpp://login?user=' + JSON.stringify(response));
+           
         });
 
 
