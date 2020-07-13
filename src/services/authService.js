@@ -432,6 +432,8 @@ const addOrUpdateUserAuthenticationToken = (refreshDetail, userId) => {
     }))
 }
 
+exports.generateUserAuthenticationResponse = generateUserAuthenticationResponse;
+
 
 
 
