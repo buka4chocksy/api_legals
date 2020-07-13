@@ -4,6 +4,7 @@ const { applyOperation } = require('fast-json-patch');
 exports.createEducation = (publicId, data) => {
     return new Promise((resolve, reject) => {
         let dataToSave = {
+            school : data.school,
             public_id: publicId,
             start_year :data.from,
             end_year : data.to,
