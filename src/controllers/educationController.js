@@ -17,7 +17,7 @@ module.exports =  function bioController(){
     }
 
     this.retrieveEducation = (req , res)=>{
-        service.retrieveEducation(req.body).then(data =>{
+        service.retrieveEducation(req.query).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }

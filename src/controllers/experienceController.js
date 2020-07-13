@@ -17,7 +17,7 @@ module.exports =  function bioController(){
     }
 
     this.retrieveExperience = (req , res)=>{
-        service.retrieveExperience(req.body).then(data =>{
+        service.retrieveExperience(req.query).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
