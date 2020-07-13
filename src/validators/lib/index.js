@@ -2,17 +2,15 @@ const joiValidator = require('../index');
 
 
 
-const validate =  (schema) => {
-    return async function (req, res, next) {
-        // 
-        joiValidator(req.body, schema).then(result => {
-            next();
-        }).catch(error => {
-            
-            res.status(400).send(error);
-        });
+const validate =  (schema) => (req, res, next) => {
+        joiValidator(req.body, schema, (err, result) => {
+            if(err){
+                res.status(400).send(err);
+            }else{
+                next()
+            }
+        })
     };
-}
 
 module.exports = {
     validate

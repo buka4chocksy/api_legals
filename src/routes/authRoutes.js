@@ -4,12 +4,12 @@ const middleware = require('../middlewares/authMiddleware');
 const multer = require('../middlewares/multer');
 const userValidator = require('../validators/userValidator');
 // const registrationSchema = require('../validators/')
-const validatorHandler = require('../middlewares/errorHandlerMiddleware'); 
+const {validate} = require('../validators/lib/index'); 
 
 module.exports = function () {
     const authCtrl = new authController()
-    router.post('/register', validatorHandler.schemaValidatorHandler(userValidator.schema), authCtrl.register)
-    router.put('/oauth/addphonenumber/:publicid',validatorHandler.schemaValidatorHandler(userValidator.PhoneNumberSchema), authCtrl.updatePhonenumberForOAuthRegistration)
+    router.post('/register', validate(userValidator.schema), authCtrl.register)
+    router.put('/oauth/addphonenumber/:publicid',validate(userValidator.PhoneNumberSchema), authCtrl.updatePhonenumberForOAuthRegistration)
     router.put('/verify',middleware.authenticate, authCtrl.verifyUser)
     router.post('/terms/:publicid', authCtrl.terms )
     router.post('/authenticate', authCtrl.loginUser)

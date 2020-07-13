@@ -4,6 +4,7 @@ module.exports = function authController() {
 
     this.register = (req, res, next) => {
         //const device = req.body.deviceID || req.query.deviceID || req.headers['device-id'];
+        console.log("in the controller")
         const token = req.body.token || req.query.token || req.headers['x-access-token'];
         console.log("AM I HERE",req.body)
         service.Register(req.body, res).then(data => {
