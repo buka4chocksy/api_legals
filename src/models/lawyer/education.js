@@ -8,9 +8,11 @@ const educationSchema = new schema({
     start_year: { type: String },
     end_year: { type: String },
     organization: { type: String },
-    awards: [{
-        name: { type: String }
-    }]
+    // awards: [{
+    //     name: { type: String }
+    // }]
+
+    awards : {type : String}
 }, { timestamps: true, toObject: { getters: true } });
 
 module.exports = mongoose.model('education', educationSchema);

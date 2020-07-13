@@ -9,7 +9,7 @@ exports.createEducation = (publicId, data) => {
             start_year :data.from,
             end_year : data.to,
             organization : data.company,
-            awards : data.awards.split(",").map(x => ({name : x}))
+            awards : data.awards
         }
         education.create(dataToSave).then((created) => {
             if (created) {
