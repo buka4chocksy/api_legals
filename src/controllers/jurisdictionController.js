@@ -22,7 +22,7 @@ module.exports = function practiceAreaController(){
     }
 
     this.getalawyerJurisdiction = (req, res)=>{
-        service.getalawyerJurisdiction(req.body.public_id).then(data =>{
+        service.getalawyerJurisdiction(req.query.public_id).then(data =>{
             res.status(data.status).send(data); 
         }).catch(err => res.status(err.status).send(err));
     }

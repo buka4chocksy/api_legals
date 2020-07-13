@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs')
 const schema = mongoose.Schema;
+const uuid = require('uuid').v4;
 
 const userSchema = new schema({
     first_name: { type: String },
@@ -18,7 +19,7 @@ const userSchema = new schema({
     user_type: { type: String, lowercase: true, enum:["lawyer", "client", "student"] },
     softDelete:{type:Boolean , default: false },
     status: { type: Boolean, default: true },
-    public_id: { type: mongoose.SchemaTypes.ObjectId, default : mongoose.Types.ObjectId() },
+    public_id: { type: mongoose.SchemaTypes.ObjectId, unique: true },
     terms_accepted : {type : Boolean, default : null},
     is_complete : {type : Boolean, default : false},
     oauth: {
@@ -32,6 +33,7 @@ userSchema.pre('save', function() {
     if(this.password){
      this.password =    bcrypt.hashSync(this.password, 10)
     }
+    this.public_id = mongoose.Types.ObjectId()
 })
 
 userSchema.methods.comparePassword = function(password){
