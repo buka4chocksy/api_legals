@@ -28,18 +28,14 @@ exports.updateEducation = (publicId, educationId, patchUpdateData = []) => {
                 resolve({ success: false, message: 'Education not found', status: 404 });
             }else{
             patchUpdateData = patchUpdateData.map(x=> {
-                    if(x.hasOwnProperty('to')){
-                        x.start_year = x["to"];
-                        delete x["to"];
+                    if(x.path ==='/to'){
+                         x["path"] = "/end_year";
                     }
-                    if(x.hasOwnProperty('from')){
-                        x.start_year = x["from"];
-                        delete x["from"]
+                    if(x.path ==='/from'){
+                        x["path"] = "/start_year";
                     }
-
                     return x;
                 })
-                console.log("patch data", patchUpdateData);
                 let appliedPatch = applyPatch(foundEducation.toObject(), patchUpdateData);
             education.findOneAndUpdate({ public_id: publicId }, appliedPatch.newDocument, { new: true }).exec((err, updatedData) => {
                 if (err || !updatedData) {
