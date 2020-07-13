@@ -10,7 +10,7 @@ const recommendationRoutes  = require('./recommendationRoutes');
 const nextOfKinRoutes = require('../routes/nextOfKinRoutes');
 const matter = require('./matterRoutes');
 const experienceRoute = require('./experienceRoutes')
-const educationRoute = require('./educationRoutes')
+const educationRoute = require('./common/educationRoutes')
 const commonPracticeAreaRoutes = require('./common/practiceAreaRoutes');
 const commonJurisdictionRoutes = require('./common/jurisdictionRoutes');
 module.exports = (router) => {
