@@ -88,9 +88,6 @@ const deleteJurisdictionFile = (publicId, jurisdictionId, certificate_id, certif
     console.log("cccc",publicId, jurisdictionId, certificate_id )
     return new Promise(async (resolve, reject) => {
 
-
-
-
         JurisdictionModel.findOneAndUpdate({ public_id: publicId, _id: jurisdictionId }, 
             { $pull: { "certificate": { _id: certificate_id } } },
              { upsert: false, new: true }).exec(async (err, updated) => {
