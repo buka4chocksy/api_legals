@@ -33,10 +33,10 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
                         certificate_resource_type: cloudResult.resource_type,
                         certificate_public_id: cloudResult.public_id
                     }];
+                    //why delete?
+                    delete dataToSave.enrolment_number;
                 }
 
-                //why delete?
-                delete dataToSave.enrolment_number;
             }
 
             JurisdictionModel.create(dataToSave).then(result => {
