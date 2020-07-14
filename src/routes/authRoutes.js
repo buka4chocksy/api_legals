@@ -2,7 +2,7 @@ const router = require('express').Router()
 const authController = require('../controllers/authController')
 const middleware = require('../middlewares/authMiddleware');
 const multer = require('../middlewares/multer');
-const userValidator = require('../validators/userValidator');\
+const userValidator = require('../validators/userValidator');
 const nextOfKinController =require('../controllers/nextOfKinController');
 const {validate} = require('../validators/lib/index'); 
 
