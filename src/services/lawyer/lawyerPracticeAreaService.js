@@ -38,7 +38,7 @@ const addLawyerPracticeArea = (publicId, practiceAreaData = "") => {
 
 const getUserPracticeArea = (publicId) => {
     return new Promise((resolve, reject)=>{
-        PracticeAreaModel.findOne({public_id : publicId}).exec((err, foundData) => {
+        PracticeAreaModel.find({public_id : publicId}).exec((err, foundData) => {
             if(err){
                 resolve({ success: false, message: 'practice area not found', status: 404 });
             }
@@ -49,14 +49,14 @@ const getUserPracticeArea = (publicId) => {
 };
 
 const updateUserPracticeArea = (publicId,practiceAreaId, patchUpdateData) => {
-    console.log(publicId, practiceAreaId, patchUpdateData)
+    console.log("DATA",publicId, practiceAreaId, patchUpdateData)
 
   return new Promise((resolve, reject)=>{
     PracticeAreaModel.findOne({practice_area : practiceAreaId, public_id : publicId}).exec((err, foundArea) =>{
         if(err || !foundArea){
             resolve({ success: false, message: 'practice area not found', status: 404 });
         }
-        console.log(foundArea)
+        console.log("the found area",foundArea)
         let validationError = validate(patchUpdateData);
         if(validationError){
             resolve({ success: false, message: 'invalid operation', status: 400 });

@@ -17,7 +17,7 @@ function generateToken(data = {}) {
 }
 
 const generateTokenSync = (data) => {
-    return jwt.sign(data, secret, {expiresIn : 60*60});
+    return jwt.sign(data, secret, {expiresIn : "1d"});
 }
 
 //verify user token

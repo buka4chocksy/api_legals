@@ -52,13 +52,15 @@ exports.authenticate = async (req, res, next) => {
                             res.status(401).send({ success: false, message: "invalid token" });
                         } else {
                             req.auth = {
-                                publicId: data.public_id,
-                                userType: data.user_type,
+                                public_id: data.public_id,
+                                user_type: data.user_type,
                                 status: data.status,
                                 email: data.email_address,
-                                firstName: data.first_name,
+                                first_name: data.first_name,
                                 Id: data._id,
                             };
+
+                            // console.log(req.auth, "IIN AUTH MIDDLEWARE")
                             res.locals.response = { data: decode, message: "", success: true };
                             next();
                         }

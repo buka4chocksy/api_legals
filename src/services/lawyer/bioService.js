@@ -45,6 +45,7 @@ exports.updateBio = (data, patchUpdateData) => {
 
 exports.retrieveBio = (data) => {
     return new Promise((resolve, reject) => {
+        console.log(data.public_id)
         bio.findOne({ public_id: data.public_id }).exec((err, result) => {
             if (err) reject({success: false, err: err, status:500});
 

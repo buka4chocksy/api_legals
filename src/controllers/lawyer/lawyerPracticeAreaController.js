@@ -2,21 +2,23 @@
 const service = require('../../services/lawyer/lawyerPracticeAreaService');
 
 module.exports = function practiceAreaController(){
-
     this.addLawyerPracticeArea = (req,res)=>{
+        console.log("I GOT HERE",req.auth, req.auth.public_id)
         service.addLawyerPracticeArea(req.auth.public_id, req.body.practice_area_data).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }
 
     this.getUserPracticeArea = (req,res)=>{
+        // console.log("--------------------", req.query)
         service.getUserPracticeArea(req.auth.public_id).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }
 
     this.updateUserPracticeArea = (req,res)=>{
-        service.updateUserPracticeArea(req.auth.public_id, req.params.id, req.body.patch).then(data =>{
+        console.log("THE BODY",req.body)
+        service.updateUserPracticeArea(req.auth.public_id, req.params.id, req.body).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }
