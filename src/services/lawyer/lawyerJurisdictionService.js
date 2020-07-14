@@ -4,9 +4,9 @@ const { applyPatch } = require('fast-json-patch');
 const { uploadToCloud, deleteFromCloud } = require('../../utils/cloudinaryUtil');
 
 //fix this to check if the jurisdiction am adding already exist
-const addlawyerJurisdiction = (jurisdictionData, file) => {
+const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
     return new Promise((resolve, reject) => {
-        UserModel.findOne({ public_id: jurisdictionData.public_id }).exec(async (err, foundUser) => {
+        UserModel.findOne({ public_id: public_id }).exec(async (err, foundUser) => {
             if (err || !foundUser) {
                 //log error here
                 resolve({ success: false, message: 'user not found', status: 404 });
