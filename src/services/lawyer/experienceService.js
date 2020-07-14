@@ -45,7 +45,7 @@ exports.updateExperience = (data, patchUpdateData) => {
 
 exports.retrieveExperience = (data) => {
     return new Promise((resolve, reject) => {
-        experience.findOne({ public_id: data.public_id }).exec((err, result) => {
+        experience.find({ public_id: data.public_id }).exec((err, result) => {
             if (err) reject({ success: false, err: err, status: 500 });
             resolve({ success: true, message: 'Experience retrieved', status: 200, data: result });
         });
