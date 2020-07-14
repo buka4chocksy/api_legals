@@ -69,5 +69,7 @@ exports.authenticate = async (req, res, next) => {
                 }
             });
         }
+    }else{
+        res.status(401).send({ success: false, message: 'authentication required' });
     }
 };
