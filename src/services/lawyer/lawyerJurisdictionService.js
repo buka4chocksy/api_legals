@@ -10,42 +10,44 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
             if (err || !foundUser) {
                 //log error here
                 resolve({ success: false, message: 'user not found', status: 404 });
-            }
+            } else {
 
-            let dataToSave = {
-                user: foundUser._id,
-                public_id: foundUser.public_id,
-                jurisdiction_id: jurisdictionData.jurisdiction_id,
-                enrolment_number: jurisdictionData.enrolment_number,
-                year: jurisdictionData.year
-            };
+                console.log("check", foundUser);
+                let dataToSave = {
+                    user: foundUser._id,
+                    public_id: foundUser.public_id,
+                    jurisdiction_id: jurisdictionData.jurisdiction_id,
+                    enrolment_number: jurisdictionData.enrolment_number,
+                    year: jurisdictionData.year
+                };
 
-            if (file) {
-                //save to cloudinary first
-                var cloudResult = await uploadToCloud(file.path, "lawyercerts");
+                if (file) {
+                    //save to cloudinary first
+                    var cloudResult = await uploadToCloud(file.path, "lawyercerts");
 
-                if (cloudResult) {
-                    dataToSave.certificate = [{
-                        certificate_url: cloudResult.url,
-                        certificate_secure_url: cloudResult.secure_url,
-                        certificate_id: cloudResult.asset_id,
-                        certificate_delete_token: cloudResult.delete_token,
-                        certificate_resource_type: cloudResult.resource_type,
-                        certificate_public_id: cloudResult.public_id
-                    }];
+                    if (cloudResult) {
+                        dataToSave.certificate = [{
+                            certificate_url: cloudResult.url,
+                            certificate_secure_url: cloudResult.secure_url,
+                            certificate_id: cloudResult.asset_id,
+                            certificate_delete_token: cloudResult.delete_token,
+                            certificate_resource_type: cloudResult.resource_type,
+                            certificate_public_id: cloudResult.public_id
+                        }];
+                        //why delete?
+                        delete dataToSave.enrolment_number;
+                    }
+
                 }
 
-                //why delete?
-                delete dataToSave.enrolment_number;
+                JurisdictionModel.create(dataToSave).then(result => {
+                    resolve({ success: true, message: 'jurisdiction added', status: 201, data: result });
+                }).catch(error => {
+                    //log error here
+                    console.log(error);
+                    reject({ success: false, message: 'could not add jurisdiction', status: 500 });
+                });
             }
-
-            JurisdictionModel.create(dataToSave).then(result => {
-                resolve({ success: true, message: 'jurisdiction added', status: 201, data: result });
-            }).catch(error => {
-                //log error here
-                console.log(error);
-                reject({ success: false, message: 'could not add jurisdiction', status: 500 });
-            });
 
         });
     });
@@ -87,25 +89,25 @@ const deleteJurisdictionFile = (publicId, jurisdictionId, certificate_id, certif
     //make a call to cloudinary and delete file first
     return new Promise(async (resolve, reject) => {
 
-        JurisdictionModel.findOneAndUpdate({ public_id: publicId, _id: jurisdictionId }, 
+        JurisdictionModel.findOneAndUpdate({ public_id: publicId, _id: jurisdictionId },
             { $pull: { "certificate": { _id: certificate_id } } },
-             { upsert: false, new: true }).exec(async (err, updated) => {
-            if (err) {
-                //Logger.error(err)
-                reject({ message: err, statusCode: 500, data: null });
-            }
+            { upsert: false, new: true }).exec(async (err, updated) => {
+                if (err) {
+                    //Logger.error(err)
+                    reject({ message: err, statusCode: 500, data: null });
+                }
 
-            resolve({ success: true, message: 'Jurisdiction file removed', status: 200, data: null });
-            var response = await deleteFromCloud(certificate_public_id);
-            if (response) {
-                console.log("-----------------------------DONE");
-            }
-        });
+                resolve({ success: true, message: 'Jurisdiction file removed', status: 200, data: null });
+                var response = await deleteFromCloud(certificate_public_id);
+                if (response) {
+                    console.log("-----------------------------DONE");
+                }
+            });
     });
 };
 
-const addJurisdictionFile =async (public_id, jurisdiction_id, file) => {
-    return new Promise( (resolve, reject) => {
+const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
+    return new Promise((resolve, reject) => {
         JurisdictionModel.findOne({ _id: jurisdiction_id, public_id: public_id }).exec(async (err, foundResult) => {
             if (err || !foundResult) {
                 resolve({ success: false, data: null, message: 'jurisdiction not found', status: 404 });
@@ -114,7 +116,7 @@ const addJurisdictionFile =async (public_id, jurisdiction_id, file) => {
                 if (file) {
                     //save to cloudinary first
                     var cloudResult = await uploadToCloud(file.path, "lawyercerts");
-                    console.log("uploaded", cloudResult)
+                    console.log("uploaded", cloudResult);
                     if (cloudResult) {
                         certificate = {
                             certificate_url: cloudResult.url,

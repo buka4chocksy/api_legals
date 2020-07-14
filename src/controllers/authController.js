@@ -64,7 +64,7 @@ module.exports = function authController() {
             password: req.body.password,
             comfirm_password: req.body.new_password
         }
-        service.changePassword(req.auth.publicId, data).then(data => {
+        service.changePassword(req.auth.public_id, data).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }
@@ -72,7 +72,7 @@ module.exports = function authController() {
     this.DBupdateToken = (req,res)=>{
         const token = req.body.token || req.query.token || req.headers['x-access-token']
         const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
-        service.DBupdateToken(req.auth.publicId , token, device).then(data => {
+        service.DBupdateToken(req.auth.public_id , token, device).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }

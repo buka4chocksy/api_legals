@@ -3,7 +3,7 @@ const cloudinary = require('../middlewares/cloudinary')
 module.exports = function lawFirmController() {
 
     this.createLawFirm = (req, res) => {
-        service.createLawFirm(req.auth.publicId, req.body).then(data => {
+        service.createLawFirm(req.auth.public_id, req.body).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(data))
     }
@@ -21,7 +21,7 @@ module.exports = function lawFirmController() {
             });
         }
         service
-            .uploadProfilePicture(req.auth.publicId, req.query.firmId, requestDetails)
+            .uploadProfilePicture(req.auth.public_id, req.query.firmId, requestDetails)
             .then(data => {
                 res.status(data.status).send(data);
             })
@@ -31,7 +31,7 @@ module.exports = function lawFirmController() {
     };
 
     this.getlawfirmProfile = (req, res) => {
-        service.getLawFirmProfile(req.auth.publicId, req.query.firmId)
+        service.getLawFirmProfile(req.auth.public_id, req.query.firmId)
             .then(data => {
                 res.status(data.status).send(data);
             }).catch(err => res.status(err.status).send(err));
@@ -39,7 +39,7 @@ module.exports = function lawFirmController() {
 
 
     this.addAdmin = (req, res) => {
-        service.addAdmin(req.auth.publicId, req.query.firmId , req.body)
+        service.addAdmin(req.auth.public_id, req.query.firmId , req.body)
             .then(data => {
                 res.status(data.status).send(data);
             }).catch(err =>{
@@ -50,7 +50,7 @@ module.exports = function lawFirmController() {
     }
 
     this.addlocation = (req, res) => {
-        service.addLocation(req.auth.publicId, req.query.firmId , req.body)
+        service.addLocation(req.auth.public_id, req.query.firmId , req.body)
             .then(data => {
                 res.status(data.status).send(data);
             }).catch(err =>{
@@ -61,7 +61,7 @@ module.exports = function lawFirmController() {
     }
 
     this.addLawyerToLawfirm = (req,res) =>{
-        service.addlawFirmLawyer(req.auth.publicId , req.query.firmId ,req.body).then(data => {
+        service.addlawFirmLawyer(req.auth.public_id , req.query.firmId ,req.body).then(data => {
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
@@ -94,7 +94,7 @@ module.exports = function lawFirmController() {
     }
 
     this.lawyerLawFirmList = (req, res) => {
-        service.lawyerLawFirmList(req.auth.publicId, req.params.pagenumber, req.params.pagesize).then(data => {
+        service.lawyerLawFirmList(req.auth.public_id, req.params.pagenumber, req.params.pagesize).then(data => {
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
@@ -120,7 +120,7 @@ module.exports = function lawFirmController() {
     }
 
     this.deleteLawfirm = (req, res)=>{
-        service.deleteLawfirm(req.query.firmId , req.auth.publicId).then(data =>{
+        service.deleteLawfirm(req.query.firmId , req.auth.public_id).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
