@@ -6,41 +6,13 @@ const lawyerSchema = new schema({
     email_address: { type: String, required: true, unique: true },
     phone_number: { type: String, required: true },
     image_url: { type: String, default: '' },
-    image_id: { type: String, default: '' },  
-    softDelete:{type:Boolean , default: false },
-    user_type: { type: String, default : 'lawyer' },
+    image_id: { type: String, default: '' },
+    softDelete: { type: Boolean, default: false },
+    user_type: { type: String, default: 'lawyer' },
     public_id: { type: mongoose.SchemaTypes.ObjectId },
-    enrollment_number: { type: String, default: '' },
-    practice_area: [{
-        practice_area_id: { type: mongoose.SchemaTypes.ObjectId, ref: 'practiceArea', autopopulate: true }
-    }],
-    jurisdiction: [{
-        jurisdiction_id: { type: mongoose.SchemaTypes.ObjectId, ref: 'jurisdiction', autopopulate: true }
-    }],
-    education: [{
-       institution: { type: String, default: '' },
-       degree:{ type: String, default: '' },
-       qualification:{ type: String, default: '' },
-       yearFrom:{ type: Date, default: '' },
-       yearTo:{ type: Date, default: '' },
-    }],
-    experience: [{
-        organisation: { type: String, default: '' },
-        role:{ type: String, default: '' },
-        workHighlight:{ type: String, default: '' },
-        honours:{ type: String, default: '' },
-        yearFrom:{ type: Date, default: '' },
-        yearTo:{ type: Date, default: '' },
-     }],
-     profileSummary:{type:String , default:''},
-    law_certificates: [{
-        image_url: { type: String, default: '' },
-    }],
-    country: { type: String, default: '' },
-    state_of_origin: { type: String, default: '' },
+    profileSummary: { type: String, default: '' },
     gender: { type: String, default: '' }
-
-})
+});
 
 
 
