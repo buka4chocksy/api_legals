@@ -3,7 +3,7 @@ const service = require('../services/lawyer/lawyerJurisdictionService');
 module.exports = function practiceAreaController() {
 
     this.addlawyerJurisdiction = (req, res) => {
-        service.addlawyerJurisdiction(req.body, req.file).then(data => {
+        service.addlawyerJurisdiction(req.auth.publicId, req.body, req.file).then(data => {
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     };
