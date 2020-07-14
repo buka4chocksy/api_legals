@@ -36,12 +36,19 @@ const addNextofKinDetails = (publicId, nextofKinData) => {
 
 const updateNextofKinDetails = (id, publicId , data) => {
     return new Promise((resolve, reject) => {
+        console.log(id, publicId )
         NextOfKinSchema.findOne({ _id:id , public_id: publicId }).exec((err, found) => {
             if (err) reject({ err: err, status: 500 });
             if(!found){
                 resolve({ success: true, message: 'Next of kin profile not updated',  status: 401 })
             }else{
-                var updateProfile =  jsonPatch.applyOperation(found.toObject(), data);
+                let validationError = jsonPatch.validate(data);
+                if(validationError){
+                    console.log(validationError)
+                    resolve({ success: false, message: 'invalid operation', status: 400 });
+                }
+                
+                var updateProfile =  jsonPatch.applyPatch(found.toObject(), data);
 
                 NextOfKinSchema.findOneAndUpdate({_id:id ,public_id:publicId}, updateProfile.newDocument).exec((err , updated)=>{
                     if (err) reject({ err: err, status: 500 });
@@ -61,7 +68,7 @@ const deleteNextofKinDetails = (publicId , id)=>{
             if(!deleted){
                 resolve({success:false , message:"could not delete next of kin details" , status:400})
             }else{
-                resolve({success:true , message:"next of kin details updated successfully" , status:200 })
+                resolve({success:true , message:"next of kin details deleted successfully" , status:200 })
             }
         })
     })
@@ -69,7 +76,7 @@ const deleteNextofKinDetails = (publicId , id)=>{
 
 const getUserNextOfKinDetail = (id , publicId)=>{
     return new Promise((resolve , reject)=>{
-        NextOfKinSchema.findOne({_id:id , public_id:publicId },{_id:0 ,createdAt:0,updatedAt:0 ,__v:0})
+        NextOfKinSchema.findOne({_id:id , public_id:publicId },{createdAt:0,updatedAt:0 ,__v:0})
         .exec((err , found)=>{
             if(err)reject({err:err , status:500})
             if(found){
@@ -83,7 +90,7 @@ const getUserNextOfKinDetail = (id , publicId)=>{
 
 const getAllNextofKinDetail = (publicId)=>{
     return new Promise((resolve , reject)=>{
-        NextOfKinSchema.find({public_id:publicId},{_id:0 ,createdAt:0,updatedAt:0 ,__v:0})
+        NextOfKinSchema.find({public_id:publicId},{createdAt:0,updatedAt:0 ,__v:0})
         .exec((err , found)=>{
             if(err)reject({err:err , status:500})
             if(found){

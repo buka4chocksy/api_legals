@@ -4,10 +4,10 @@ const middleware = require('../middlewares/authMiddleware');
 const multer = require('../middlewares/multer');
 module.exports = function () {
     const nextOfKinCtrl = new nextOfKinController()
-    router.post('/:publicid', middleware.authenticate, nextOfKinCtrl.create);
+    router.post('/', middleware.authenticate, nextOfKinCtrl.create);
     router.get('/',middleware.authenticate , nextOfKinCtrl.getAllNextofKinDetail  )
-    router.patch('/edit', middleware.authenticate , nextOfKinCtrl.update)
-    router.get('/single',middleware.authenticate ,nextOfKinCtrl.getSingleNextOfKin )
-    router.delete('/delete',middleware.authenticate ,nextOfKinCtrl.deleteNextOfKin )
+    router.patch('/:id', middleware.authenticate , nextOfKinCtrl.update)
+    router.get('/:id',middleware.authenticate ,nextOfKinCtrl.getSingleNextOfKin )
+    router.delete('/:id',middleware.authenticate, nextOfKinCtrl.deleteNextOfKin )
     return router;
 }
