@@ -1,7 +1,6 @@
 const service = require('../services/lawyer/lawyerJurisdictionService');
 
 module.exports = function practiceAreaController(){
-
     this.addlawyerJurisdiction = (req,res)=>{
         service.addlawyerJurisdiction(req.body, req.file).then(data =>{
             res.status(data.status).send(data);
@@ -15,14 +14,19 @@ module.exports = function practiceAreaController(){
     }
 
     this.updateLawyerJurisdiction = (req,res)=>{
-        console.log(req.query.public_id, req.query.jurisdiction_id, req.body.patch_update_data)
-        service.updateLawyerJurisdiction(req.query.public_id, req.query.jurisdiction_id, req.body).then(data =>{
+        service.updateLawyerJurisdiction(req.auth.publicId, req.params.id, req.body).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }
 
-    this.getalawyerJurisdiction = (req, res)=>{
-        service.getalawyerJurisdiction(req.query.public_id).then(data =>{
+    this.getlawyerJurisdiction = (req, res)=>{
+        service.getlawyerJurisdiction(req.auth.publicId).then(data =>{
+            res.status(data.status).send(data); 
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.getSinglelawyerJurisdiction = (req, res)=>{
+        service.getSinglelawyerJurisdiction(req.auth.publicId, req.params.id).then(data =>{
             res.status(data.status).send(data); 
         }).catch(err => res.status(err.status).send(err));
     }

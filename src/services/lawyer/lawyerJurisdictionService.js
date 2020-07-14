@@ -1,6 +1,6 @@
 const JurisdictionModel = require('../../models/lawyer/lawyerJurisdiction');
 const UserModel = require('../../models/auth/users');
-const { applyOperation, validate } = require('fast-json-patch');
+const { applyPatch } = require('fast-json-patch');
 const {uploadToCloud, deleteFromCloud} = require('../../utils/cloudinaryUtil');
 
 //fix this to check if the jurisdiction am adding already exist
@@ -11,8 +11,6 @@ const addlawyerJurisdiction =  (jurisdictionData, file) => {
                 //log error here
                 resolve({ success: false, message: 'user not found', status: 404 });
             }
-
-            //console.log("FOUND USER", foundUser)
 
             let dataToSave = {
                 user: foundUser._id,
@@ -53,10 +51,11 @@ const addlawyerJurisdiction =  (jurisdictionData, file) => {
     })
 };
 
-const getalawyerJurisdiction = (publicId) => {
-    console.log(publicId)
+//Paginate later
+
+const getlawyerJurisdiction = (publicId) => {
     return new Promise((resolve, reject)=>{
-        JurisdictionModel.find({public_id : publicId}).exec((err, foundData) => {
+        JurisdictionModel.find({public_id : publicId}).select({__v : 0, createdAt : 0, updatedAt : 0}).exec((err, foundData) => {
             if(err){
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
             }
@@ -65,32 +64,23 @@ const getalawyerJurisdiction = (publicId) => {
     }) 
 };
 
-const updateLawyerJurisdiction = (publicId, jurisdictionId, patchUpdateData) => {
+const updateLawyerJurisdiction = (publicId, jurisdictionId, patchUpdateData = []) => {
     return new Promise((resolve, reject)=>{
-        JurisdictionModel.findOne({public_id : publicId}).exec((err, foundJurisdiction) =>{
+        console.log(publicId, jurisdictionId)
+        JurisdictionModel.findOne({public_id : publicId, _id : jurisdictionId}).exec((err, foundJurisdiction) =>{
             if(err || !foundJurisdiction){
                 resolve({ success: false, message: 'jurisdiction not found', status: 404 });
+            }else{
+                let appliedPatch = applyPatch(foundJurisdiction.toObject(), patchUpdateData);    
+                JurisdictionModel.findOneAndUpdate({_id : jurisdictionId, public_id : publicId}, appliedPatch.newDocument, {new : true }).exec((err, updatedData) => {
+                    if(err || !updatedData){
+                        resolve({ success: false, message: 'could not update jurisdiction', status: 400, data : null });
+                    }
+                    resolve({success : true, message : 'jurisdiction updated', status : 200, data : updatedData });
+                })
+
             }
 
-            //console.log(foundJurisdiction)
-            // let validationError = validate(patchUpdateData);
-            // if(validationError){
-            //     console.log(validationError)
-            //     resolve({ success: false, message: 'invalid operation', status: 400 });
-            // }
-
-            // console.log("jurisdiction check", validationError)
-            let appliedPatch = applyOperation(foundJurisdiction.toObject(), patchUpdateData);
-            //console.log("new data", appliedPatch.newDocument)
-            console.log(jurisdictionId,publicId)
-            JurisdictionModel.findOneAndUpdate({jurisdiction_id : jurisdictionId, public_id : publicId}, appliedPatch.newDocument, {new : true }).exec((err, updatedData) => {
-                if(err || !updatedData){+
-                    console.log(err, updatedData)
-                    resolve({ success: false, message: 'could not add jurisdiction', status: 500, data : null });
-                }
-
-                resolve({success : true, message : 'jurisdiction updated', status : 200, data : updatedData });
-            })
         })
     }) 
 };
@@ -145,6 +135,18 @@ const addJurisdictionFile = (jurisdictionData, file) => {
     })
   }
 
+  const getSinglelawyerJurisdiction = (publicId, areaId) => {
+    return new Promise((resolve, reject)=>{
+        JurisdictionModel.find({public_id : publicId, _id : areaId}).select({__v : 0, createdAt : 0, updatedAt : 0}).exec((err, foundData) => {
+            if(err){
+                resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
+            }
+            resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data : foundData });
+        })
+    }) 
+};
+
+
   module.exports = {
-    addlawyerJurisdiction, getalawyerJurisdiction, updateLawyerJurisdiction, deleteJurisdictionFile, addJurisdictionFile
+    addlawyerJurisdiction, getlawyerJurisdiction, updateLawyerJurisdiction, deleteJurisdictionFile, addJurisdictionFile, getSinglelawyerJurisdiction
   }

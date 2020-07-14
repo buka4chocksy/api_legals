@@ -1,6 +1,6 @@
 const authRoutes = require('./authRoutes');
 const practiceAreaRoutes = require('./lawyer/lawyerPracticeAreaRoutes')
-const jurisdictionRoutes = require('./jurisdictionRoutes');
+const jurisdictionRoutes = require('./lawyer/jurisdictionRoutes');
 const lawyerRoutes = require('./lawyerRoutes');
 const lawFirmRoutes = require('./lawFirmRoutes');
 const clientRoutes = require('./clientRoutes');
@@ -18,7 +18,7 @@ module.exports = (router) => {
     router.use("/practicearea", commonPracticeAreaRoutes());
     router.use("/common_jurisdiction", commonJurisdictionRoutes());
     router.use('/lawyer/practice_area', practiceAreaRoutes());
-    router.use('/jurisdiction', jurisdictionRoutes());
+    router.use('/lawyer/jurisdiction', jurisdictionRoutes());
     router.use('/lawyer', lawyerRoutes());
     router.use('/lawfirm', lawFirmRoutes());
     router.use('/client', clientRoutes());
