@@ -56,7 +56,7 @@ const addlawyerJurisdiction =  (jurisdictionData, file) => {
 const getalawyerJurisdiction = (publicId) => {
     console.log(publicId)
     return new Promise((resolve, reject)=>{
-        JurisdictionModel.findOne({public_id : publicId}).exec((err, foundData) => {
+        JurisdictionModel.find({public_id : publicId}).exec((err, foundData) => {
             if(err){
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
             }
@@ -81,11 +81,14 @@ const updateLawyerJurisdiction = (publicId, jurisdictionId, patchUpdateData) => 
 
             // console.log("jurisdiction check", validationError)
             let appliedPatch = applyOperation(foundJurisdiction.toObject(), patchUpdateData);
-            console.log("new data", appliedPatch.newDocument)
-            JurisdictionModel.findOneAndUpdate({_id : jurisdictionId, public_id : publicId}, appliedPatch.newDocument, {new : true }).exec((err, updatedData) => {
-                if(err || !updatedData){
-                    resolve({ success: false, message: 'could not add jurisdiction', status: 404, data : null });
+            //console.log("new data", appliedPatch.newDocument)
+            console.log(jurisdictionId,publicId)
+            JurisdictionModel.findOneAndUpdate({jurisdiction_id : jurisdictionId, public_id : publicId}, appliedPatch.newDocument, {new : true }).exec((err, updatedData) => {
+                if(err || !updatedData){+
+                    console.log(err, updatedData)
+                    resolve({ success: false, message: 'could not add jurisdiction', status: 500, data : null });
                 }
+
                 resolve({success : true, message : 'jurisdiction updated', status : 200, data : updatedData });
             })
         })

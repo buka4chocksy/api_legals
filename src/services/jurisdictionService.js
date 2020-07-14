@@ -48,6 +48,7 @@ const getAllJurisdiction = () => {
 
 //get single jurisdiction
 const getJurisdictionById = (data) => {
+    console.log(data)
     return new Promise((resolve, reject) => {
         model.findOne({ _id: data }).then(found => {
             if (found) {
