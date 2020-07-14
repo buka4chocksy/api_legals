@@ -1,15 +1,15 @@
 const router = require('express').Router()
 const educationController = require('../../controllers/educationController')
-const middleware = require('../../middlewares/authMiddleware')
+const {authenticate} = require('../../middlewares/authMiddleware')
 const multer = require('../../middlewares/multer');
+const {validateJsonPatchOperation} = require('../../validators/updateValidators/index');
 module.exports = function(){
     const educationCtrl = new educationController()
-    
-    router.get('/',  middleware.authenticate, educationCtrl.retrieveEducation)
-    router.get('/:id',  middleware.authenticate, educationCtrl.retrieveSingleEducation)
-    router.post('/',  middleware.authenticate, educationCtrl.createEducation)
-    router.put('/:id',  middleware.authenticate, educationCtrl.updateEducation)
-    router.delete('/:id',  middleware.authenticate, educationCtrl.deleteEducation)
+    router.get('/',  authenticate, educationCtrl.retrieveEducation)
+    router.get('/:id',  authenticate, educationCtrl.retrieveSingleEducation)
+    router.post('/',  authenticate, educationCtrl.createEducation)
+    router.patch('/:id', [authenticate, validateJsonPatchOperation], educationCtrl.updateEducation)
+    router.delete('/:id',  authenticate, educationCtrl.deleteEducation)
 
     return router;
 }
