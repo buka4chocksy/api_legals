@@ -1,5 +1,5 @@
 const experience = require('../../models/lawyer/experience');
-const { applyOperation, validate } = require('fast-json-patch');
+const { applyPatch, validate } = require('fast-json-patch');
 
 exports.createExperience = (data) => {
     return new Promise((resolve, reject) => {
@@ -25,13 +25,13 @@ exports.updateExperience = (data, patchUpdateData) => {
             }
 
             console.log(foundExperience)
-            // let validationError = validate(patchUpdateData);
-            // if(validationError){
-            //     console.log(validationError)
-            //     resolve({ success: false, message: 'invalid operation', status: 400 });
-            // }
+            let validationError = validate(patchUpdateData);
+            if(validationError){
+                console.log(validationError)
+                resolve({ success: false, message: 'invalid operation', status: 400 });
+            }
 
-            let appliedPatch = applyOperation(foundExperience.toObject(), patchUpdateData);
+            let appliedPatch = applyPatch(foundExperience.toObject(), patchUpdateData);
 
             experience.findOneAndUpdate({public_id : data.public_id}, appliedPatch.newDocument, {new : true }).exec((err, updatedData) => {
                 if(err || !updatedData){

@@ -11,19 +11,19 @@ module.exports =  function bioController(){
     }
 
     this.updateExperience = (req , res)=>{
-        service.updateExperience(req.query, req.body).then(data =>{
+        service.updateExperience(req.auth, req.body).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
 
     this.retrieveExperience = (req , res)=>{
-        service.retrieveExperience(req.query).then(data =>{
+        service.retrieveExperience(req.auth).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
 
     this.deleteExperience = (req , res)=>{
-        service.deleteExperience(req.body).then(data =>{
+        service.deleteExperience(req.auth).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }

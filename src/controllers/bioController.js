@@ -23,7 +23,7 @@ module.exports =  function bioController(){
     }
 
     this.deleteBio = (req , res)=>{
-        service.deleteBio(req.body).then(data =>{
+        service.deleteBio(req.auth).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }

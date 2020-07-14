@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const educationController = require('../../controllers/educationController')
+const educationController = require('../../controllers/common/educationController')
 const {authenticate} = require('../../middlewares/authMiddleware')
 const multer = require('../../middlewares/multer');
 const {validateJsonPatchOperation} = require('../../validators/updateValidators/index');
