@@ -85,7 +85,6 @@ const updateLawyerJurisdiction = (publicId, jurisdictionId, patchUpdateData = []
 
 const deleteJurisdictionFile = (publicId, jurisdictionId, certificate_id, certificate_public_id) => {
     //make a call to cloudinary and delete file first
-    console.log("cccc",publicId, jurisdictionId, certificate_id )
     return new Promise(async (resolve, reject) => {
 
         JurisdictionModel.findOneAndUpdate({ public_id: publicId, _id: jurisdictionId }, 
