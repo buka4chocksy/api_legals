@@ -2,7 +2,7 @@ const nextOfKinService = require('../services/common/nextOfKinService');
 
 module.exports = function nextOfKinController() {
     this.create =(req, res, next)=>{
-        console.log("WETIN OOCUR",req.auth)
+        
         nextOfKinService.addNextofKinDetails(req.auth.public_id, req.body).then(data =>{
             res.status(data.status).send(data)
         }).catch(err => {
