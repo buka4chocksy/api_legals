@@ -6,7 +6,7 @@ const multer = require('../../../bin/config/multer')
 
 module.exports = function(){
     const jurisCtrl = new jurisdictionController()
-    router.post('/', multer.upload.single('image'), jurisCtrl.addlawyerJurisdiction)
+    router.post('/',[authenticate, multer.upload.single('cert')], jurisCtrl.addlawyerJurisdiction)
     router.post('/:id/addcert',[authenticate,multer.upload.single('cert')], jurisCtrl.addJurisdictionFile)
     router.get('/',authenticate, jurisCtrl.getlawyerJurisdiction)
     router.get('/:id',authenticate, jurisCtrl.getSinglelawyerJurisdiction)
