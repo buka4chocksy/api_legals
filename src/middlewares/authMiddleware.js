@@ -36,7 +36,6 @@ exports.authenticate = async (req, res, next) => {
     if (token) {
         token = token.replace("Bearer", "").trim();
         let decode = verifyTokenSync(token);
-        console.log(decode);
         if (decode instanceof Error) {
             res.setHeader("x-lawyerpp-error", "invalid token");
             res.status(401).send({ success: false, message: "invalid authentication, try logging in" });

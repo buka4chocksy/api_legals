@@ -60,13 +60,18 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
 
 const getlawyerJurisdiction = (publicId) => {
     return new Promise((resolve, reject) => {
-        JurisdictionModel.populate("jurisdiction_id").find({ public_id: publicId }).select({ __v: 0, createdAt: 0, updatedAt: 0 })
-        
-        .exec((err, foundData) => {
+        JurisdictionModel.find({ public_id: publicId }).populate("jurisdiction_id").select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
             if (err) {
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
+            } else {
+                foundData = foundData.map(x => {
+                    x = x.toObject();
+                    x.jurisdiction_details = x.jurisdiction_id;
+                    delete x.jurisdiction_id;
+                    return x;
+                });
+                resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
             }
-            resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
         });
     });
 };
@@ -120,8 +125,9 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
                 var certificate = {};
                 if (file) {
                     //save to cloudinary first
+                    console.log("FILE---------------------------------------------->", file)
                     var cloudResult = await uploadToCloud(file.path, "lawyercerts");
-                    console.log("uploaded", cloudResult);
+                    //console.log("uploaded", cloudResult);
                     if (cloudResult) {
                         certificate = {
                             certificate_url: cloudResult.url,
@@ -129,7 +135,9 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
                             certificate_id: cloudResult.asset_id,
                             certificate_delete_token: cloudResult.delete_token,
                             certificate_resource_type: cloudResult.resource_type,
-                            certificate_public_id: cloudResult.public_id
+                            certificate_public_id: cloudResult.public_id,
+                            certificate_name: file.originalname,
+                            mime_type: file.mimetype
                         };
                     }
                 }
@@ -150,14 +158,15 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
 
 const getSinglelawyerJurisdiction = (publicId, areaId) => {
     return new Promise((resolve, reject) => {
-        JurisdictionModel.find({ public_id: publicId, _id: areaId }).populate({path : "jurisdiction_id"}).select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
-            console.log("adfasda", err)
+        JurisdictionModel.findOne({ public_id: publicId, _id: areaId }).populate("jurisdiction_id").select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
             if (err) {
                 console.log("adfasda", err)
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
-            }else{
-                console.log("adfasda", err)
-            resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
+            } else {
+                foundData = foundData.toObject();
+                foundData.jurisdiction_details = foundData.jurisdiction_id;
+                delete foundData.jurisdiction_id;
+                resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
             }
         });
     });
