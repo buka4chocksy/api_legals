@@ -1,4 +1,4 @@
-const nextOfKinModel = require('../models/panic/nextOfKin');
+const nextOfKinModel = require('../models/common/nextOfKin');
 const user = require('../models/auth/users');
 const panicModel = require('../models/panic/panicHistory')
 const client = require('../models/client/client')

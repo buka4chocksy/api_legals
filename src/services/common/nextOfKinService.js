@@ -17,15 +17,36 @@ const addNextofKinDetails = (publicId, nextofKinData) => {
                 resolve({ success: true, message: "user not found", status: 404 })
             }else{
                 details.user = foundUser._id
-                NextOfKinSchema.create(details).then(created => {
-                    if (created) {
-                        resolve({ success: true, message: "Next of kin created successfully", status: 200, data: created });
-                    } else {
-                        resolve({ success: false, message: "Error creating next of kin" });
+
+                UserSchema.findOne({email_address : details.email_address}).exec((err, foundNOK) => {
+                    if(err || !foundNOK){ 
+                        //Log error             
+                        NextOfKinSchema.create(details).then(created => {
+                            if (created) {
+                                resolve({ success: true, message: "Next of kin created successfully", status: 200, data: created });
+                            } else {
+                                resolve({ success: false, message: "Error creating next of kin" });
+                            }
+                        }).catch(err => {
+                            reject({ err: err, status: 500 })
+                        });
+                    }else{
+                        
+                        details.next_of_kin_id = foundNOK.public_id
+                        NextOfKinSchema.create(details).then(created => {
+                            if (created) {
+                                resolve({ success: true, message: "Next of kin created successfully", status: 200, data: created });
+                            } else {
+                                resolve({ success: false, message: "Error creating next of kin" });
+                            }
+                        }).catch(err => {
+                            reject({ err: err, status: 500 })
+                        });
+        
                     }
-                }).catch(err => {
-                    reject({ err: err, status: 500 })
-                });
+                })
+
+                
 
             }
         })
