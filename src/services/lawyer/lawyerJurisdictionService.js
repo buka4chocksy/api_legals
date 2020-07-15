@@ -60,8 +60,15 @@ const getlawyerJurisdiction = (publicId) => {
         JurisdictionModel.find({ public_id: publicId }).populate("jurisdiction_id").select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
             if (err) {
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
+            } else {
+                foundData = foundData.map(x => {
+                    x = x.toObject();
+                    x.jurisdiction_details = x.jurisdiction_id;
+                    delete x.jurisdiction_id;
+                    return x;
+                });
+                resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
             }
-            resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
         });
     });
 };
@@ -145,11 +152,15 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
 
 const getSinglelawyerJurisdiction = (publicId, areaId) => {
     return new Promise((resolve, reject) => {
-        JurisdictionModel.find({ public_id: publicId, _id: areaId }).populate("jurisdiction_id").select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
+        JurisdictionModel.findOne({ public_id: publicId, _id: areaId }).populate("jurisdiction_id").select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
             if (err) {
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
+            } else {
+                foundData = foundData.toObject();
+                foundData.jurisdiction_details = foundData.jurisdiction_id;
+                delete foundData.jurisdiction_id;
+                resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
             }
-            resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
         });
     });
 };
