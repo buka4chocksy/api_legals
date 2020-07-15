@@ -4,6 +4,7 @@ const UserModel = require('../../models/auth/users');
 const { applyPatch } = require('fast-json-patch');
 const { uploadToCloud, deleteFromCloud } = require('../../utils/cloudinaryUtil');
 const jurisdiction = require('../../models/lawyer/jurisdiction');
+const { findOne } = require('../../models/auth/users');
 
 
 //fix this to check if the jurisdiction am adding already exist
@@ -116,24 +117,37 @@ const deleteJurisdictionFile = (publicId, jurisdictionId, certificate_id, certif
     });
 };
 
-const deleteJurisdiction = (publicId, jurisdiction_details) => {
+const deleteJurisdiction = (publicId, jurisdiction_id) => {
+    console.log("INCOMING DETAILS", publicId, jurisdiction_id)
     //make a call to cloudinary and delete file first
     return new Promise(async (resolve, reject) => {
 
-        JurisdictionModel.deleteOne({ public_id: publicId, jurisdiction_id: jurisdiction_details.jurisdiction_id }).exec(async (err, deleted) => {
-                if (err) {
-                    //Logger.error(err)
-                    reject({ message: err, statusCode: 500, data: null });
-                }
+        JurisdictionModel.findOne({public_id: publicId, jurisdiction_id: jurisdiction_id }).exec((err, foundData) => {
+            if (err || !foundData) {
+                console.log("adfasda", err)
+                resolve({ success: false, message: 'jurisdiction not found', status: 404, data: null });
+            } else {
+                //foundData = foundData.toObject();
 
-                console.log("DELETED", deleted)
-                resolve({ success: true, message: 'Jurisdiction deleted', status: 200, data: null });
-
-                for (index = 0; index < jurisdiction_details.certificate_ids.length; index++) { 
-                    console.log(jurisdiction_details.certificate_ids[index])
-                    await deleteFromCloud(jurisdiction_details.certificate_ids[index]);
-                }
-            });
+                JurisdictionModel.deleteOne({ public_id: publicId, jurisdiction_id: jurisdiction_id }).exec(async (err, deleted) => {
+                    if (err || !deleted) {
+                        //Logger.error(err)
+                        reject({ message: "Something went wrong, either a server error or you and sending an empty field", statusCode: 500, data: null });
+                    }
+        
+                    console.log("DELETED", deleted)
+                    resolve({ success: true, message: 'Jurisdiction deleted', status: 200, data: null });
+        
+                    if(foundData.certificate.length>0){
+                        for (index = 0; index < foundData.certificate.length; index++) { 
+                            console.log("CERTIFICATE PUBLIC ID TO DELETE FROM CLOUDI...",jurisdiction_details.certificate_ids[index].certificate_public_id)
+                            await deleteFromCloud(jurisdiction_details.certificate_ids[index].certificate_public_id);
+                        }
+                    }
+                    
+                });
+            }
+        });
     });
 };
 

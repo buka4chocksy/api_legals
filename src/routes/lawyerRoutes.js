@@ -14,6 +14,5 @@ module.exports = function(){
     router.get('/search', middleware.authenticate , lawCtrl.searchLawyer)
     router.put('/profile_picture', middleware.authenticate, multer.upload.single('profile'), lawCtrl.uploadProfilePicture)
 
-
     return router;
 }

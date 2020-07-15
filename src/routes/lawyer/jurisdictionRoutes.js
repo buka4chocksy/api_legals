@@ -12,6 +12,6 @@ module.exports = function(){
     router.get('/:id',authenticate, jurisCtrl.getSinglelawyerJurisdiction)
     router.patch('/:id',[ authenticate, validateJsonPatchOperation], jurisCtrl.updateLawyerJurisdiction)
     router.delete('/:id/cert/:certid',authenticate,jurisCtrl.deleteJurisdictionFile);
-    router.delete('/',authenticate,jurisCtrl.deleteJurisdiction);
+    router.delete('/:id',authenticate,jurisCtrl.deleteJurisdiction);
     return router;
 }
