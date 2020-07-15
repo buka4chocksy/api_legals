@@ -43,4 +43,11 @@ module.exports = function practiceAreaController() {
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     };
+
+    this.deleteJurisdiction = (req, res) =>{
+        console.log(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", req.auth.public_id, req.body)
+        service.deleteJurisdiction(req.auth.public_id, req.body).then(data => {
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err));
+    }
 };
