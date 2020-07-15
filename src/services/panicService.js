@@ -1,4 +1,4 @@
-const nextOfKinModel = require('../models/common/nextOfKin');
+const nextOfKinModel = require('../models/panic/nextOfKin');
 const user = require('../models/auth/users');
 const panicModel = require('../models/panic/panicHistory')
 const client = require('../models/client/client')
@@ -82,7 +82,6 @@ exports.getUser = (id) => {
     return new Promise((resolve , reject)=>{
         user.findOne({public_id: id}).exec((err , foundUser)=>{
             if(err)reject({err: err , status:500});
-
             // console.log("FOUND USER", foundUser, foundUser.user_type)
 
             if(!foundUser){
@@ -139,7 +138,7 @@ exports.getNextOfKin = (id) => {
     return new Promise((resolve , reject)=>{
         nextOfKinModel.find({public_id: id}).exec((error , found)=>{
             if(error)reject(error)
-            
+    
             resolve(found)
         })
     })
@@ -279,10 +278,9 @@ exports.fetchExistingAlerts = () => {
 exports.storeAlertDetails = (alertDetails) => {
     try {
         redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
-        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, 
-        "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
-        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", 
-        alertDetails.status, "client_state", alertDetails.client_state, "client_country", alertDetails.client_country)
+        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", alertDetails.panic_initiation_latitude, 
+        "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, "client_state", alertDetails.client_state, 
+        "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin)
 
         redis.expire(alertDetails.alert_id, 259200)
 
@@ -296,12 +294,9 @@ exports.updateAlertOnRedis = (alertDetails) => {
     console.log("I UPDATED THE ALERT DETAILS")
     try {
         redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "lawyer_img_url", alertDetails.lawyer_img_url, "lawyer_name", alertDetails.lawyer_name, "lawyer_phonenumber", alertDetails.lawyer_phonenumber, "lawyer_email", alertDetails.lawyer_email, 
-        "lawyer_id", alertDetails.lawyer_id, "lawyer_latitude", 
-        alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
-        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, 
-        "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
-        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", 
-        alertDetails.status, "client_state", alertDetails.client_state, "client_country", alertDetails.client_country)
+        "lawyer_id", alertDetails.lawyer_id, "lawyer_latitude", alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
+        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, 
+        "client_state", alertDetails.client_state, "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin)
     } catch (error) {
         console.log(error)
     }
@@ -315,10 +310,9 @@ exports.getStoredAlertDetails = (alert_id) => {
     })
 }
 
-exports.storeLawyerPosition = (lawyerDetails) => {
+exports.storePosition = (details) => {
     try {
-        redis.hmset(lawyerDetails.lawyer_id, "lawyer_id", lawyerDetails.lawyer_id, "lawyer_longitude", lawyerDetails.lawyer_longitude,
-            "lawyerDetails", lawyerDetails.lawyer_latitude)
+        redis.hmset(details.id, "lawyer_id", details.id, "longitude", details.longitude, "latitude", details.latitude)
     } catch (error) {
         console.error(error)
     }
@@ -332,4 +326,4 @@ exports.getStoredLawyerPosition = (lawyer_id) => {
     })
 }
 
-    // panic_ending_location: {type: String}
+// panic_ending_location: {type: String}
