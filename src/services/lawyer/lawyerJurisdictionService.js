@@ -150,11 +150,15 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
 
 const getSinglelawyerJurisdiction = (publicId, areaId) => {
     return new Promise((resolve, reject) => {
-        JurisdictionModel.find({ public_id: publicId, _id: areaId }).select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
+        JurisdictionModel.find({ public_id: publicId, _id: areaId }).populate({path : "jurisdiction_id"}).select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
+            console.log("adfasda", err)
             if (err) {
+                console.log("adfasda", err)
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
-            }
+            }else{
+                console.log("adfasda", err)
             resolve({ success: true, message: 'jurisdiction retrieved', status: 200, data: foundData });
+            }
         });
     });
 };

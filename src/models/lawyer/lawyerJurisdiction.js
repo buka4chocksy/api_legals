@@ -1,10 +1,9 @@
 const mongoose = require('mongoose');
-const jurisdictionModel = require('./jurisdiction');
 const schema = mongoose.Schema;
 const LawyerJurisdictionSchema = new schema({
     user : {type : mongoose.SchemaTypes.ObjectId, ref : "users"},
     public_id : {type : mongoose.SchemaTypes.ObjectId},
-    jurisdiction_id: { type: mongoose.Types.ObjectId, ref: 'jurisdiction'},
+    jurisdiction_id: { type: mongoose.SchemaTypes.ObjectId, ref: 'jurisdiction'},
     year: {type : String, default : null},
     enrolment_number : {type : String, default : null},
     certificate : [{

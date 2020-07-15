@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const schema = mongoose.Schema;
 const jurisdiction_schema = new schema({
-    _id : {type : mongoose.Types.ObjectId},
     name: { type: String, required: true },
     code : {type : String},
     state : [{}],
