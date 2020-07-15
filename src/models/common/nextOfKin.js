@@ -7,7 +7,8 @@ const NextOfKinSchema = new schema({
     full_name : {type :  String, required : true},
     phone_number : {type : String, required : true},
     email_address : {type : String},
-    relationship : {type : String, enum :["Mother", "Father", "Wife", "Husband", "Child", "Brother", "Sister", "Cousin", "Others"]}
+    relationship : {type : String, enum :["Mother", "Father", "Wife", "Husband", "Child", "Brother", "Sister", "Cousin", "Others"]},
+    next_of_kin_id: {type: mongoose.SchemaTypes.ObjectId, default: null}
 }, {timestamps : true, toObject : {getters : true}});
 
 module.exports = mongoose.model("nextofkin", NextOfKinSchema);

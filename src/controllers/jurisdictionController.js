@@ -34,7 +34,7 @@ module.exports = function practiceAreaController() {
     this.getSinglelawyerJurisdiction = (req, res) => {
         service.getSinglelawyerJurisdiction(req.auth.public_id, req.params.id).then(data => {
             res.status(data.status).send(data);
-        }).catch(err => res.status(err.status).send(err));
+        }).catch(err => res.status(200).send(err));
     };
 
     this.deleteJurisdictionFile = (req, res) => {

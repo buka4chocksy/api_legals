@@ -1,7 +1,10 @@
 const JurisdictionModel = require('../../models/lawyer/lawyerJurisdiction');
+const Jurisdiction = require('../../models/lawyer/jurisdiction')
 const UserModel = require('../../models/auth/users');
 const { applyPatch } = require('fast-json-patch');
 const { uploadToCloud, deleteFromCloud } = require('../../utils/cloudinaryUtil');
+const jurisdiction = require('../../models/lawyer/jurisdiction');
+
 
 //fix this to check if the jurisdiction am adding already exist
 const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
@@ -122,8 +125,9 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
                 var certificate = {};
                 if (file) {
                     //save to cloudinary first
+                    console.log("FILE---------------------------------------------->", file)
                     var cloudResult = await uploadToCloud(file.path, "lawyercerts");
-                    console.log("uploaded", cloudResult);
+                    //console.log("uploaded", cloudResult);
                     if (cloudResult) {
                         certificate = {
                             certificate_url: cloudResult.url,
@@ -131,7 +135,9 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
                             certificate_id: cloudResult.asset_id,
                             certificate_delete_token: cloudResult.delete_token,
                             certificate_resource_type: cloudResult.resource_type,
-                            certificate_public_id: cloudResult.public_id
+                            certificate_public_id: cloudResult.public_id,
+                            certificate_name: file.originalname,
+                            mime_type: file.mimetype
                         };
                     }
                 }
@@ -154,6 +160,7 @@ const getSinglelawyerJurisdiction = (publicId, areaId) => {
     return new Promise((resolve, reject) => {
         JurisdictionModel.findOne({ public_id: publicId, _id: areaId }).populate("jurisdiction_id").select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
             if (err) {
+                console.log("adfasda", err)
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
             } else {
                 foundData = foundData.toObject();
