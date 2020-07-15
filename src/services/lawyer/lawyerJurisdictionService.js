@@ -116,6 +116,28 @@ const deleteJurisdictionFile = (publicId, jurisdictionId, certificate_id, certif
     });
 };
 
+const deleteJurisdiction = (publicId, jurisdiction_details) => {
+    //make a call to cloudinary and delete file first
+    return new Promise(async (resolve, reject) => {
+
+        JurisdictionModel.deleteOne({ public_id: publicId, jurisdiction_id: jurisdiction_details.jurisdiction_id }).exec(async (err, deleted) => {
+                if (err) {
+                    //Logger.error(err)
+                    reject({ message: err, statusCode: 500, data: null });
+                }
+
+                console.log("DELETED", deleted)
+                resolve({ success: true, message: 'Jurisdiction deleted', status: 200, data: null });
+
+                for (index = 0; index < jurisdiction_details.certificate_ids.length; index++) { 
+                    console.log(jurisdiction_details.certificate_ids[index])
+                    await deleteFromCloud(jurisdiction_details.certificate_ids[index]);
+                }
+            });
+    });
+};
+
+
 const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
     return new Promise((resolve, reject) => {
         JurisdictionModel.findOne({ _id: jurisdiction_id, public_id: public_id }).exec(async (err, foundResult) => {
@@ -174,5 +196,5 @@ const getSinglelawyerJurisdiction = (publicId, areaId) => {
 
 
 module.exports = {
-    addlawyerJurisdiction, getlawyerJurisdiction, updateLawyerJurisdiction, deleteJurisdictionFile, addJurisdictionFile, getSinglelawyerJurisdiction
+    addlawyerJurisdiction, getlawyerJurisdiction, updateLawyerJurisdiction, deleteJurisdictionFile, addJurisdictionFile, getSinglelawyerJurisdiction, deleteJurisdiction
 };
