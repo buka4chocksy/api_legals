@@ -1,7 +1,10 @@
 const JurisdictionModel = require('../../models/lawyer/lawyerJurisdiction');
+const Jurisdiction = require('../../models/lawyer/jurisdiction')
 const UserModel = require('../../models/auth/users');
 const { applyPatch } = require('fast-json-patch');
 const { uploadToCloud, deleteFromCloud } = require('../../utils/cloudinaryUtil');
+const jurisdiction = require('../../models/lawyer/jurisdiction');
+
 
 //fix this to check if the jurisdiction am adding already exist
 const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
@@ -57,7 +60,9 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
 
 const getlawyerJurisdiction = (publicId) => {
     return new Promise((resolve, reject) => {
-        JurisdictionModel.find({ public_id: publicId }).select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
+        JurisdictionModel.populate("jurisdiction_id").find({ public_id: publicId }).select({ __v: 0, createdAt: 0, updatedAt: 0 })
+        
+        .exec((err, foundData) => {
             if (err) {
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
             }
