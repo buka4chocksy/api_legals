@@ -57,7 +57,7 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
 
 const getlawyerJurisdiction = (publicId) => {
     return new Promise((resolve, reject) => {
-        JurisdictionModel.find({ public_id: publicId }).select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
+        JurisdictionModel.find({ public_id: publicId }).populate("jurisdiction_id").select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
             if (err) {
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
             }
@@ -145,7 +145,7 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
 
 const getSinglelawyerJurisdiction = (publicId, areaId) => {
     return new Promise((resolve, reject) => {
-        JurisdictionModel.find({ public_id: publicId, _id: areaId }).select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
+        JurisdictionModel.find({ public_id: publicId, _id: areaId }).populate("jurisdiction_id").select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
             if (err) {
                 resolve({ success: false, message: 'jurisdiction found', status: 404, data: null });
             }
