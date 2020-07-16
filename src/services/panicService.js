@@ -4,6 +4,7 @@ const panicModel = require('../models/panic/panicHistory')
 const client = require('../models/client/client')
 const lawyer = require('../models/lawyer/lawyer')
 const deactivatePanicModel = require('../models/panic/deactivatedPanic')
+const { sms } = require('../utils/smsUtil')
 var Redis = require('ioredis');
 var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
@@ -140,6 +141,29 @@ exports.getNextOfKin = (id) => {
             if(error)reject(error)
     
             resolve(found)
+
+            for(index=0; index<found.length; index++){
+                const options = {
+                    to: [`${found[index].phone_number}`],
+                    message: `Someone who you are a next of kin to needs a great help`
+                }
+    
+                sms.send(options)
+                    .then(response => {
+                        // if (details.userdeviceid) {
+                        //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
+                        //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
+                        //     });
+    
+                        //     resolve({ message: "The rider is on the way to deliver your package", data: details })
+                        // } else {
+                            // resolve({ message: "The rider is on the way to deliver your package", data: details })
+                        // }
+                    })
+                    .catch(error => {
+                        console.error(error)
+                    });
+            }
         })
     })
 }

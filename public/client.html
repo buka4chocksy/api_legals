@@ -17,12 +17,19 @@
             <option value="scheduled">scheduled</option>
         </select>
         <input id="alert_id" type="text" placeholder="alert_id" value="" />
+        <select id="to_who">
+            <option value="client">client</option>
+            <option value="next_of_kin">next_of_kin</option>
+        </select>
         <hr>
+        <button id="to_client" type="button">MESSAGE CLIENT</button>
+        <button id="to_nok" type="button">MESSAGE KINSMEN</button>
         <button id="client_online" type="button">CLIENT ONLINE</button>
         <button id="panic_alert" type="button">PANIC_ALERT</button>
         <button id="get_lawyer_position" type="button">GET_LAWYER_POSITION</button>
         <button id="get_nok_position" type="button">GET_NOK_POSITION</button>
         <button id="send_message" type="button">SEND_MESSAGE</button>
+        <button id="update_position" type="button">UPDATE_POSITION</button>
 
         <script src="/client.js"></script>
         <script src="/socket.io/socket.io.js"></script>

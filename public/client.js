@@ -5,7 +5,10 @@ var client_id = document.getElementById("client_id"),
     get_lawyer_position = document.getElementById("get_lawyer_position"),
     get_nok_position = document.getElementById("get_nok_position"),
     send_message = document.getElementById("send_message")
-
+    to_client = document.getElementById("to_client")
+    update_position = document.getElementById("update_position"),
+    to__next_of_kin = document.getElementById("to_nok")
+    to_who = document.getElementById("to_who")
 
 var socket = io.connect(window.location.hostname == "localhost" ? "http://localhost:8080/panic" : "https://staging-fastpaceapi.herokuapp.com/user");
 
@@ -28,13 +31,28 @@ panic_alert.addEventListener('click', function() {
 
 send_message.addEventListener('click', function() {
     socket.emit('send_message', {
-        client_id: client_id.value,
         alert_id: alert_id.value,
-        message: "haloooo",
-        to_who: "lawyer"
+        message: "haloooo my lawyer",
+        to_who: 'lawyer'
     })
 })
 
+to_client.addEventListener('click', function() {
+    socket.emit('send_message', {
+        alert_id: alert_id.value,
+        message: "haloooo my client",
+        to_who: to_who.value
+    })
+})
+
+to__next_of_kin.addEventListener('click', function() {
+    socket.emit('send_message', {
+        // client_id: client_id.value,
+        next_of_kin_id: '5f0ef270203ea25111656cd7',
+        message: "haloooo my next of kin",
+        to_who: to_who.value
+    })
+})
 get_lawyer_position.addEventListener('click', function() {
     socket.emit('get_lawyer_position', {
         alert_id: alert_id.value
@@ -43,7 +61,17 @@ get_lawyer_position.addEventListener('click', function() {
 
 get_nok_position.addEventListener('click', function() {
     socket.emit('get_nok_position', {
-        next_of_kin_id: '5f0ef270203ea25111656cd7'
+        next_of_kin_id: '5f0ef270203ea25111656cd7',
+        client_id: client_id.value
+    })
+})
+
+update_position.addEventListener('click', function() {
+    socket.emit('update_nok_position', {
+        id: client_id.value,
+        alert_id: alert_id.value,
+        latitude: 6.3910178,
+        longitude: 7.5340073
     })
 })
 
