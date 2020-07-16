@@ -1,5 +1,5 @@
-const africasTalkingKey = process.env.africasTalkingKey
-const africasTalkingUsername = process.env.africasTalkingUsername
+const africasTalkingKey = process.env.AFRICASTALKINGKEY
+const africasTalkingUsername = process.env.AFRICASTALKINGUSERNAME
 const credentials = {
     apiKey: africasTalkingKey,
     username: africasTalkingUsername
