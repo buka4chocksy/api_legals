@@ -1,9 +1,10 @@
-const nextOfKinModel = require('../models/panic/nextOfKin');
+const nextOfKinModel = require('../models/common/nextOfKin');
 const user = require('../models/auth/users');
 const panicModel = require('../models/panic/panicHistory')
 const client = require('../models/client/client')
 const lawyer = require('../models/lawyer/lawyer')
 const deactivatePanicModel = require('../models/panic/deactivatedPanic')
+const { sms } = require('../utils/smsUtil')
 var Redis = require('ioredis');
 var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
@@ -140,6 +141,29 @@ exports.getNextOfKin = (id) => {
             if(error)reject(error)
     
             resolve(found)
+
+            for(index=0; index<found.length; index++){
+                const options = {
+                    to: [`${found[index].phone_number}`],
+                    message: `Someone who you are a next of kin to needs a great help`
+                }
+    
+                sms.send(options)
+                    .then(response => {
+                        // if (details.userdeviceid) {
+                        //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
+                        //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
+                        //     });
+    
+                        //     resolve({ message: "The rider is on the way to deliver your package", data: details })
+                        // } else {
+                            // resolve({ message: "The rider is on the way to deliver your package", data: details })
+                        // }
+                    })
+                    .catch(error => {
+                        console.error(error)
+                    });
+            }
         })
     })
 }
@@ -157,6 +181,7 @@ exports.updateAlertOnMongo = (alertDetails) => {
 exports.closeAlert = (alertDetails) => {
     return new Promise((resolve , reject)=>{
         panicModel.findOneAndUpdate({alert_id: alertDetails.alert_id}, { $set: { resolved: true } }, {new: true}).exec((err , completed)=>{
+            console.log("Errror", err, completed)
             if(err)reject({err: err , status:500});
             
             resolve(completed)
@@ -166,16 +191,25 @@ exports.closeAlert = (alertDetails) => {
 
 exports.declareHoax = (alertDetails) => {
     return new Promise((resolve , reject)=>{
-        panicModel.findOne({public_id: alertDetails.id}).exec((err , result)=>{
+        panicModel.findOne({alert_id: alertDetails.alert_id}).exec((err , result)=>{
             if(err)reject({err: err , status:500});
             
-            user.findOneAndUpdate({public_id: result.client_id}, { $inc: { hoax: 1 } },{new: true})
-            .aggregate([{
-                $project: { blocked: { $cond: { if: { $gt: [ "$hoax", 1 ] }, then: true, else: false }} }
-            }])
+            user.findOneAndUpdate({public_id: result.client_id}, { $inc: { hoax_alert: 1 } },{new: true})
             .exec((err , completed)=>{
+                console.log("HOAX NUMBER", completed.hoax_alert)
                 if(err)reject({err: err , status:500});
                 
+                if(completed.hoax > 1){
+                    user.findOneAndUpdate({public_id: result.client_id}, { $set: { blocked: true } },{new: true})
+                    .exec((err , completed)=>{
+                        if(err)reject({err: err , status:500});
+                        
+                        if(completed.hoax > 1){
+                            
+                        }
+                        resolve(result)
+                    })
+                }
                 resolve(result)
             })
         })
@@ -312,13 +346,13 @@ exports.getStoredAlertDetails = (alert_id) => {
 
 exports.storePosition = (details) => {
     try {
-        redis.hmset(details.id, "lawyer_id", details.id, "longitude", details.longitude, "latitude", details.latitude)
+        redis.hmset(details.id, "id", details.id, "longitude", details.longitude, "latitude", details.latitude)
     } catch (error) {
         console.error(error)
     }
 }
 
-exports.getStoredLawyerPosition = (lawyer_id) => {
+exports.getStoredPosition = (lawyer_id) => {
     return new Promise((resolve, reject) => {
         redis.hgetall(lawyer_id, (err, result) => {
             result ? resolve(result) : console.log(err)

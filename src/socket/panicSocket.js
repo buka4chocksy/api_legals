@@ -2,6 +2,7 @@ var socket = require('socket.io');
 var panicService = require('../services/panicService');
 var uuidv4 = require('uuid').v4;
 var { getNearbyClients, getNearbyLawyers, sortNearbyDistance, calculateDistance} = require('../utils/calculatorUtil')
+const oneSignal = require('../utils/oneSignalUtil')
 // const Logger = require('../../bin/config/logger');
 
 var allSockets = {}
@@ -58,57 +59,64 @@ function panicSocket(server) {
 
             socket.on('panic_alert', (data) => {
                 panicService.getUser(data.client_id).then((result)=>{
-                    data.alert_id = uuidv4()
-                    data.status = "sent"
-                    data.resolved = false
-                    data.client_img_url = result.image_url, 
-                    data.client_name = result.first_name + " " + result.last_name, 
-                    data.client_phonenumber = result.phone_number, 
-                    data.client_email = result.email_address, 
-                    data.client_state = result.client_state, 
-                    data.client_country = result.client_country
-                    //data.client_id = data.lawyer_id
+                    if(result.hoax_alert < 3){
+                        data.alert_id = uuidv4()
+                        data.status = "sent"
+                        data.resolved = false
+                        data.client_img_url = result.image_url, 
+                        data.client_name = result.first_name + " " + result.last_name, 
+                        data.client_phonenumber = result.phone_number, 
+                        data.client_email = result.email_address, 
+                        data.client_state = result.client_state, 
+                        data.client_country = result.client_country
+                        //data.client_id = data.lawyer_id
 
-                    console.log("BEFORE REDIS STORE", data)
-                    panicService.storeAlertDetails(data)
+                        console.log("BEFORE REDIS STORE", data)
+                        panicService.storeAlertDetails(data)
 
-                    panicService.createPanicAlert(data).then((result)=>{
-                        var sortedDistanceArray = [],
-                        distanceArray = []
+                        panicService.createPanicAlert(data).then((result)=>{
+                            var sortedDistanceArray = [],
+                            distanceArray = []
 
-                        Object.entries(allSockets.lawyers).forEach(([key, value]) => {
-                            var distance = calculateDistance(data.panic_initiation_latitude, data.panic_initiation_longitude, value.lawyer_latitude, value.lawyer_longitude)
-                            distanceArray = getNearbyLawyers(distance, value.lawyer_id);
-                        });
+                            Object.entries(allSockets.lawyers).forEach(([key, value]) => {
+                                var distance = calculateDistance(data.panic_initiation_latitude, data.panic_initiation_longitude, value.lawyer_latitude, value.lawyer_longitude)
+                                distanceArray = getNearbyLawyers(distance, value.lawyer_id);
+                            });
 
-                        sortedDistanceArray = sortNearbyDistance(distanceArray);
-                        console.log(sortedDistanceArray)
+                            sortedDistanceArray = sortNearbyDistance(distanceArray);
+                            console.log(sortedDistanceArray)
 
-                        for (i = 0; i < sortedDistanceArray.length; i++) {
-                            //ridersContacted.push(sortedDistanceArray[i].rider.riderid)
-                            allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address &&
-                                io.of('/panic').to(`${allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", data });
-                        }
-
-                        panicService.getNextOfKin(data.client_id).then((nextOfKins)=>{
-                            data.next_of_kin = [];
-                            // nextOfKins.next_of_kin, 
-                            // data.relationship = nextOfKins.relationship, 
-                            // data.next_of_kin_phone_number = nextOfKins.phone_number, 
-                            // data.next_of_kin_email = nextOfKins.email_address
-
-                            console.log("BEFORE REDIS STORE", data)
-                            panicService.storeAlertDetails(data)
-
-                            //Emit alert to NOKs
-                            for (i = 0; i < nextOfKins.length; i++) {
-                                data.next_of_kin.push(nextOfKins[i])
-
-                                allSockets.clients[nextOfKins[i].client_id].socket_address &&
-                                    io.of('/panic').to(`${allSockets.clients[nextOfKins[i].client_id].socket_address}`).emit('alert_kinsmen', { message: "Help! Help!! Help!!!", data });
+                            for (i = 0; i < sortedDistanceArray.length; i++) {
+                                allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address &&
+                                    io.of('/panic').to(`${allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", data });
                             }
+
+                            panicService.getNextOfKin(data.client_id).then((nextOfKins)=>{
+                                console.log("LIST OF NEXT OF KINS", nextOfKins)
+                                if(nextOfKins.length > 0){
+                                    var nextOfKin = [];
+
+                                    //Emit alert to NOKs
+                                    for (i = 0; i < nextOfKins.length; i++) {
+                                        console.log("EMITTING TO NEXT OF KIN", nextOfKins[i].next_of_kin_id)
+                                        nextOfKin.push(nextOfKins[i]);
+        ``
+                                        if(nextOfKins[i].next_of_kin_id){
+                                            allSockets.clients[nextOfKins[i].next_of_kin_id] &&
+                                            io.of('/panic').to(`${allSockets.clients[nextOfKins[i].next_of_kin_id].socket_address}`).emit('alert_kinsmen', { message: "Help! Help!! Help!!!", data });
+                                        }
+                                    }
+
+                                    data.next_of_kin = nextOfKin
+                                    //console.log("BEFORE REDIS STORE FOR NOK---------->", data)
+                                    panicService.storeAlertDetails(data)
+                                }
+                            }).catch((error)=>{console.log(error)})
                         }).catch((error)=>{console.log(error)})
-                    }).catch((error)=>{console.log(error)})
+                    }else{
+                        allSockets.clients[data.client_id] &&
+                            io.of('/panic').to(`${allSockets.clients[data.client_id].socket_address}`).emit('failed', { message: "You were blocked for making hoax alerts, please contact the admin", data: null });
+                    }
                 }).catch((error)=>{console.log(error)})
             })
 
@@ -139,8 +147,8 @@ function panicSocket(server) {
                             data.client_country = alertDetails.client_country,
                             data.next_of_kin = alertDetails.next_of_kin, 
                             data.relationship = alertDetails.relationship, 
-                            data.next_of_kin_phone_number = next_of_kin.phone_number, 
-                            data.next_of_kin_email = alertDetails.next_of_kin_email
+                            // data.next_of_kin_phone_number = next_of_kin.phone_number, 
+                            // data.next_of_kin_email = alertDetails.next_of_kin_email
 
                             panicService.updateAlertOnRedis(data)
 
@@ -162,43 +170,52 @@ function panicSocket(server) {
                 panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
                     console.log("MESSAGE", data.client_id, data.lawyer_id)
                     if(data.to_who === "lawyer"){
-                        console.log(alertDetails.lawyer_id)
+                        console.log("MESSAGE lawyer",alertDetails.lawyer_id)
                         allSockets.lawyers[alertDetails.lawyer_id] &&
                             io.of('/panic').to(`${allSockets.lawyers[alertDetails.lawyer_id].socket_address}`).emit('receive_message', { message: "You got a new message", data: data.message });
                     }
                     
                     if(data.to_who === "client"){
-                        console.log("MESSAGE", alertDetails.client_id)
+                        console.log("MESSAGE client", alertDetails.client_id)
                         allSockets.clients[alertDetails.client_id] &&
                             io.of('/panic').to(`${allSockets.clients[alertDetails.client_id].socket_address}`).emit('receive_message', { message: "You got a new message", data: data.message });
                     }
 
                     if(data.to_who === "next_of_kin"){
-                        console.log("MESSAGE", alertDetails.client_id)
-                        allSockets.clients[alertDetails.client_id] &&
+                        console.log("MESSAGE next of kin", data.next_of_kin_id)
+                        allSockets.clients[data.next_of_kin_id] &&
                             io.of('/panic').to(`${allSockets.clients[data.next_of_kin_id].socket_address}`).emit('receive_message', {message: "You got a new message", data: data.message});
                     }
                 }).catch((error)=>{console.log(error)})
-                //send messages between client and lawyers
-                //like Canyou talk? Where are you? or any other custom messages
             })
 
             socket.on('close_alert', (data) => {
+                console.log("CLOSE ALERT DATA", {data})
                 //check if the lawyer ticked a)assisted b)not able to assist c)hoax
                 if(data.lawyer_response === "assisted"){
                     panicService.closeAlert(data).then((result)=>{
-                        allSockets.lawyers[data.lawyer_id] &&
-                        io.of('/panic').to(`${allSockets.clients[data.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: null });
+                        allSockets.lawyers[result.lawyer_id] &&
+                        io.of('/panic').to(`${allSockets.lawyers[result.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: result });
+
+                        allSockets.clients[result.client_id] &&
+                        io.of('/panic').to(`${allSockets.clients[result.client_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: result });
                     }).catch((error)=>{console.log(error)})
-                }else if (data.lawyer_response === "unassisted"){
+                }
+                
+                if (data.lawyer_response === "unassisted"){
+                    console.log("I got herr-----------------------")
                     panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
+                        console.log("get the alert details========================", alertDetails)
+                        console.log("AVAILABLE LAWYERSs========================", allSockets.lawyers)
+
                         var sortedDistanceArray = [],
                         distanceArray = []
 
                         //create object to put all clients details from Redis and then send to the new Lawyers
 
                         Object.entries(allSockets.lawyers).forEach(([key, value]) => {
-                            if (value.available === true) {
+                            if (value.lawyer_id !== data.lawyer_id) {
+                                console.log("did you her get at all at all", value)
                                 var distance = calculateDistance(alertDetails.panic_initiation_latitude, alertDetails.panic_initiation_longitude, value.lawyer_latitude, value.lawyer_longitude)
                                 distanceArray = getNearbyLawyers(distance, value.lawyer_id);
                             }
@@ -206,15 +223,18 @@ function panicSocket(server) {
                         sortedDistanceArray = sortNearbyDistance(distanceArray);
 
                         for (i = 0; i < sortedDistanceArray.length; i++) {
-                            //ridersContacted.push(sortedDistanceArray[i].rider.riderid)
-                            allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address &&
+                            console.log("LAWYER TO ASK FOR HELP", allSockets.lawyers[sortedDistanceArray[i].lawyer_id] )
+
+                            allSockets.lawyers[sortedDistanceArray[i].lawyer_id] &&
                                 io.of('/panic').to(`${allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", alertDetails });
                         }
                     }).catch((error)=>{console.log(error)})
-                }else{
+                }
+                
+                if (data.lawyer_response === "hoax"){
                     panicService.declareHoax(data).then((result)=>{
                         allSockets.clients[result.client_id] &&
-                        io.of('/panic').to(`${allSockets.clients[result.client_id].socket_address}`).emit('alert_closed', { message: "Your alert was declared a hoax, do you want to appeal against this?", data: null });
+                        io.of('/panic').to(`${allSockets.clients[result.client_id].socket_address}`).emit('declared_hoax', { message: "Your alert was declared a hoax, do you want to appeal against this?", data: null });
                     }).catch((error)=>{console.log(error)})
                 }
                 //if assited, tick the alert as completed
@@ -225,21 +245,22 @@ function panicSocket(server) {
                //clear lawyer position from redis
             })
 
-            socket.on('update_position', (data)=>{
+            socket.on('update_lawyer_position', (data)=>{
                 //store update clients position on redis with the public_id
                 //fetch all ongoing alerts of the person(possibly from redis) and emit position to the clients or lawyers 
                 //data will contai lawyerid, lawyerlongitude, lawyerlatitude
                 panicService.fetchAllUnresolved(data)
                 .then((result) => {
-                    //console.log(result)
+                    console.log("LIST OF UNRESOLVED PANIC",result)
+                    console.log("LAWYER TO STORE HIS POSITION", data)
                     panicService.storePosition(data)
 
 
                     for(i=0; i<result.data.length; i++){
-                        console.log(allSockets.clients[result.data[i].client_id].socket_address)
+                        console.log(allSockets.clients[result.data[i].client_id])
 
                         allSockets.clients[result.data[i].client_id] &&
-                            io.of('/panic').to(`${allSockets.clients[result.data[i].client_id].socket_address}`).emit('lawyer_position', {message:"Rider position", data});
+                            io.of('/panic').to(`${allSockets.clients[result.data[i].client_id].socket_address}`).emit('lawyer_position', {message:"Lawyer position", data});
                     }
                 })
                 .catch((error) => {
@@ -269,19 +290,34 @@ function panicSocket(server) {
                 }).catch((error)=>{console.log(error)})
             });
 
+            socket.on('update_nok_position', (data)=>{
+                //store update clients position on redis with the public_id
+                //fetch all ongoing alerts of the person(possibly from redis) and emit position to the clients or lawyers 
+                //data will contai lawyerid, lawyerlongitude, lawyerlatitude
+                console.log("UPDATING NOK POSITION", data)
+                panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
+                    console.log("NOK TO STORE HIS POSITION", data)
+                    panicService.storePosition(data)
+
+                    allSockets.clients[alertDetails.client_id] &&
+                        io.of('/panic').to(`${allSockets.clients[alertDetails.client_id].socket_address}`).emit('nok_position', {message:"Next of kin position", data});
+                }).catch((error)=>{console.log(error)})
+            });
+
             socket.on('get_nok_position', (data)=>{
                 //fetch position of a lawer/client with the public_id
                //data will contai dispatchid, userid
-                panicService.getStoredPosition(alertDetails.lawyer_id).then((lawyerDetails)=>{
-                    console.log("LAWYER TO GET HIS POSITION", nokDetails)
+               console.log("GET NOK POSITION",data)
+                panicService.getStoredPosition(data.next_of_kin_id).then((nokDetails)=>{
+                    console.log("NOK TO GET HIS POSITION", nokDetails)
                     var positionDetails = {
                         next_of_kin_id: nokDetails.id, 
                         next_of_kin_longitude: nokDetails.longitude, 
                         next_of_kin_latitude: nokDetails.latitude
                     }
 
-                    allSockets.clients[alertDetails.client_id] &&
-                        io.of('/panic').to(`${allSockets.clients[alertDetails.client_id].socket_address}`).emit('lawyer_position', { message: "Lawyers Position", data: positionDetails });
+                    allSockets.clients[data.client_id] &&
+                        io.of('/panic').to(`${allSockets.clients[data.client_id].socket_address}`).emit('nok_position', { message: "Next of kin Position", data: positionDetails });
                 }).catch((error)=>{console.log(error)})
            });
 
