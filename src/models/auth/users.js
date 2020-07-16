@@ -21,6 +21,7 @@ const userSchema = new schema({
     public_id: { type: mongoose.SchemaTypes.ObjectId, unique: true },
     terms_accepted: { type: Boolean, default: null },
     is_complete: { type: Boolean, default: false },
+    gender : {type : String, default : null},
     oauth: {
         provider: { type: String, enum: ['google', 'linkedin'] },
         oauthID: { type: String },
@@ -38,7 +39,6 @@ userSchema.pre('save', function () {
 });
 
 userSchema.methods.comparePassword = function (password) {
-    console.log("comparing password", password);
     return bcrypt.compareSync(password, this.password);
 };
 

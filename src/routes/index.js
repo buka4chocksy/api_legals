@@ -13,6 +13,7 @@ const experienceRoute = require('./experienceRoutes')
 const educationRoute = require('./common/educationRoutes')
 const commonPracticeAreaRoutes = require('./common/practiceAreaRoutes');
 const commonJurisdictionRoutes = require('./common/jurisdictionRoutes');
+const commonUserRoutes = require('./common/userSettingRoutes');
 module.exports = (router) => {
     router.use('/auth', authRoutes());
     router.use("/practicearea", commonPracticeAreaRoutes());
@@ -29,5 +30,6 @@ module.exports = (router) => {
     router.use('/bio', bioRoute())
     router.use('/experience', experienceRoute())
     router.use('/education', educationRoute())
+    router.use("/user/setting", commonUserRoutes())
     return router;
 }
