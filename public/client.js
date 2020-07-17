@@ -25,7 +25,7 @@ panic_alert.addEventListener('click', function() {
     socket.emit('panic_alert', {
         client_id: client_id.value,
         panic_initiation_latitude: 6.3910178,
-        panic_initiation_longitude: 7.5340073
+        panic_initiation_longitude: 7.5340073,
     })
 })
 
@@ -100,5 +100,9 @@ socket.on('receive_message', function(data) {
 })
 
 socket.on('alert_kinsmen', function(data) {
+    console.log(data)
+})
+
+socket.on('alert_successful', function(data) {
     console.log(data)
 })

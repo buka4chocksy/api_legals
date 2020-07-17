@@ -29,5 +29,6 @@ yarn-error.log*
 .env
 yarn.lock
 .random.js
+package-lock.json
 
 /uploads

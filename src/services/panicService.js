@@ -1,6 +1,7 @@
 const nextOfKinModel = require('../models/common/nextOfKin');
 const user = require('../models/auth/users');
 const panicModel = require('../models/panic/panicHistory')
+const userSettings = require('../models/common/userSettings')
 const client = require('../models/client/client')
 const lawyer = require('../models/lawyer/lawyer')
 const deactivatePanicModel = require('../models/panic/deactivatedPanic')
@@ -88,44 +89,93 @@ exports.getUser = (id) => {
             if(!foundUser){
                reject({message: "User does not exist"}) 
             }
-            
-            //re-write to use aggregate
-            if(foundUser.user_type === "lawyer"){
-                lawyer.findOne({public_id: id}).exec((err , found)=>{
-                    if(err)reject({err: err , status:500});
 
-                    // console.log("FOUND", found)
+            userSettings.findOne({public_id: id}).exec((err, settings)=>{
+                if(err)reject({err: err , status:500});
 
-                    if(!found){
-                       reject({message: "Lawyer does not exist"}) 
-                    }
+                //console.log("", settings)
+                if(settings && settings.device_id) foundUser.device_id = settings.device_id 
 
-                    // foundUser.client_country = found.state_of_origin
-                    // foundUser.client_state = found.country 
-                    
-                    resolve(foundUser)
-                })
-            }
-            
-            if(foundUser.user_type === "client"){
-                client.findOne({public_id: id}).exec((err , found)=>{
-                    if(err)reject({err: err , status:500});
+                //re-write to use aggregate
+                if(foundUser.user_type === "lawyer"){
+                    lawyer.findOne({public_id: id}).exec((err , found)=>{
+                        if(err)reject({err: err , status:500});
 
-                    // console.log("FOUND", found)
+                        if(!found){
+                        reject({message: "Lawyer does not exist"}) 
+                        }
+                        
+                        resolve(foundUser)
+                    })
+                }
+                
+                if(foundUser.user_type === "client"){
+                    client.findOne({public_id: id}).exec((err , found)=>{
+                        if(err)reject({err: err , status:500});
 
-                    if(!found){
-                       reject({message: "Client does not exist"}) 
-                    }
+                        if(!found){
+                        reject({message: "Client does not exist"}) 
+                        }
 
-                    foundUser.client_country = found.state_of_origin
-                    foundUser.client_state = found.country 
-                    
-                    resolve(foundUser)
-                })
-            }
+                        foundUser.client_country = found.state_of_origin
+                        foundUser.client_state = found.country 
+                        
+                        resolve(foundUser)
+                    })
+                }
+            })
         })
     })
 }
+
+// exports.getUser = (id) => {
+//     return new Promise((resolve , reject)=>{
+//         user.aggregate([{
+//             $lookup: {
+//                     from: "userSettings",
+//                     localField: "public_id",
+//                     foreignField: "public_id",
+//                     as: "copies_sold"
+//             }
+//         }])
+//         user.findOne({public_id: id}).exec((err , foundUser)=>{
+//             if(err)reject({err: err , status:500});
+//             // console.log("FOUND USER", foundUser, foundUser.user_type)
+
+//             if(!foundUser){
+//                reject({message: "User does not exist"}) 
+//             }
+            
+//             //re-write to use aggregate
+//             if(foundUser.user_type === "lawyer"){
+//                 lawyer.findOne({public_id: id}).exec((err , found)=>{
+//                     if(err)reject({err: err , status:500});
+
+//                     if(!found){
+//                        reject({message: "Lawyer does not exist"}) 
+//                     }
+                    
+//                     resolve(foundUser)
+//                 })
+//             }
+            
+//             if(foundUser.user_type === "client"){
+//                 client.findOne({public_id: id}).exec((err , found)=>{
+//                     if(err)reject({err: err , status:500});
+
+//                     if(!found){
+//                        reject({message: "Client does not exist"}) 
+//                     }
+
+//                     foundUser.client_country = found.state_of_origin
+//                     foundUser.client_state = found.country 
+                    
+//                     resolve(foundUser)
+//                 })
+//             }
+//         })
+//     })
+// }
 
 exports.createPanicAlert = (panicDetails)=>{
     return new Promise((resolve , reject)=>{
@@ -137,33 +187,34 @@ exports.createPanicAlert = (panicDetails)=>{
 
 exports.getNextOfKin = (id) => {
     return new Promise((resolve , reject)=>{
-        nextOfKinModel.find({public_id: id}).exec((error , found)=>{
+        nextOfKinModel.find({public_id: id}).populate('next_of_kin').exec((error , found)=>{
             if(error)reject(error)
     
             resolve(found)
 
-            for(index=0; index<found.length; index++){
-                const options = {
-                    to: [`${found[index].phone_number}`],
-                    message: `Someone who you are a next of kin to needs a great help`
-                }
+            console.log("NEXT OF KIN", found)
+            // for(index=0; index<found.length; index++){
+            //     const options = {
+            //         to: [`${found[index].phone_number}`],
+            //         message: `Someone who you are a next of kin to needs a great help`
+            //     }
     
-                sms.send(options)
-                    .then(response => {
-                        // if (details.userdeviceid) {
-                        //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
-                        //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
-                        //     });
+            //     sms.send(options)
+            //         .then(response => {
+            //             // if (details.userdeviceid) {
+            //             //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
+            //             //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
+            //             //     });
     
-                        //     resolve({ message: "The rider is on the way to deliver your package", data: details })
-                        // } else {
-                            // resolve({ message: "The rider is on the way to deliver your package", data: details })
-                        // }
-                    })
-                    .catch(error => {
-                        console.error(error)
-                    });
-            }
+            //             //     resolve({ message: "The rider is on the way to deliver your package", data: details })
+            //             // } else {
+            //                 // resolve({ message: "The rider is on the way to deliver your package", data: details })
+            //             // }
+            //         })
+            //         .catch(error => {
+            //             console.error(error)
+            //         });
+            // }
         })
     })
 }
@@ -314,7 +365,8 @@ exports.storeAlertDetails = (alertDetails) => {
         redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
         "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", alertDetails.panic_initiation_latitude, 
         "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, "client_state", alertDetails.client_state, 
-        "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin)
+        "client_device_id", alertDetails.client_device_id, "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin, "next_of_kin_device_id", 
+        alertDetails.next_of_kin_device_id)
 
         redis.expire(alertDetails.alert_id, 259200)
 

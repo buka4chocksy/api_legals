@@ -58,6 +58,9 @@ function panicSocket(server) {
             })
 
             socket.on('panic_alert', (data) => {
+                allSockets.clients[data.client_id] &&
+                    io.of('/panic').to(`${allSockets.clients[data.client_id].socket_address}`).emit('alert_successful', { message: "Panic alert successful, You can now relax!", data: null });
+
                 panicService.getUser(data.client_id).then((result)=>{
                     if(result.hoax_alert < 3){
                         data.alert_id = uuidv4()
@@ -68,7 +71,8 @@ function panicSocket(server) {
                         data.client_phonenumber = result.phone_number, 
                         data.client_email = result.email_address, 
                         data.client_state = result.client_state, 
-                        data.client_country = result.client_country
+                        data.client_country = result.client_country,
+                        data.client_device_id = result.device_id,
                         //data.client_id = data.lawyer_id
 
                         console.log("BEFORE REDIS STORE", data)
@@ -100,6 +104,8 @@ function panicSocket(server) {
                                     for (i = 0; i < nextOfKins.length; i++) {
                                         console.log("EMITTING TO NEXT OF KIN", nextOfKins[i].next_of_kin_id)
                                         nextOfKin.push(nextOfKins[i]);
+
+                                        if(nextOfKins[i].next_of_kin) data.next_of_kin_device_id = nextOfKins[i].next_of_kin.device_id
         ``
                                         if(nextOfKins[i].next_of_kin_id){
                                             allSockets.clients[nextOfKins[i].next_of_kin_id] &&
@@ -107,7 +113,7 @@ function panicSocket(server) {
                                         }
                                     }
 
-                                    data.next_of_kin = nextOfKin
+                                    data.next_of_kin = nextOfKin                                  
                                     //console.log("BEFORE REDIS STORE FOR NOK---------->", data)
                                     panicService.storeAlertDetails(data)
                                 }
@@ -129,8 +135,9 @@ function panicSocket(server) {
                             data.lawyer_img_url = result.lawyer_img_url, 
                             data.lawyer_name = result.lawyer_name, 
                             data.lawyer_phonenumber = result.lawyer_phonenumber, 
-                            data.lawyer_email = result.lawyer_email
-                            data.status = "accepted"
+                            data.lawyer_device_id = result.device_id,
+                            data.lawyer_email = result.lawyer_email,
+                            data.status = "accepted",
                             data.client_img_url = alertDetails.client_img_url, 
                             data.alert_id = alertDetails.alert_id, 
                             data.client_name = alertDetails.client_name, 
@@ -147,6 +154,7 @@ function panicSocket(server) {
                             data.client_country = alertDetails.client_country,
                             data.next_of_kin = alertDetails.next_of_kin, 
                             data.relationship = alertDetails.relationship, 
+                            data.client_device_id = alertDetails.client_device_id
                             // data.next_of_kin_phone_number = next_of_kin.phone_number, 
                             // data.next_of_kin_email = alertDetails.next_of_kin_email
 
@@ -323,12 +331,12 @@ function panicSocket(server) {
 
             socket.on('find_panics', (data)=>{
                 panicService.getUser(data.lawyer_id).then((result)=>{
-                //fetch available panics and emit to lawyer
-                var sortedDistanceArray = [],
-                    distanceArray = [],
-                    distances = [];
+                    //fetch available panics and emit to lawyer
+                    var sortedDistanceArray = [],
+                        distanceArray = [],
+                        distances = [];
 
-                panicService.fetchExistingAlerts().then((oldDispatchArray) => {
+                    panicService.fetchExistingAlerts().then((oldDispatchArray) => {
                         //console.log("OLDDISPATCHARRAY",oldDispatchArray)
                         if(oldDispatchArray.length > 0){
                             oldDispatchArray.map((oldDispatchObject) => {

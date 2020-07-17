@@ -31,7 +31,7 @@ const addNextofKinDetails = (publicId, nextofKinData) => {
                             reject({ err: err, status: 500 })
                         });
                     }else{
-                        
+                        details.next_of_kin = foundNOK._id
                         details.next_of_kin_id = foundNOK.public_id
                         NextOfKinSchema.create(details).then(created => {
                             if (created) {
