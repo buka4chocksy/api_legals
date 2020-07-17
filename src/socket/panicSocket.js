@@ -58,21 +58,22 @@ function panicSocket(server) {
             })
 
             socket.on('panic_alert', (data) => {
+                data.alert_id = uuidv4()
+
                 allSockets.clients[data.client_id] &&
-                    io.of('/panic').to(`${allSockets.clients[data.client_id].socket_address}`).emit('alert_successful', { message: "Panic alert successful, You can now relax!", data: null });
+                    io.of('/panic').to(`${allSockets.clients[data.client_id].socket_address}`).emit('alert_successful', { message: "Panic alert successful, You can now relax!", data: data.alert_id });
 
                 panicService.getUser(data.client_id).then((result)=>{
                     if(result.hoax_alert < 3){
-                        data.alert_id = uuidv4()
                         data.status = "sent"
                         data.resolved = false
-                        data.client_img_url = result.image_url, 
-                        data.client_name = result.first_name + " " + result.last_name, 
-                        data.client_phonenumber = result.phone_number, 
-                        data.client_email = result.email_address, 
-                        data.client_state = result.client_state, 
-                        data.client_country = result.client_country,
-                        data.client_device_id = result.device_id,
+                        data.client_img_url = result.image_url
+                        data.client_name = result.first_name + " " + result.last_name
+                        data.client_phonenumber = result.phone_number
+                        data.client_email = result.email_address
+                        data.client_state = result.client_state 
+                        data.client_country = result.client_country
+                        data.client_device_id = result.device_id
                         //data.client_id = data.lawyer_id
 
                         console.log("BEFORE REDIS STORE", data)
