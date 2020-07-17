@@ -11,7 +11,7 @@ const UpdateUserAvatar = (req, res, next) => {
     .catch(error => res.status(500).send(error));
 }
 
-const addDevice = (req , res)=>{
+const AddUserDeviceId = (req , res)=>{
     console.log("UPDATE/CREATE DEVICE ID",req.auth, req.params.id)
     addDeviceId(req.auth.public_id, req.auth.Id, req.params.id).then(data =>{
         res.status(data.status).send(data);
@@ -24,5 +24,5 @@ const addDevice = (req , res)=>{
 
 
 module.exports = {
-    UpdateUserDetails,UpdateUserAvatar, addDevice
+    UpdateUserDetails,UpdateUserAvatar, AddUserDeviceId
 }
