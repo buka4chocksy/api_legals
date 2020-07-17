@@ -36,7 +36,7 @@ const updatePracticeArea = (id, new_name) => {
 //get all practicearea
 const getAllPracticeArea = () => {
     return new Promise((resolve, reject) => {
-        model.find({}).then(data => {
+        model.find({}).sort({name: 'asc' }).then(data => {
             if (data) {
                 resolve({ success: true, message: 'practice areas retrieved', data: data , status:200 })
             } else {

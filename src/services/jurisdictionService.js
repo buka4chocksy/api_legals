@@ -36,7 +36,7 @@ const updateJurisdiction = (id, new_name) => {
 //get all jurisdiction
 const getAllJurisdiction = () => {
     return new Promise((resolve, reject) => {
-        model.find({}).then(data => {
+        model.find({}).sort({name: 'asc' }).then(data => {
             if (data) {
                 resolve({ success: true, message: 'jurisdiction retrieved', data: data , status:200 })
             } else {
