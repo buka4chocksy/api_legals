@@ -285,12 +285,16 @@ exports.deactivateAlert = (deactivationDetails) => {
                 if (err || !currentUser) {
                     reject({ message: "User not found", statusCode: 404, data: null })
                 } else {
-                    console.log("ERORRRRR")
-                    var validPassword = currentUser.comparePassword(deactivationDetails.password);
-                    if (validPassword) {
-                        deleteStoredAlertDetails(deactivationDetails.alert_id)
+                    var validPassword;
 
-                        deactivatePanicModel.create(deactivationDetails)
+                    console.log("ERORRRRR")
+                    if(deactivationDetails.password){
+                        validPassword = currentUser.comparePassword(deactivationDetails.password);
+
+                        if (validPassword){ 
+                            reject({ message: "Invalid user credentials", statusCode: 400, data: null });
+                        }else{
+                            deactivatePanicModel.create(deactivationDetails)
                             .then(result => {
                                 resolve({ message: "Deactivation successful", status: 200, data: null });
                             }).catch(error => {
@@ -298,8 +302,13 @@ exports.deactivateAlert = (deactivationDetails) => {
                                 console.error(error)
                                 reject({message : "Something went wrong", data : null, statusCode : 500})
                             })
-                    } else {
-                        reject({ message: "Invalid user credentials", statusCode: 400, data: null });
+                        }
+                    }
+
+                    deleteStoredAlertDetails(deactivationDetails.alert_id)
+
+                    if(!deactivationDetails.password){
+                        resolve({ message: "Deactivation successful", status: 200, data: null });
                     }
                 }
             })
