@@ -15,19 +15,19 @@ module.exports = function lawyerController() {
     }
     
     this.getLawyerProile = (req, res) => {
-        service.getLawyerProfile(req.auth.publicId).then(data => {
+        service.getLawyerProfile(req.auth.public_id).then(data => {
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
     
     this.updateLawyerProfile = (req, res) => {
-        service.editLawyerProfile(req.auth.publicId, req.body).then(data => {
+        service.editLawyerProfile(req.auth.public_id, req.body).then(data => {
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
 
     this.deleteUserAccount = (req, res) => {
-        service.deleteAccount(req.auth.Id , req.auth.publicId).then(data => {
+        service.deleteAccount(req.auth.Id , req.auth.public_id).then(data => {
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err))
     }
@@ -72,7 +72,7 @@ module.exports = function lawyerController() {
             });
         }
         service
-            .profilePicture(req.auth.publicId, requestDetails)
+            .profilePicture(req.auth.public_id, requestDetails)
             .then(data => {
                 res.status(data.status).send(data);
             })

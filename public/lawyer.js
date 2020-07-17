@@ -5,9 +5,10 @@ var lawyer_id = document.getElementById("lawyer_id"),
     close_alert = document.getElementById("close_alert"),
     update_position = document.getElementById("update_position"),
     alert_id = document.getElementById("alert_id")
+    response = document.getElementById("response")
     
 var details = {}
-var    socket = io.connect(window.location.hostname == "localhost" ? "http://localhost:8080/panic" : "https://staging-fastpaceapi.herokuapp.com/user")
+var    socket = io.connect(window.location.hostname == "localhost" ? "http://localhost:8080/panic" : "https://staging-lawyerpp-api-v2.herokuapp.com/panic")
 
 lawyer_online.addEventListener('click', function() {
     socket.emit('online', {
@@ -39,20 +40,26 @@ send_message.addEventListener('click', function() {
     socket.emit('send_message', {
         lawyer_id: lawyer_id.value,
         alert_id: alert_id.value,
-        message: "What's going on client?!"
+        message: "What's going on client?!",
+        to_who: "client"
     })
 })
 
 close_alert.addEventListener('click', function() {
+    console.log({
+        alert_id: alert_id.value,
+        lawyer_response: response.value
+    })
     socket.emit('close_alert', {
         lawyer_id: lawyer_id.value,
-        response: response.value
+        alert_id: alert_id.value,
+        lawyer_response: response.value
     })
 })
 
 update_position.addEventListener('click', function() {
-    socket.emit('update_position', {
-        lawyer_id: lawyer_id.value,
+    socket.emit('update_lawyer_position', {
+        id: lawyer_id.value,
         lawyer_latitude: 6.3910178,
         lawyer_longitude: 7.5340073
     })

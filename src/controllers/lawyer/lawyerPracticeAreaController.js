@@ -1,34 +1,36 @@
 // const service = require('../services/practiceAreaService');
-const service = require('../services/lawyer/practiceAreaService');
+const service = require('../../services/lawyer/lawyerPracticeAreaService');
 
 module.exports = function practiceAreaController(){
-
     this.addLawyerPracticeArea = (req,res)=>{
-        service.addLawyerPracticeArea(req.body.public_id, req.body.practice_area_data).then(data =>{
+        console.log("I GOT HERE",req.auth, req.auth.public_id)
+        service.addLawyerPracticeArea(req.auth.public_id, req.body.practice_area_data).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }
 
     this.getUserPracticeArea = (req,res)=>{
-        service.getUserPracticeArea(req.query.public_id).then(data =>{
+        // console.log("--------------------", req.query)
+        service.getUserPracticeArea(req.auth.public_id).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }
 
     this.updateUserPracticeArea = (req,res)=>{
-        service.updateUserPracticeArea(req.body.public_id, req.body.practice_area, req.body.patch).then(data =>{
+        console.log("THE BODY",req.body)
+        service.updateUserPracticeArea(req.auth.public_id, req.params.id, req.body).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }
 
     this.getSingleUserPracticeArea = (req,res)=>{
-        service.getSingleUserPracticeArea(req.query.public_id, req.query.practice_area).then(data =>{
+        service.getSingleUserPracticeArea(req.auth.public_id,  req.params.id).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }
 
     this.deleteUserPracticeArea = (req,res)=>{
-        service.deleteUserPracticeArea(req.query.public_id, req.query.practice_area).then(data =>{
+        service.deleteUserPracticeArea(req.auth.public_id,  req.params.id).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
     }

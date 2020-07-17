@@ -32,17 +32,15 @@ module.exports.ErrorHandler = function (req, res, next, error) {
         if (!isProduction) 
         {}
         next();
+};
 
-    };
-
-module.exports.schemaValidatorHandler = function (schema) {
-    return async function (req, res, next) {
-        // 
+module.exports.schemaValidatorHandler = (schema) => {
+    return async (req, res, next) =>{
         joiValidator(req.body, schema).then(result => {
             next();
         }).catch(error => {
-            
-            res.status(400).send(error);
+            // res.status(400).send(error);
+            res.status(400).send({ success: false, message: error, data: null })
         });
     };
 }

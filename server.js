@@ -91,13 +91,14 @@ app.get("/client", (req, res) => {
   return res.sendFile(__dirname + "/public/client.html");
 })
 
-app.use((req, res, next) => {
-  const error = new Error('Not found');
-  error.status = 404;
-  next(error);
-})
+// app.use((req, res, next) => {
+//   const error = new Error('Not found');
+//   error.status = 404;
+//   next(error);
+// })
 
 app.use((error, req, res, next) => {
+  console.log("in here for general error", error)
   res.status(error.status || 500);
   res.json({
     error: {

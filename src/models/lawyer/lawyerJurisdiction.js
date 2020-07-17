@@ -12,8 +12,11 @@ const LawyerJurisdictionSchema = new schema({
         certificate_id : {type : String},
         certificate_delete_token : {type: String},
         certificate_resource_type : {type : String},
-        certificate_public_id : {type :String}
-    }]
+        certificate_public_id : {type :String},
+        certificate_name: {type :String},
+        mime_type: {type :String}
+    }],
+    verified : {type : Boolean, default : null}
 }, { timestamps: true });
 
 module.exports = mongoose.model('lawyerjurisdiction', LawyerJurisdictionSchema);

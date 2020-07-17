@@ -1,11 +1,11 @@
 const model = require('../models/lawyer/jurisdiction');
 
 //create jurisdiction
-exports.create = (data) => {
+const createJurisdiction = (data) => {
     return new Promise((resolve, reject) => {
         model.findOne({ name: data.name }).then(exists => {
             if (exists) {
-                resolve({ success: false, message: 'jurisdiction already exists !!!', status:400})
+                resolve({ success: false, message: 'jurisdiction already exists ', status:409})
             } else {
                 const detail = { name: data.name }
                 model.create(detail).then(created => {
@@ -21,33 +21,34 @@ exports.create = (data) => {
 }
 
 //update jurisdiction
-exports.update = (id, new_name) => {
+const updateJurisdiction = (id, new_name) => {
     return new Promise((resolve, reject) => {
         model.findByIdAndUpdate({ _id: id }, { name: new_name }).then(updated => {
             if (updated) {
                 resolve({ success: true, message: 'jurisdiction updated successfully' , status:200 })
             } else {
-                resolve({ success: false, message: 'Error encountered while updating jurisdiction !!!', status:400 })
+                resolve({ success: false, message: 'Error encountered while updating jurisdiction ', status:400 })
             }
         }).catch(err => reject({err: err , status:500}))
     })
 }
 
 //get all jurisdiction
-exports.getAll = () => {
+const getAllJurisdiction = () => {
     return new Promise((resolve, reject) => {
-        model.find({}).then(data => {
+        model.find({}).sort({name: 'asc' }).then(data => {
             if (data) {
-                resolve({ success: true, message: 'jurisdiction', data: data , status:200 })
+                resolve({ success: true, message: 'jurisdiction retrieved', data: data , status:200 })
             } else {
-                resolve({ success: false, message: 'no jurisdiction found !!!' ,status:404})
+                resolve({ success: false, message: 'no jurisdiction found ' ,status:404})
             }
         }).catch(err => reject({err: err , status:500}));
     })
 }
 
 //get single jurisdiction
-exports.getById = (data) => {
+const getJurisdictionById = (data) => {
+    console.log(data)
     return new Promise((resolve, reject) => {
         model.findOne({ _id: data }).then(found => {
             if (found) {
@@ -60,7 +61,7 @@ exports.getById = (data) => {
 }
 
 //delete jurisdiction
-exports.delete = (data) => {
+const deleteJurisdiction = (data) => {
     return new Promise((resolve, reject) => {
         model.findOneAndRemove({ _id: data }).then(found => {
             if (found) {
@@ -70,4 +71,8 @@ exports.delete = (data) => {
             }
         }).catch(err => reject({err: err , status:500}));
     })
+}
+
+module.exports = {
+    createJurisdiction, getAllJurisdiction, updateJurisdiction, getAllJurisdiction, getJurisdictionById, deleteJurisdiction
 }

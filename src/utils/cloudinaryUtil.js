@@ -6,7 +6,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-uploadToCloud = async (filename, folder = "public") => {
+const uploadToCloud = async (filename, folder = "public") => {
     try{
         var result = await   cloudinary.uploader.upload(filename,{folder : `/lawyerpp/${cloudinaryPath}/${folder}/`, return_delete_token : true, resource_type : "auto"})
         return result;
@@ -18,14 +18,15 @@ uploadToCloud = async (filename, folder = "public") => {
 
 
 
-deleteFromCloud = function (fileId) {
+const deleteFromCloud = function (fileId) {
     return cloudinary.uploader.destroy(fileId, function (result) {
         //console.log("HERE S THE ERROR", err)
+        console.log("check here for destroy",fileId, result )
         return Promise.resolve(result);
     });
 };
 
-multipleUpload = function (filenames = []) {
+const multipleUpload = function (filenames = []) {
     console.log("in clodinary method", filenames);
     return new Promise((resolve, reject) => {
         var responses = [];

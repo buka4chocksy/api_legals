@@ -1,5 +1,5 @@
 const bio = require('../../models/lawyer/bio');
-const { applyOperation, validate } = require('fast-json-patch');
+const { applyPatch, validate } = require('fast-json-patch');
 
 exports.createBio = (data) => {
     return new Promise((resolve, reject) => {
@@ -25,13 +25,13 @@ exports.updateBio = (data, patchUpdateData) => {
             }
 
             console.log(foundBio)
-            // let validationError = validate(patchUpdateData);
-            // if(validationError){
-            //     console.log(validationError)
-            //     resolve({ success: false, message: 'invalid operation', status: 400 });
-            // }
+            let validationError = validate(patchUpdateData);
+            if(validationError){
+                console.log(validationError)
+                resolve({ success: false, message: 'invalid operation', status: 400 });
+            }
 
-            let appliedPatch = applyOperation(foundBio.toObject(), patchUpdateData);
+            let appliedPatch = applyPatch(foundBio.toObject(), patchUpdateData);
 
             bio.findOneAndUpdate({public_id : data.public_id}, appliedPatch.newDocument, {new : true }).exec((err, updatedData) => {
                 if(err || !updatedData){

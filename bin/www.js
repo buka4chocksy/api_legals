@@ -4,16 +4,17 @@
  * Module dependencies.
  */
 
-var app = require('../server');
-// var logger = require('../dist/util/logger');
-var path = require('path');
-var fs = require('fs');
-var http = require('http');
-var https  = require('https')
-var dbConfiguration = require('./config/db');
-var initSocket = require('../src/socket').initSocket
-var port = normalizePort(process.env.PORT || '8080');
-var serverType = process.env.servertype;
+const app = require('../server');
+// const logger = require('../dist/util/logger');
+const path = require('path');
+const fs = require('fs');
+const http = require('http');
+const https  = require('https')
+const dbConfiguration = require('./config/db');
+const initSocket = require('../src/socket').initSocket
+const Seeder = require('./config/seeder');
+const port = normalizePort(process.env.PORT || '8080');
+const serverType = process.env.servertype;
 app.set('port', port);
 var server = {};
 

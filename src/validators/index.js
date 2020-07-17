@@ -1,12 +1,12 @@
 const Joi = require('@hapi/joi');
 
-module.exports = function validate(data, schema) {
-    return new Promise((resolve, reject) => {
-        Joi.validate(data, schema).then(result => {
-           resolve();
-       }).catch(error => {
-           reject(error.details.map(error => error.message));
-       });
-
-    })
+module.exports = (data, schema, cb) => {
+        const { error, value }    = schema.validate(data);
+        // console.log("data check", error, value, data)
+        if(error){
+            cb(error.details.map(error => error.message), null);
+        }else{
+            cb(null, value);
+        }
+        return {error, value};
 }

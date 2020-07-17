@@ -2,7 +2,7 @@ const service = require('../services/panicService');
 
 module.exports = function panicController(){
     this.createPanicAlert = (req,res)=>{
-        service.createPanic(req.body , req.auth.publicId , req.auth.userType).then(data =>{
+        service.createPanic(req.body , req.auth.public_id , req.auth.userType).then(data =>{
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }
@@ -14,21 +14,24 @@ module.exports = function panicController(){
     }
 
     this.getUserPanicAlertDetail = (req,res)=>{
-        service.getPanicAlertById(req.auth.publicId).then(data =>{
+        service.getPanicAlertById(req.auth.public_id).then(data =>{
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }
 
     this.deactivatePanic = (req, res)=>{
         var deactivationDetails = {
-            client_id: req.body.public_id,
+            client_id: req.auth.public_id,
             alert_id: req.body.alert_id,
             reason: req.body.reason,
-            alert_type: req.body.alert_type
+            alert_type: req.body.alert_type,
+            password: req.body.password
         }
 
         service.deactivateAlert(deactivationDetails).then(data =>{
             res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(err));
+        }).catch(err =>{
+            console.log(err)
+            res.status(err.status).send(err)});
     }
 }

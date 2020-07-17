@@ -7,10 +7,11 @@ const {generateToken,verifyToken, generateTokenSync }  = require('../utils/jwtUt
 const {setRequestHeader} = require('../utils/responseFormatter');
 const uuid = require('uuid').v4;
 exports.Register = (data, res) => {
+    console.log("I GOT HERE")
     const userDetails = {
         first_name: data.first_name,
         last_name: data.last_name,
-        email_address: data.email_address,
+        email_address: data.email_address.toLowerCase(),
         phone_number: data.phone_number,
         password: data.password,
     }
@@ -70,7 +71,7 @@ exports.updatePhonenumberForOAuthRegistration = (publicId, phonenumber) => {
             //create logger here
             return { success: false, message: 'current user not found', status: 404 }
         }
-        return {success: false, message: 'phone number updated', status: 200, data : publicId}
+        return {success: true, message: 'phone number updated', status: 200, data : publicId}
     })
 }
 
@@ -140,9 +141,9 @@ exports.acceptTerms = (data, id, ipaddress) => {
     return new Promise((resolve, reject) => {
         if (data.accept == 'accept') {
             const usertype = data.user_type;
-            const dataForUpdate = { status: true, user_type: usertype }
-            usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
-            model.findOneAndUpdate({ public_id: id,is_complete : false, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
+            const dataForUpdate = { status: true, user_type: usertype, is_complete : true, terms_accepted : true }
+            // usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
+            model.findOneAndUpdate({ public_id: id, terms_accepted : null, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updatedUser) {
                     let jwtTokenDetails = {
@@ -156,26 +157,35 @@ exports.acceptTerms = (data, id, ipaddress) => {
                         first_name: updatedUser.first_name,
                         last_name: updatedUser.last_name
                     }
+
                     if (data.user_type === 'client' || data.user_type === 'student') {
-                            client.create(userDetails).then(createdUser => {
-                                if (createdUser) {
-                                    //remove generate tokena and use the function that generates authentication response
-                                    generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
-                                         resolve({
-                                            success: true, 
-                                            data: { userDetails ,authDetails : result.data },
-                                                message: 'registration complete',
-                                                status: 200
-                                        })
-                                    }).catch(error => {
-                                        //add logger here
-                                    }) 
-                                } else {
-                                    resolve({ success: false, message: 'Error creating user', status: 401 })
-                                }
-                            }).catch(err => reject({ err: err, status: 500 }))
+                        createClientUser(userDetails).then(createduser => {
+                            generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
+                               console.log("in the rsolv")
+                                resolve({
+                                   success: true, 
+                                   data: { userDetails ,authDetails : result.data },
+                                       message: 'registration complete',
+                                       status: 200
+                               })
+                           }).catch(error => {
+                               //add logger here
+                               console.log("error", error)
+                           }) 
+                        })                          
                     } else {
-                        resolve({success : true, status : 201, data : updatedUser.public_id});
+                        generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
+                            resolve({
+                               success: true, 
+                               data: { userDetails ,authDetails : result.data },
+                                   message: 'registration complete',
+                                   status: 200
+                           })
+                       }).catch(error => {
+                           console.log("error", error)
+                           //add logger here
+                       }) 
+                        // resolve({success : true, status : 201, data : updatedUser.public_id});
                     }
                 } else {
                     resolve({ success: false, message: 'could not accept terms. make sure you have added a valid phone number or you have already accepted our tems of service', status: 404 })
@@ -187,9 +197,18 @@ exports.acceptTerms = (data, id, ipaddress) => {
     })
 }
 
+const createClientUser = (userDetails) => {
+        return new Promise((resolve, reject) => {
+            console.log("in aafadf")
+            client.create(userDetails).then(createdUser => {
+                resolve(createdUser);
+            }).catch(err => console.log("in the error", err))
+        })
+}
+
 exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ email_address: email_address }, { __v: 0, }).then(user => {
+        model.findOne({ email_address: email_address.toLowerCase() }, { __v: 0, }).then(user => {
            if(!user) resolve({ success: false, message: 'user does not exist', status: 404 })
            else if(user && !user.is_complete){
             GetNextProcessForIncompleteRegistration(user, res);
@@ -431,6 +450,8 @@ const addOrUpdateUserAuthenticationToken = (refreshDetail, userId) => {
     }))
 }
 
+exports.generateUserAuthenticationResponse = generateUserAuthenticationResponse;
+exports.createClientUser = createClientUser;
 
 
 

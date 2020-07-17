@@ -36,7 +36,6 @@ exports.authenticate = async (req, res, next) => {
     if (token) {
         token = token.replace("Bearer", "").trim();
         let decode = verifyTokenSync(token);
-        console.log(decode);
         if (decode instanceof Error) {
             res.setHeader("x-lawyerpp-error", "invalid token");
             res.status(401).send({ success: false, message: "invalid authentication, try logging in" });
@@ -52,13 +51,15 @@ exports.authenticate = async (req, res, next) => {
                             res.status(401).send({ success: false, message: "invalid token" });
                         } else {
                             req.auth = {
-                                publicId: data.public_id,
-                                userType: data.user_type,
+                                public_id: data.public_id,
+                                user_type: data.user_type,
                                 status: data.status,
                                 email: data.email_address,
-                                firstName: data.first_name,
+                                first_name: data.first_name,
                                 Id: data._id,
                             };
+
+                            // console.log(req.auth, "IIN AUTH MIDDLEWARE")
                             res.locals.response = { data: decode, message: "", success: true };
                             next();
                         }
@@ -69,5 +70,7 @@ exports.authenticate = async (req, res, next) => {
                 }
             });
         }
+    }else{
+        res.status(401).send({ success: false, message: 'authentication required' });
     }
 };

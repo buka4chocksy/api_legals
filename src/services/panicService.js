@@ -1,10 +1,12 @@
-const nextOfKinModel = require('../models/panic/nextOfKin');
-const user = require('../models/auth/users');
+const nextOfKinModel = require('../models/common/nextOfKin')
+const user = require('../models/auth/users')
 const panicModel = require('../models/panic/panicHistory')
+const userSettings = require('../models/common/userSettings')
 const client = require('../models/client/client')
 const lawyer = require('../models/lawyer/lawyer')
 const deactivatePanicModel = require('../models/panic/deactivatedPanic')
-var Redis = require('ioredis');
+const { sms } = require('../utils/smsUtil')
+var Redis = require('ioredis')
 var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
@@ -82,50 +84,98 @@ exports.getUser = (id) => {
     return new Promise((resolve , reject)=>{
         user.findOne({public_id: id}).exec((err , foundUser)=>{
             if(err)reject({err: err , status:500});
-
             // console.log("FOUND USER", foundUser, foundUser.user_type)
 
             if(!foundUser){
                reject({message: "User does not exist"}) 
             }
-            
-            //re-write to use aggregate
-            if(foundUser.user_type === "lawyer"){
-                lawyer.findOne({public_id: id}).exec((err , found)=>{
-                    if(err)reject({err: err , status:500});
 
-                    // console.log("FOUND", found)
+            userSettings.findOne({public_id: id}).exec((err, settings)=>{
+                if(err)reject({err: err , status:500});
 
-                    if(!found){
-                       reject({message: "Lawyer does not exist"}) 
-                    }
+                //console.log("", settings)
+                if(settings && settings.device_id) foundUser.device_id = settings.device_id 
 
-                    // foundUser.client_country = found.state_of_origin
-                    // foundUser.client_state = found.country 
-                    
-                    resolve(foundUser)
-                })
-            }
-            
-            if(foundUser.user_type === "client"){
-                client.findOne({public_id: id}).exec((err , found)=>{
-                    if(err)reject({err: err , status:500});
+                //re-write to use aggregate
+                if(foundUser.user_type === "lawyer"){
+                    lawyer.findOne({public_id: id}).exec((err , found)=>{
+                        if(err)reject({err: err , status:500});
 
-                    // console.log("FOUND", found)
+                        if(!found){
+                        reject({message: "Lawyer does not exist"}) 
+                        }
+                        
+                        resolve(foundUser)
+                    })
+                }
+                
+                if(foundUser.user_type === "client"){
+                    client.findOne({public_id: id}).exec((err , found)=>{
+                        if(err)reject({err: err , status:500});
 
-                    if(!found){
-                       reject({message: "Client does not exist"}) 
-                    }
+                        if(!found){
+                        reject({message: "Client does not exist"}) 
+                        }
 
-                    foundUser.client_country = found.state_of_origin
-                    foundUser.client_state = found.country 
-                    
-                    resolve(foundUser)
-                })
-            }
+                        foundUser.client_country = found.state_of_origin
+                        foundUser.client_state = found.country 
+                        
+                        resolve(foundUser)
+                    })
+                }
+            })
         })
     })
 }
+
+// exports.getUser = (id) => {
+//     return new Promise((resolve , reject)=>{
+//         user.aggregate([{
+//             $lookup: {
+//                     from: "userSettings",
+//                     localField: "public_id",
+//                     foreignField: "public_id",
+//                     as: "copies_sold"
+//             }
+//         }])
+//         user.findOne({public_id: id}).exec((err , foundUser)=>{
+//             if(err)reject({err: err , status:500});
+//             // console.log("FOUND USER", foundUser, foundUser.user_type)
+
+//             if(!foundUser){
+//                reject({message: "User does not exist"}) 
+//             }
+            
+//             //re-write to use aggregate
+//             if(foundUser.user_type === "lawyer"){
+//                 lawyer.findOne({public_id: id}).exec((err , found)=>{
+//                     if(err)reject({err: err , status:500});
+
+//                     if(!found){
+//                        reject({message: "Lawyer does not exist"}) 
+//                     }
+                    
+//                     resolve(foundUser)
+//                 })
+//             }
+            
+//             if(foundUser.user_type === "client"){
+//                 client.findOne({public_id: id}).exec((err , found)=>{
+//                     if(err)reject({err: err , status:500});
+
+//                     if(!found){
+//                        reject({message: "Client does not exist"}) 
+//                     }
+
+//                     foundUser.client_country = found.state_of_origin
+//                     foundUser.client_state = found.country 
+                    
+//                     resolve(foundUser)
+//                 })
+//             }
+//         })
+//     })
+// }
 
 exports.createPanicAlert = (panicDetails)=>{
     return new Promise((resolve , reject)=>{
@@ -137,10 +187,34 @@ exports.createPanicAlert = (panicDetails)=>{
 
 exports.getNextOfKin = (id) => {
     return new Promise((resolve , reject)=>{
-        nextOfKinModel.find({public_id: id}).exec((error , found)=>{
+        nextOfKinModel.find({public_id: id}).populate('next_of_kin').exec((error , found)=>{
             if(error)reject(error)
-            
+    
             resolve(found)
+
+            console.log("NEXT OF KIN", found)
+            // for(index=0; index<found.length; index++){
+            //     const options = {
+            //         to: [`${found[index].phone_number}`],
+            //         message: `Someone who you are a next of kin to needs a great help`
+            //     }
+    
+            //     sms.send(options)
+            //         .then(response => {
+            //             // if (details.userdeviceid) {
+            //             //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
+            //             //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
+            //             //     });
+    
+            //             //     resolve({ message: "The rider is on the way to deliver your package", data: details })
+            //             // } else {
+            //                 // resolve({ message: "The rider is on the way to deliver your package", data: details })
+            //             // }
+            //         })
+            //         .catch(error => {
+            //             console.error(error)
+            //         });
+            // }
         })
     })
 }
@@ -158,6 +232,8 @@ exports.updateAlertOnMongo = (alertDetails) => {
 exports.closeAlert = (alertDetails) => {
     return new Promise((resolve , reject)=>{
         panicModel.findOneAndUpdate({alert_id: alertDetails.alert_id}, { $set: { resolved: true } }, {new: true}).exec((err , completed)=>{
+            deleteStoredAlertDetails(alertDetails.alert_id)
+            console.log("Errror", err, completed)
             if(err)reject({err: err , status:500});
             
             resolve(completed)
@@ -167,16 +243,25 @@ exports.closeAlert = (alertDetails) => {
 
 exports.declareHoax = (alertDetails) => {
     return new Promise((resolve , reject)=>{
-        panicModel.findOne({public_id: alertDetails.id}).exec((err , result)=>{
+        panicModel.findOne({alert_id: alertDetails.alert_id}).exec((err , result)=>{
             if(err)reject({err: err , status:500});
             
-            user.findOneAndUpdate({public_id: result.client_id}, { $inc: { hoax: 1 } },{new: true})
-            .aggregate([{
-                $project: { blocked: { $cond: { if: { $gt: [ "$hoax", 1 ] }, then: true, else: false }} }
-            }])
+            user.findOneAndUpdate({public_id: result.client_id}, { $inc: { hoax_alert: 1 } },{new: true})
             .exec((err , completed)=>{
+                console.log("HOAX NUMBER", completed.hoax_alert)
                 if(err)reject({err: err , status:500});
                 
+                if(completed.hoax > 1){
+                    user.findOneAndUpdate({public_id: result.client_id}, { $set: { blocked: true } },{new: true})
+                    .exec((err , completed)=>{
+                        if(err)reject({err: err , status:500});
+                        
+                        if(completed.hoax > 1){
+                            
+                        }
+                        resolve(result)
+                    })
+                }
                 resolve(result)
             })
         })
@@ -194,19 +279,20 @@ exports.fetchAllUnresolved = (data) => {
 
 exports.deactivateAlert = (deactivationDetails) => {
     return new Promise((resolve, reject) => {
-        user.findOne({ public_id: deactivationDetails.public_id })
+        user.findOne({ public_id: deactivationDetails.client_id })
             .select({ "__v": 0,  })
             .exec((err, currentUser) => {
                 if (err || !currentUser) {
                     reject({ message: "User not found", statusCode: 404, data: null })
                 } else {
+                    console.log("ERORRRRR")
                     var validPassword = currentUser.comparePassword(deactivationDetails.password);
                     if (validPassword) {
                         deleteStoredAlertDetails(deactivationDetails.alert_id)
 
                         deactivatePanicModel.create(deactivationDetails)
                             .then(result => {
-                                resolve({ message: "Deactivation successful", data: null });
+                                resolve({ message: "Deactivation successful", status: 200, data: null });
                             }).catch(error => {
                                 //use the error logger here
                                 console.error(error)
@@ -222,7 +308,7 @@ exports.deactivateAlert = (deactivationDetails) => {
 
 const deleteStoredAlertDetails = (alert_id) => {
     redis.del(alert_id, (err, result) => {
-        redis.lrem("alert_ids", 1, uniqueid, (error, result) => {
+        redis.lrem("alert_ids", 1, alert_id, (error, result) => {
             if(error){
                 console.error(error)
             }
@@ -279,10 +365,10 @@ exports.fetchExistingAlerts = () => {
 exports.storeAlertDetails = (alertDetails) => {
     try {
         redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
-        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, 
-        "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
-        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", 
-        alertDetails.status, "client_state", alertDetails.client_state, "client_country", alertDetails.client_country)
+        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", alertDetails.panic_initiation_latitude, 
+        "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, "client_state", alertDetails.client_state, 
+        "client_device_id", alertDetails.client_device_id, "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin, "next_of_kin_device_id", 
+        alertDetails.next_of_kin_device_id)
 
         redis.expire(alertDetails.alert_id, 259200)
 
@@ -296,12 +382,9 @@ exports.updateAlertOnRedis = (alertDetails) => {
     console.log("I UPDATED THE ALERT DETAILS")
     try {
         redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "lawyer_img_url", alertDetails.lawyer_img_url, "lawyer_name", alertDetails.lawyer_name, "lawyer_phonenumber", alertDetails.lawyer_phonenumber, "lawyer_email", alertDetails.lawyer_email, 
-        "lawyer_id", alertDetails.lawyer_id, "lawyer_latitude", 
-        alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
-        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, 
-        "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
-        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", 
-        alertDetails.status, "client_state", alertDetails.client_state, "client_country", alertDetails.client_country)
+        "lawyer_id", alertDetails.lawyer_id, "lawyer_latitude", alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
+        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, 
+        "client_state", alertDetails.client_state, "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin)
     } catch (error) {
         console.log(error)
     }
@@ -315,16 +398,15 @@ exports.getStoredAlertDetails = (alert_id) => {
     })
 }
 
-exports.storeLawyerPosition = (lawyerDetails) => {
+exports.storePosition = (details) => {
     try {
-        redis.hmset(lawyerDetails.lawyer_id, "lawyer_id", lawyerDetails.lawyer_id, "lawyer_longitude", lawyerDetails.lawyer_longitude,
-            "lawyerDetails", lawyerDetails.lawyer_latitude)
+        redis.hmset(details.id, "id", details.id, "longitude", details.longitude, "latitude", details.latitude)
     } catch (error) {
         console.error(error)
     }
 }
 
-exports.getStoredLawyerPosition = (lawyer_id) => {
+exports.getStoredPosition = (lawyer_id) => {
     return new Promise((resolve, reject) => {
         redis.hgetall(lawyer_id, (err, result) => {
             result ? resolve(result) : console.log(err)
@@ -332,4 +414,4 @@ exports.getStoredLawyerPosition = (lawyer_id) => {
     })
 }
 
-    // panic_ending_location: {type: String}
+// panic_ending_location: {type: String}

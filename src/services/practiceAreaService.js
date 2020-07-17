@@ -1,18 +1,18 @@
 const model = require('../models/practicearea/practiceArea');
 
 //create practicearea
-exports.create = (data) => {
+const createPracticeArea = (data) => {
     return new Promise((resolve, reject) => {
         model.findOne({ name: data.name }).then(exists => {
             if (exists) {
-                resolve({ success: false, message: 'pracitcearea already exists !!!', status:400 })
+                resolve({ success: false, message: 'pracitce area already exists', status:409 })
             } else {
                 const detail = { name: data.name }
                 model.create(detail).then(created => {
                     if (created) {
-                        resolve({ success: true, message: 'practicearea created successfully' ,status:200})
+                        resolve({ success: true, message: 'practice area created successfully' ,status:201})
                     } else {
-                        resolve({ success: false, message: 'could not create practicearea' , status:400 })
+                        resolve({ success: false, message: 'could not create practic earea' , status:400 })
                     }
                 }).catch(err => reject({err: err , status:500}))
             }
@@ -21,53 +21,57 @@ exports.create = (data) => {
 }
 
 //update practicearea
-exports.update = (id, new_name) => {
+const updatePracticeArea = (id, new_name) => {
     return new Promise((resolve, reject) => {
         model.findByIdAndUpdate({ _id: id }, { name: new_name }).then(updated => {
             if (updated) {
-                resolve({ success: true, message: 'practicearea updated successfully',status:200 })
+                resolve({ success: true, message: 'practic earea updated successfully',status:200 })
             } else {
-                resolve({ success: false, message: 'Error encountered while updating practice area !!!', status:400 })
+                resolve({ success: false, message: 'Error encountered while updating practice area', status:400 })
             }
         }).catch(err => reject({err: err , status:500}))
     })
 }
 
 //get all practicearea
-exports.getAll = () => {
+const getAllPracticeArea = () => {
     return new Promise((resolve, reject) => {
-        model.find({}).then(data => {
+        model.find({}).sort({name: 'asc' }).then(data => {
             if (data) {
-                resolve({ success: true, message: 'practiceareas', data: data , status:200 })
+                resolve({ success: true, message: 'practice areas retrieved', data: data , status:200 })
             } else {
-                resolve({ success: false, message: 'no practicearea found !!!' ,status:404})
+                resolve({ success: false, message: 'no practice area found' ,status:404})
             }
         }).catch(err => reject({err: err , status:500}));
     })
 }
 
 //get single practicearea
-exports.getById = (data) => {
+const getPracticeAreaById = (id) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ _id: data }).then(found => {
+        model.findOne({ _id: id }).then(found => {
             if (found) {
-                resolve({ success: true, message: found , status:200})
+                resolve({ success: true, data: found, message : "not found" , status:200})
             } else {
-                resolve({ success: false, message: 'could not find practicearea !!' , status:404})
+                resolve({ success: false, message: 'could not find practice area' , status:404})
             }
         }).catch(err => reject({err: err , status:500}));
     })
 }
 
 //delete practicearea
-exports.delete = (data) => {
+const deletePracticeArea = (id) => {
     return new Promise((resolve, reject) => {
-        model.findOneAndRemove({ _id: data }).then(found => {
+        model.findOneAndRemove({ _id: id }).then(found => {
             if (found) {
-                resolve({ success: true, message: 'practicearea deleted', status:200 })
+                resolve({ success: true, message: 'practice area deleted', status:200 })
             } else {
-                resolve({ success: false, message: 'could not delete practicearea !!' , status:400})
+                resolve({ success: false, message: 'could not delete practice area' , status:400})
             }
         }).catch(err => reject({err: err , status:500}));
     })
+}
+
+module.exports = {
+    createPracticeArea, updatePracticeArea, getAllPracticeArea, getPracticeAreaById, deletePracticeArea
 }
