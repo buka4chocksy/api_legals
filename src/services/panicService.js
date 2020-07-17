@@ -291,13 +291,10 @@ exports.deactivateAlert = (deactivationDetails) => {
                     if(deactivationDetails.password){
                         validPassword = currentUser.comparePassword(deactivationDetails.password);
 
-                        if (!validPassword) reject({ message: "Invalid user credentials", statusCode: 400, data: null });
-                    }
-
-                    if(!deactivationDetails.password || validPassword){
-                        deleteStoredAlertDetails(deactivationDetails.alert_id)
-
-                        deactivatePanicModel.create(deactivationDetails)
+                        if (validPassword){ 
+                            reject({ message: "Invalid user credentials", statusCode: 400, data: null });
+                        }else{
+                            deactivatePanicModel.create(deactivationDetails)
                             .then(result => {
                                 resolve({ message: "Deactivation successful", status: 200, data: null });
                             }).catch(error => {
@@ -305,6 +302,13 @@ exports.deactivateAlert = (deactivationDetails) => {
                                 console.error(error)
                                 reject({message : "Something went wrong", data : null, statusCode : 500})
                             })
+                        }
+                    }
+
+                    deleteStoredAlertDetails(deactivationDetails.alert_id)
+
+                    if(!deactivationDetails.password){
+                        resolve({ message: "Deactivation successful", status: 200, data: null });
                     }
                 }
             })

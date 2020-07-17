@@ -77,24 +77,10 @@ function panicSocket(server) {
                         //data.client_id = data.lawyer_id
 
                         console.log("BEFORE REDIS STORE", data)
-                        panicService.storeAlertDetails(data)
+                        //panicService.storeAlertDetails(data)
 
                         panicService.createPanicAlert(data).then((result)=>{
-                            var sortedDistanceArray = [],
-                            distanceArray = []
-
-                            Object.entries(allSockets.lawyers).forEach(([key, value]) => {
-                                var distance = calculateDistance(data.panic_initiation_latitude, data.panic_initiation_longitude, value.lawyer_latitude, value.lawyer_longitude)
-                                distanceArray = getNearbyLawyers(distance, value.lawyer_id);
-                            });
-
-                            sortedDistanceArray = sortNearbyDistance(distanceArray);
-                            console.log(sortedDistanceArray)
-
-                            for (i = 0; i < sortedDistanceArray.length; i++) {
-                                allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address &&
-                                    io.of('/panic').to(`${allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", data });
-                            }
+                            
 
                             panicService.getNextOfKin(data.client_id).then((nextOfKins)=>{
                                 console.log("LIST OF NEXT OF KINS", nextOfKins)
@@ -116,8 +102,26 @@ function panicSocket(server) {
 
                                     data.next_of_kin = nextOfKin                                  
                                     //console.log("BEFORE REDIS STORE FOR NOK---------->", data)
-                                    panicService.storeAlertDetails(data)
+                                    
                                 }
+
+                                var sortedDistanceArray = [],
+                                distanceArray = []
+
+                                Object.entries(allSockets.lawyers).forEach(([key, value]) => {
+                                    var distance = calculateDistance(data.panic_initiation_latitude, data.panic_initiation_longitude, value.lawyer_latitude, value.lawyer_longitude)
+                                    distanceArray = getNearbyLawyers(distance, value.lawyer_id);
+                                });
+
+                                sortedDistanceArray = sortNearbyDistance(distanceArray);
+                                console.log(sortedDistanceArray)
+
+                                for (i = 0; i < sortedDistanceArray.length; i++) {
+                                    allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address &&
+                                        io.of('/panic').to(`${allSockets.lawyers[sortedDistanceArray[i].lawyer_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", data });
+                                }
+
+                                panicService.storeAlertDetails(data)
                             }).catch((error)=>{console.log(error)})
                         }).catch((error)=>{console.log(error)})
                     }else{
