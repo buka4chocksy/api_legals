@@ -44,16 +44,14 @@ passport.use("signin", LinkedinSignin);
 passport.use("signup", LinkedinSignup);
 
 // serialize and deserialize
-passport.serializeUser(function (user, done) {
-  // console.log('serialize user: ', user)
-  done(null, user._id);
-});
-passport.deserializeUser(function (id, done) {
-  User.findById(id, function (err, user) {
-    // console.log('deserialize user: ', user)
-    if (!err) done(null, user);
-    else done(err, null);
+passport.serializeUser(function(user, done) {
+    done(null, user._id);
   });
+passport.deserializeUser(function(id, done) {
+    User.findById(id, function(err, user){
+        if(!err) done(null, user);
+        else done(err, null);
+      });
 });
 
 app.use(express.static("public"));
@@ -62,8 +60,8 @@ app.use(morgan('dev'));
 app.use(express.static("public"));
 app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
-app.use(express.json());//for parsing application/json
-app.use(express.urlencoded({ extended: false })); //for parsing application/x-www-form-urlencoded
+app.use(express.json()); //for parsing application/json
+app.use(express.urlencoded({ extended: false})); //for parsing application/x-www-form-urlencoded
 app.use(cors());
 
 // app.set('allRiderSockets', {});
