@@ -10,7 +10,7 @@ var client_id = document.getElementById("client_id"),
     to__next_of_kin = document.getElementById("to_nok")
     to_who = document.getElementById("to_who")
 
-var socket = io.connect(window.location.hostname == "localhost" ? "http://localhost:8080/panic" : "https://staging-fastpaceapi.herokuapp.com/user");
+var socket = io.connect(window.location.hostname == "localhost" ? "http://localhost:8080/panic" : "https://staging-lawyerpp-api-v2.herokuapp.com/panic");
 
 client_online.addEventListener('click', function() {
     socket.emit('online', {
