@@ -83,9 +83,10 @@ function panicSocket(server) {
                             
 
                             panicService.getNextOfKin(data.client_id).then((nextOfKins)=>{
+                                var nextOfKin = [];
                                 console.log("LIST OF NEXT OF KINS", nextOfKins)
                                 if(nextOfKins.length > 0){
-                                    var nextOfKin = [];
+                                    
 
                                     //Emit alert to NOKs
                                     for (i = 0; i < nextOfKins.length; i++) {
@@ -100,11 +101,12 @@ function panicSocket(server) {
                                         }
                                     }
 
-                                    data.next_of_kin = nextOfKin                                  
+                                                                    
                                     //console.log("BEFORE REDIS STORE FOR NOK---------->", data)
                                     
                                 }
-
+                                
+                                data.next_of_kin = nextOfKin  
                                 var sortedDistanceArray = [],
                                 distanceArray = []
 
