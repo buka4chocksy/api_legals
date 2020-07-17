@@ -18,7 +18,7 @@ module.exports = (router) => {
     router.use('/auth', authRoutes());
     router.use("/practicearea", commonPracticeAreaRoutes());
     router.use("/jurisdiction", commonJurisdictionRoutes());
-    router.use("/settings", commonUserSettingsRoutes());
+    // router.use("/settings", commonUserSettingsRoutes());
     router.use('/lawyer/practice_area', practiceAreaRoutes());
     router.use('/lawyer/jurisdiction', jurisdictionRoutes());
     router.use('/lawyer', lawyerRoutes());
