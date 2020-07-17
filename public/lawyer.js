@@ -8,7 +8,7 @@ var lawyer_id = document.getElementById("lawyer_id"),
     response = document.getElementById("response")
     
 var details = {}
-var    socket = io.connect(window.location.hostname == "localhost" ? "http://localhost:8080/panic" : "https://staging-lawyerpp-api-v2.herokuapp.com/user")
+var    socket = io.connect(window.location.hostname == "localhost" ? "http://localhost:8080/panic" : "https://staging-lawyerpp-api-v2.herokuapp.com/panic")
 
 lawyer_online.addEventListener('click', function() {
     socket.emit('online', {
