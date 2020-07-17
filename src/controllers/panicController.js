@@ -23,11 +23,11 @@ module.exports = function panicController(){
         var deactivationDetails = {
             client_id: req.auth.public_id,
             alert_id: req.body.alert_id,
-            reason: req.body.reason,
-            alert_type: req.body.alert_type
         }
         
         if(req.body.password) deactivationDetails.password = req.body.password
+        if(req.body.reason) deactivationDetails.password = req.body.reason
+        if(req.body.alert_type) deactivationDetails.password = req.body.alert_type
 
         service.deactivateAlert(deactivationDetails).then(data =>{
             res.status(data.status).send(data)
