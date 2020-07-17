@@ -32,3 +32,4 @@ yarn.lock
 package-lock.json
 
 /uploads
+.package-lock.json
