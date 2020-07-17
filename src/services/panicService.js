@@ -1,12 +1,12 @@
-const nextOfKinModel = require('../models/common/nextOfKin');
-const user = require('../models/auth/users');
+const nextOfKinModel = require('../models/common/nextOfKin')
+const user = require('../models/auth/users')
 const panicModel = require('../models/panic/panicHistory')
 const userSettings = require('../models/common/userSettings')
 const client = require('../models/client/client')
 const lawyer = require('../models/lawyer/lawyer')
 const deactivatePanicModel = require('../models/panic/deactivatedPanic')
 const { sms } = require('../utils/smsUtil')
-var Redis = require('ioredis');
+var Redis = require('ioredis')
 var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
