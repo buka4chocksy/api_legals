@@ -21,14 +21,17 @@ module.exports = function panicController(){
 
     this.deactivatePanic = (req, res)=>{
         var deactivationDetails = {
-            client_id: req.body.public_id,
+            client_id: req.auth.public_id,
             alert_id: req.body.alert_id,
             reason: req.body.reason,
-            alert_type: req.body.alert_type
+            alert_type: req.body.alert_type,
+            password: req.body.password
         }
 
         service.deactivateAlert(deactivationDetails).then(data =>{
             res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(err));
+        }).catch(err =>{
+            console.log(err)
+            res.status(err.status).send(err)});
     }
 }

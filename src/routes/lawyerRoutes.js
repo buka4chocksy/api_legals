@@ -6,7 +6,7 @@ module.exports = function(){
     const lawCtrl = new lawyerController()
     router.post('/register/:publicid', multer.upload.single('certificate'), lawCtrl.completeLawyerRegistration)
     router.get('/profile', middleware.authenticate, lawCtrl.getLawyerProile)
-    router.post('/update_profile', middleware.authenticate, lawCtrl.updateLawyerProfile)
+    router.put('/update_profile', middleware.authenticate, lawCtrl.updateLawyerProfile)
     router.delete('/delete_account', middleware.authenticate, lawCtrl.deleteUserAccount)
     router.get('/lawyers/:pagesize/:pagenumber', middleware.authenticate ,  lawCtrl.getlawyerList)
     router.get('/sort_practice_area/:id/:pagesize/:pagenumber', middleware.authenticate , lawCtrl.sortLawerByPracticeArea)
