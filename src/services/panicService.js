@@ -285,9 +285,16 @@ exports.deactivateAlert = (deactivationDetails) => {
                 if (err || !currentUser) {
                     reject({ message: "User not found", statusCode: 404, data: null })
                 } else {
+                    var validPassword;
+
                     console.log("ERORRRRR")
-                    var validPassword = currentUser.comparePassword(deactivationDetails.password);
-                    if (validPassword) {
+                    if(deactivationDetails.password){
+                        validPassword = currentUser.comparePassword(deactivationDetails.password);
+
+                        if (!validPassword) reject({ message: "Invalid user credentials", statusCode: 400, data: null });
+                    }
+
+                    if(!deactivationDetails.password || validPassword){
                         deleteStoredAlertDetails(deactivationDetails.alert_id)
 
                         deactivatePanicModel.create(deactivationDetails)
@@ -298,8 +305,6 @@ exports.deactivateAlert = (deactivationDetails) => {
                                 console.error(error)
                                 reject({message : "Something went wrong", data : null, statusCode : 500})
                             })
-                    } else {
-                        reject({ message: "Invalid user credentials", statusCode: 400, data: null });
                     }
                 }
             })
