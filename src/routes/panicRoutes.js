@@ -7,7 +7,7 @@ module.exports = function () {
     router.post('/create', middleware.authenticate, panicCtrl.createPanicAlert)
     router.get('/', panicCtrl.getPanicAlerts)
     router.get('/user',middleware.authenticate, panicCtrl.getUserPanicAlertDetail)
-    router.get('/deactivate_panic',middleware.authenticate, panicCtrl.deactivatePanic)
+    router.post('/deactivate_panic',middleware.authenticate, panicCtrl.deactivatePanic)
 
     return router;
 }

@@ -232,6 +232,7 @@ exports.updateAlertOnMongo = (alertDetails) => {
 exports.closeAlert = (alertDetails) => {
     return new Promise((resolve , reject)=>{
         panicModel.findOneAndUpdate({alert_id: alertDetails.alert_id}, { $set: { resolved: true } }, {new: true}).exec((err , completed)=>{
+            deleteStoredAlertDetails(alertDetails.alert_id)
             console.log("Errror", err, completed)
             if(err)reject({err: err , status:500});
             
@@ -278,19 +279,20 @@ exports.fetchAllUnresolved = (data) => {
 
 exports.deactivateAlert = (deactivationDetails) => {
     return new Promise((resolve, reject) => {
-        user.findOne({ public_id: deactivationDetails.public_id })
+        user.findOne({ public_id: deactivationDetails.client_id })
             .select({ "__v": 0,  })
             .exec((err, currentUser) => {
                 if (err || !currentUser) {
                     reject({ message: "User not found", statusCode: 404, data: null })
                 } else {
+                    console.log("ERORRRRR")
                     var validPassword = currentUser.comparePassword(deactivationDetails.password);
                     if (validPassword) {
                         deleteStoredAlertDetails(deactivationDetails.alert_id)
 
                         deactivatePanicModel.create(deactivationDetails)
                             .then(result => {
-                                resolve({ message: "Deactivation successful", data: null });
+                                resolve({ message: "Deactivation successful", status: 200, data: null });
                             }).catch(error => {
                                 //use the error logger here
                                 console.error(error)
@@ -306,7 +308,7 @@ exports.deactivateAlert = (deactivationDetails) => {
 
 const deleteStoredAlertDetails = (alert_id) => {
     redis.del(alert_id, (err, result) => {
-        redis.lrem("alert_ids", 1, uniqueid, (error, result) => {
+        redis.lrem("alert_ids", 1, alert_id, (error, result) => {
             if(error){
                 console.error(error)
             }
