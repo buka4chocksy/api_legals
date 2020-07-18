@@ -13,6 +13,7 @@ const panicHistory = new schema({
     client_phonenumber: {type: String},
     lawyer_phonenumber: {type: String},
     client_name :{type:String},
+    lawyer_name :{type:String},
     resolved:{type: Boolean, default: false},
     client_email:{type:String},
     lawyer_email: {type: String},
