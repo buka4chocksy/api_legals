@@ -120,14 +120,15 @@ function panicSocket(server) {
 
             socket.on('accept_alert', (data) => {
                 panicService.getUser(data.lawyer_id).then((result)=>{
+                    console.log('FETCED LAWYER DETAILS', result)
                     console.log("ACCEPTING ALERT",data)
                     panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
                         if(alertDetails.status === "sent"){
-                            data.lawyer_img_url = result.lawyer_img_url, 
-                            data.lawyer_name = result.lawyer_name, 
-                            data.lawyer_phonenumber = result.lawyer_phonenumber, 
+                            data.lawyer_img_url = result.image_url, 
+                            data.lawyer_name = result.result.first_name + " " + result.last_name, 
+                            data.lawyer_phonenumber = result.phone_number, 
                             data.lawyer_device_id = result.device_id,
-                            data.lawyer_email = result.lawyer_email,
+                            data.lawyer_email = result.email_address,
                             data.status = "accepted",
                             data.client_img_url = alertDetails.client_img_url, 
                             data.alert_id = alertDetails.alert_id, 

@@ -11,6 +11,10 @@ var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 
+// sub.subscribe(`${dispatchDetails.userdeviceid}`, function (err, count) {
+//     pub.publish(`${dispatchDetails.userdeviceid}`, `Your ${dispatchDetails.contentdetails} dispatch request has been accepted`);
+// });
+
 exports.createPanic = (data,id,user_type)=>{
     return new Promise((resolve , reject)=>{
         nextOfKinModel.findOne({public_id:id}).exec((err , exists)=>{
@@ -57,13 +61,13 @@ exports.createPanic = (data,id,user_type)=>{
 exports.getAllPanicAlerts = ()=>{
     return new Promise((resolve, reject)=>{
         nextOfKinModel.find({}).exec((err, found)=>{
-        if(err)reject({err: err , status:500});
-        if(found){
-            resolve({success:true , message:found , status:200})
-        }else{
-            resolve({success:false , message:'could not find panic alerts', status:404})
-        }
-    })      
+            if(err)reject({err: err , status:500});
+            if(found){
+                resolve({success:true , message:found , status:200})
+            }else{
+                resolve({success:false , message:'could not find panic alerts', status:404})
+            }
+        })      
     })
 }
 
@@ -102,9 +106,9 @@ exports.getUser = (id) => {
                         if(err)reject({err: err , status:500});
 
                         if(!found){
-                        reject({message: "Lawyer does not exist"}) 
+                            reject({message: "Lawyer does not exist"}) 
                         }
-                        
+                        console.log("LAWYER DETAILS FROM DB", foundUser)
                         resolve(foundUser)
                     })
                 }
@@ -120,6 +124,7 @@ exports.getUser = (id) => {
                         foundUser.client_country = found.state_of_origin
                         foundUser.client_state = found.country 
                         
+                        console.log("CLIENT DETAILS FRO DB", foundUser)
                         resolve(foundUser)
                     })
                 }
