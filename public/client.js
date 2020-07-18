@@ -14,7 +14,7 @@ var socket = io.connect(window.location.hostname == "localhost" ? "http://localh
 
 client_online.addEventListener('click', function() {
     socket.emit('online', {
-        client_id: client_id.value,
+        public_id: client_id.value,
         panic_initiation_latitude: 6.3910178,
         panic_initiation_longitude: 7.5340073,
         user_type: "client"
@@ -23,7 +23,7 @@ client_online.addEventListener('click', function() {
 
 panic_alert.addEventListener('click', function() {
     socket.emit('panic_alert', {
-        client_id: client_id.value,
+        public_id: client_id.value,
         panic_initiation_latitude: 6.3910178,
         panic_initiation_longitude: 7.5340073,
     })
@@ -62,7 +62,7 @@ get_lawyer_position.addEventListener('click', function() {
 get_nok_position.addEventListener('click', function() {
     socket.emit('get_nok_position', {
         next_of_kin_id: '5f0ef270203ea25111656cd7',
-        client_id: client_id.value
+        public_id: client_id.value
     })
 })
 
