@@ -80,7 +80,7 @@ function panicSocket(server) {
                                         console.log("EMITTING TO NEXT OF KIN", nextOfKins[i].next_of_kin_id)
                                         nextOfKin.push(nextOfKins[i]);
 
-                                        if(nextOfKins[i].next_of_kin) data.next_of_kin_device_id = nextOfKins[i].next_of_kin.device_id
+                                        //if(nextOfKins[i].next_of_kin) data.next_of_kin_device_id = nextOfKins[i].next_of_kin.device_id
         ``
                                         if(nextOfKins[i].next_of_kin_id){
                                             allSockets.clients[nextOfKins[i].next_of_kin_id] &&

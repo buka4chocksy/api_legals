@@ -374,4 +374,13 @@ exports.getStoredPosition = (lawyer_id) => {
     })
 }
 
+sub.on("message", function (channel, message) {
+    oneSignal.sendNotice(channel, message)
+        .then((res) => {
+
+        })
+        .catch((error) => {
+            console.error('FAILED TO SEND PUSH NOTIFICATION', error)
+        })
+});
 // panic_ending_location: {type: String}
