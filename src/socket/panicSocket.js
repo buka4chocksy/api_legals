@@ -125,7 +125,7 @@ function panicSocket(server) {
                     panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
                         if(alertDetails.status === "sent"){
                             data.lawyer_img_url = result.image_url, 
-                            data.lawyer_name = result.result.first_name + " " + result.last_name, 
+                            data.lawyer_name = result.first_name + " " + result.last_name, 
                             data.lawyer_phonenumber = result.phone_number, 
                             data.lawyer_device_id = result.device_id,
                             data.lawyer_email = result.email_address,
@@ -156,6 +156,10 @@ function panicSocket(server) {
 
                                 allSockets.clients[alertDetails.client_id] &&
                                     io.of('/panic').to(`${allSockets.clients[alertDetails.client_id].socket_address}`).emit('alert_accepted', { message: "A lawyer is coming to your aid", data: updated });
+
+                                allSockets.lawyers[data.lawyer_id] &&
+                                    io.of('/panic').to(`${allSockets.lawyers[data.lawyer_id].socket_address}`).emit('acceptance_successful', { message: "You have accepted the alert successfully", data: {accepted: true} });
+                                
                             }).catch((error)=>{console.log(error)})
                         }
                     }).catch((error)=>{console.log(error)})
