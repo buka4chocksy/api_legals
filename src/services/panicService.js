@@ -128,55 +128,6 @@ exports.getUser = (id) => {
     })
 }
 
-// exports.getUser = (id) => {
-//     return new Promise((resolve , reject)=>{
-//         user.aggregate([{
-//             $lookup: {
-//                     from: "userSettings",
-//                     localField: "public_id",
-//                     foreignField: "public_id",
-//                     as: "copies_sold"
-//             }
-//         }])
-//         user.findOne({public_id: id}).exec((err , foundUser)=>{
-//             if(err)reject({err: err , status:500});
-//             // console.log("FOUND USER", foundUser, foundUser.user_type)
-
-//             if(!foundUser){
-//                reject({message: "User does not exist"}) 
-//             }
-            
-//             //re-write to use aggregate
-//             if(foundUser.user_type === "lawyer"){
-//                 lawyer.findOne({public_id: id}).exec((err , found)=>{
-//                     if(err)reject({err: err , status:500});
-
-//                     if(!found){
-//                        reject({message: "Lawyer does not exist"}) 
-//                     }
-                    
-//                     resolve(foundUser)
-//                 })
-//             }
-            
-//             if(foundUser.user_type === "client"){
-//                 client.findOne({public_id: id}).exec((err , found)=>{
-//                     if(err)reject({err: err , status:500});
-
-//                     if(!found){
-//                        reject({message: "Client does not exist"}) 
-//                     }
-
-//                     foundUser.client_country = found.state_of_origin
-//                     foundUser.client_state = found.country 
-                    
-//                     resolve(foundUser)
-//                 })
-//             }
-//         })
-//     })
-// }
-
 exports.createPanicAlert = (panicDetails)=>{
     return new Promise((resolve , reject)=>{
         panicModel.create(panicDetails).then(created => {
@@ -193,28 +144,34 @@ exports.getNextOfKin = (id) => {
             resolve(found)
 
             console.log("NEXT OF KIN", found)
-            // for(index=0; index<found.length; index++){
-            //     const options = {
-            //         to: [`${found[index].phone_number}`],
-            //         message: `Someone who you are a next of kin to needs a great help`
-            //     }
-    
-            //     sms.send(options)
-            //         .then(response => {
-            //             // if (details.userdeviceid) {
-            //             //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
-            //             //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
-            //             //     });
-    
-            //             //     resolve({ message: "The rider is on the way to deliver your package", data: details })
-            //             // } else {
-            //                 // resolve({ message: "The rider is on the way to deliver your package", data: details })
-            //             // }
-            //         })
-            //         .catch(error => {
-            //             console.error(error)
-            //         });
-            // }
+            if(found.length>0){
+                for(index=0; index<found.length; index++){
+                    var phone_number = "+234" + found[index].phone_number.split('').slice(1).join('')
+                    const options = {
+                        to: [phone_number],
+                        message: `Yours Kinsmen is calling for help!`
+                    }
+
+                    console.log("PHONENUMBER", options)
+        
+                    sms.send(options)
+                        .then(response => {
+                            console.log("MESSAGE SENT")
+                            // if (details.userdeviceid) {
+                            //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
+                            //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
+                            //     });
+        
+                            //     resolve({ message: "The rider is on the way to deliver your package", data: details })
+                            // } else {
+                                // resolve({ message: "The rider is on the way to deliver your package", data: details })
+                            // }
+                        })
+                        .catch(error => {
+                            console.error("MESSAGE NOT SENT", error)
+                        });
+                }
+            }
         })
     })
 }
@@ -256,13 +213,11 @@ exports.declareHoax = (alertDetails) => {
                     .exec((err , completed)=>{
                         if(err)reject({err: err , status:500});
                         
-                        if(completed.hoax > 1){
-                            
-                        }
                         resolve(result)
                     })
+                }{
+                    resolve(result)
                 }
-                resolve(result)
             })
         })
     })
@@ -373,11 +328,7 @@ exports.fetchExistingAlerts = () => {
 
 exports.storeAlertDetails = (alertDetails) => {
     try {
-        redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
-        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", alertDetails.panic_initiation_latitude, 
-        "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, "client_state", alertDetails.client_state, 
-        "client_device_id", alertDetails.client_device_id, "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin, "next_of_kin_device_id", 
-        alertDetails.next_of_kin_device_id)
+        redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat())
 
         redis.expire(alertDetails.alert_id, 259200)
 
@@ -390,16 +341,14 @@ exports.storeAlertDetails = (alertDetails) => {
 exports.updateAlertOnRedis = (alertDetails) => {
     console.log("I UPDATED THE ALERT DETAILS")
     try {
-        redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "lawyer_img_url", alertDetails.lawyer_img_url, "lawyer_name", alertDetails.lawyer_name, "lawyer_phonenumber", alertDetails.lawyer_phonenumber, "lawyer_email", alertDetails.lawyer_email, 
-        "lawyer_id", alertDetails.lawyer_id, "lawyer_latitude", alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
-        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, 
-        "client_state", alertDetails.client_state, "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin)
+        redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat())
     } catch (error) {
         console.log(error)
     }
 }
 
 exports.getStoredAlertDetails = (alert_id) => {
+    console.log("GETTING STORED ALERT DETAILS", alert_id)
     return new Promise((resolve, reject) => {
         redis.hgetall(alert_id, (err, result) => {
             result ? resolve(result) : console.log(err)
@@ -408,6 +357,7 @@ exports.getStoredAlertDetails = (alert_id) => {
 }
 
 exports.storePosition = (details) => {
+    console.log("STORING POSTION", details)
     try {
         redis.hmset(details.id, "id", details.id, "longitude", details.longitude, "latitude", details.latitude)
     } catch (error) {
@@ -416,6 +366,7 @@ exports.storePosition = (details) => {
 }
 
 exports.getStoredPosition = (lawyer_id) => {
+    console.log("GETTING STORED POSITION", lawyer_id)
     return new Promise((resolve, reject) => {
         redis.hgetall(lawyer_id, (err, result) => {
             result ? resolve(result) : console.log(err)

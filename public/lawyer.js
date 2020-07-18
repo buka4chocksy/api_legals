@@ -60,8 +60,8 @@ close_alert.addEventListener('click', function() {
 update_position.addEventListener('click', function() {
     socket.emit('update_lawyer_position', {
         id: lawyer_id.value,
-        lawyer_latitude: 6.3910178,
-        lawyer_longitude: 7.5340073
+        latitude: 6.3910178,
+        longitude: 7.5340073
     })
 })
 
