@@ -1,8 +1,8 @@
-exports.getNearbyLawyers = (distance, lawyer_id) => {
+exports.getNearbyLawyers = (distance, public_id) => {
     var distances = []
 
     if (distance < 2000) {
-        distances.push({ distance, lawyer_id })
+        distances.push({ distance, public_id })
     }
 
     return distances

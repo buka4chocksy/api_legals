@@ -245,31 +245,16 @@ exports.deactivateAlert = (deactivationDetails) => {
                 if (err || !currentUser) {
                     reject({ message: "User not found", statusCode: 404, data: null })
                 } else {
-                    var validPassword;
-
-                    console.log("ERORRRRR")
-                    if(deactivationDetails.password){
-                        validPassword = currentUser.comparePassword(deactivationDetails.password);
-
-                        if (validPassword){ 
-                            reject({ message: "Invalid user credentials", statusCode: 400, data: null });
-                        }else{
-                            deactivatePanicModel.create(deactivationDetails)
-                            .then(result => {
-                                resolve({ message: "Deactivation successful", status: 200, data: null });
-                            }).catch(error => {
-                                //use the error logger here
-                                console.error(error)
-                                reject({message : "Something went wrong", data : null, statusCode : 500})
-                            })
-                        }
-                    }
+                    deactivatePanicModel.create(deactivationDetails)
+                    .then(result => {
+                        resolve({ message: "Deactivation successful", status: 200, data: null });
+                    }).catch(error => {
+                        //use the error logger here
+                        console.error(error)
+                        reject({message : "Something went wrong", data : null, statusCode : 500})
+                    })
 
                     deleteStoredAlertDetails(deactivationDetails.alert_id)
-
-                    if(!deactivationDetails.password){
-                        resolve({ message: "Deactivation successful", status: 200, data: null });
-                    }
                 }
             })
     })
@@ -364,16 +349,16 @@ exports.getStoredAlertDetails = (alert_id) => {
 exports.storePosition = (details) => {
     console.log("STORING POSTION", details)
     try {
-        redis.hmset(details.id, "id", details.id, "longitude", details.longitude, "latitude", details.latitude)
+        redis.hmset(details.public_id, "id", details.public_id, "longitude", details.user_longitude, "latitude", details.user_latitude)
     } catch (error) {
         console.error(error)
     }
 }
 
-exports.getStoredPosition = (lawyer_id) => {
-    console.log("GETTING STORED POSITION", lawyer_id)
+exports.getStoredPosition = (public_id) => {
+    console.log("GETTING STORED POSITION", public_id)
     return new Promise((resolve, reject) => {
-        redis.hgetall(lawyer_id, (err, result) => {
+        redis.hgetall(public_id, (err, result) => {
             result ? resolve(result) : console.log(err)
         })
     })
