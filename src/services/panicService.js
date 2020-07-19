@@ -228,7 +228,7 @@ exports.declareHoax = (alertDetails) => {
 
 exports.fetchAllUnresolved = (data) => {
     return new Promise((resolve, reject) => {
-        panicModel.find({ resolved: false, lawyer_id: data.lawyer_id })
+        panicModel.find({ resolved: false, lawyer_id: data.public_id })
             .exec((err, result) => {
                 err ? reject({ message: err, data: null }) : resolve({ message: "Unresolved alert history", data: result })
             })
