@@ -6,6 +6,22 @@ const { allSockets } = require('../socket/panicSocket');
 
 exports.userOnline = (data, allSockets) => {
     allSockets.users[data.public_id] ? allSockets.updateSocket(data) : allSockets.addSocket(data);
+
+    if(data.user_type === "lawyer"){
+        panicService.fetchAllUnresolved(data)
+        .then((result) => {
+            console.log("LIST OF OPEN ALERT FOR THIS LAWYER", result)
+            if(result.data.length < 1){
+                allSockets.users[data.public_id]["available"] = true
+                console.log("new lawyer details", allSockets.users[data.public_id])
+            }else{
+                console.log("THID LAWYER ALREADY HAS AN ONGOING ALERT AND CANNOT BE AVAILBLE FOR NOW")
+            }
+        })
+        .catch((error) => {
+            console.error(error)
+        });
+    }
 }
 
 exports.panicAlert = (data, allSockets) => {
@@ -67,7 +83,7 @@ exports.panicAlert = (data, allSockets) => {
                     sortedDistanceArray = sortNearbyDistance(distanceArray);
 
                     for (i = 0; i < sortedDistanceArray.length; i++) {
-                        console.log("LAWYER ID TO EMIT TO", allSockets.users[sortedDistanceArray[i].public_id])
+                        console.log("LAWYER ID TO EMIT TO", allSockets.users[sortedDistanceArray[i].public_id], allSockets.users[sortedDistanceArray[i].public_id].socket_address)
                         allSockets.users[sortedDistanceArray[i].public_id] &&
                             io.of('/panic').to(`${allSockets.users[sortedDistanceArray[i].public_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", data });
                     }
@@ -216,6 +232,7 @@ exports.closeAlert = (data, allSockets) => {
 }
 
 exports.updateLawyerPosition = (data, allSockets) => {
+    console.log("POSITION DATA", data)
     panicService.fetchAllUnresolved(data)
         .then((result) => {
             console.log("LIST OF UNRESOLVED PANIC",result)

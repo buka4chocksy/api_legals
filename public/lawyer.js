@@ -16,7 +16,7 @@ lawyer_online.addEventListener('click', function() {
         user_latitude: 6.3910178,
         user_longitude: 7.5340073,
         user_type: "lawyer",
-        available: true
+        // available: true
     })
 
     socket.emit('find_panics', {
@@ -60,7 +60,7 @@ close_alert.addEventListener('click', function() {
 
 update_position.addEventListener('click', function() {
     socket.emit('update_lawyer_position', {
-        id: lawyer_id.value,
+        public_id: lawyer_id.value,
         user_latitude: 6.3910178,
         user_longitude: 7.5340073
     })
