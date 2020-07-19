@@ -25,7 +25,7 @@ module.exports = function panicController(){
             alert_id: req.body.alert_id,
         }
         
-        if(req.body.password) deactivationDetails.password = req.body.password
+        //if(req.body.password) deactivationDetails.password = req.body.password
         if(req.body.reason) deactivationDetails.password = req.body.reason
         if(req.body.alert_type) deactivationDetails.password = req.body.alert_type
 

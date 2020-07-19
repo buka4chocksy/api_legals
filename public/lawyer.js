@@ -13,15 +13,16 @@ var    socket = io.connect(window.location.hostname == "localhost" ? "http://loc
 lawyer_online.addEventListener('click', function() {
     socket.emit('online', {
         public_id: lawyer_id.value,
-        lawyer_latitude: 6.3910178,
-        lawyer_longitude: 7.5340073,
-        user_type: "lawyer"
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073,
+        user_type: "lawyer",
+        available: true
     })
 
     socket.emit('find_panics', {
         public_id: lawyer_id.value,
-        lawyer_latitude: 6.3910178,
-        lawyer_longitude: 7.5340073
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073
     })
 })
 
@@ -29,8 +30,8 @@ accept_alert.addEventListener('click', function() {
     console.log(alert_id.value)
     socket.emit('accept_alert', {
         public_id: lawyer_id.value,
-        lawyer_latitude: 6.3910178,
-        lawyer_longitude: 7.5340073,
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073,
         alert_id: alert_id.value
     })
 })
@@ -60,8 +61,8 @@ close_alert.addEventListener('click', function() {
 update_position.addEventListener('click', function() {
     socket.emit('update_lawyer_position', {
         id: lawyer_id.value,
-        latitude: 6.3910178,
-        longitude: 7.5340073
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073
     })
 })
 
