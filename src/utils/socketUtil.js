@@ -52,24 +52,24 @@ exports.panicAlert = (data, allSockets) => {
 
             panicService.createPanicAlert(data).then((result)=>{
                 panicService.getNextOfKin(data.public_id).then((nextOfKins)=>{
-                    var nextOfKin = [];
+                    //var nextOfKin = [];
                     console.log("LIST OF NEXT OF KINS", nextOfKins)
                     if(nextOfKins.length > 0){
                         //Emit alert to NOKs
                         for (i = 0; i < nextOfKins.length; i++) {
-                            nextOfKin.push(nextOfKins[i]);
-                            //if(nextOfKins[i].next_of_kin) data.next_of_kin_device_id = nextOfKins[i].next_of_kin.device_id
+                            //nextOfKin.push(nextOfKins[i]);
 
                             if(nextOfKins[i].next_of_kin_id){
                                 allSockets.users[nextOfKins[i].next_of_kin_id] &&
                                 io.of('/panic').to(`${allSockets.users[nextOfKins[i].next_of_kin_id].socket_address}`).emit('alert_kinsmen', { message: "Help! Help!! Help!!!", data });
                             }
                         }
-                    }else{
-                        nextOfKin = nextOfKins
                     }
+                    // else{
+                    //     nextOfKin = nextOfKins
+                    // }
 
-                    data.next_of_kin = nextOfKin  
+                    data.next_of_kin = nextOfKins  
                     var sortedDistanceArray = [],
                     distanceArray = []
 
@@ -127,17 +127,18 @@ exports.acceptAlert = (data, allSockets) => {
                 data.client_country = alertDetails.client_country
                 data.relationship = alertDetails.relationship
                 data.client_device_id = alertDetails.client_device_id
-                data.next_of_kin = alertDetails.next_of_kin
+                data.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin.toString().replace("\n", "")))
+                data.accepted = true
 
                 console.log("TO UPDATE THE EXISTING ALERT DETAILS WHEN LAWYER ACCEPTS", data)
                 panicService.updateAlertOnRedis(data)
 
                 panicService.updateAlertOnMongo(data).then((updated)=>{
                     allSockets.users[alertDetails.client_id] &&
-                        io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_accepted', { message: "A lawyer is coming to your aid", data: updated });
+                        io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_accepted', { message: "A lawyer is coming to your aid", data: data });
 
                     allSockets.users[data.public_id] &&
-                        io.of('/panic').to(`${allSockets.users[data.public_id].socket_address}`).emit('acceptance_successful', { message: "You have accepted the alert successfully", data: {accepted: true} });
+                        io.of('/panic').to(`${allSockets.users[data.public_id].socket_address}`).emit('acceptance_successful', { message: "You have accepted the alert successfully", data: data });
                     
                     if(data.user_type && data.user_type === "lawyer"){
                         if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = false

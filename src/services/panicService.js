@@ -86,7 +86,7 @@ exports.getPanicAlertById = (id)=>{
 
 exports.getUser = (id) => {
     return new Promise((resolve , reject)=>{
-        user.findOne({public_id: id}).exec((err , foundUser)=>{
+        user.findOne({public_id: id}).select({"password": 0}).exec((err , foundUser)=>{
             if(err)reject({err: err , status:500});
             // console.log("FOUND USER", foundUser, foundUser.user_type)
 
