@@ -156,8 +156,6 @@ exports.getNextOfKin = (id) => {
                         to: [phone_number],
                         message: `Yours Kinsmen is calling for help!`
                     }
-
-                    console.log("PHONENUMBER", options)
         
                     sms.send(options)
                         .then(response => {
