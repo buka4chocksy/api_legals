@@ -11,6 +11,8 @@ module.exports = function () {
     router.get('/unresolved_history',middleware.authenticate, panicCtrl.getUnresolvedHistory)
     router.get('/resolved_history',middleware.authenticate, panicCtrl.getResolvedHistory)
     router.get('/panic_history',middleware.authenticate, panicCtrl.getHistory)
+    router.get('/sent_history',middleware.authenticate, panicCtrl.getSentHistory)
+    router.get('/received_history',middleware.authenticate, panicCtrl.getReceivedHistory)
 
     return router;
 }

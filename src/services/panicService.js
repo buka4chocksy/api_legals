@@ -102,6 +102,24 @@ exports.getResolvedHistory = (id) => {
     })
 }
 
+exports.getReceivedHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ lawyer_id: id })
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Received alert history", data: result, status: 200 })
+            })
+    })
+}
+
+exports.getSentHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ client_id: id })
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Sent alert history", data: result, status: 200 })
+            })
+    })
+}
+
 exports.getHistory = (id) => {
     return new Promise((resolve, reject) => {
         panicModel.find({ }).or([{ client_id: id }, { lawyer_id: id }])
