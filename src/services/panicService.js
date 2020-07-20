@@ -240,12 +240,14 @@ exports.declareHoax = (alertDetails) => {
                 
                 if(completed.hoax > 1){
                     user.findOneAndUpdate({public_id: result.client_id}, { $set: { blocked: true } },{new: true})
-                    .exec((err , completed)=>{
+                    .exec((err , blocked)=>{
                         if(err)reject({err: err , status:500});
                         
+                        result.blocked = true
                         resolve(result)
                     })
                 }{
+                    result.blocked = false
                     resolve(result)
                 }
             })
