@@ -92,6 +92,10 @@ socket.on('alert_closed', function(data) {
     console.log(data)
 })
 
+socket.on('declared_hoax', function(data) {
+    console.log(data)
+})
+
 socket.on('lawyer_position', function(data) {
     console.log(data)
 })

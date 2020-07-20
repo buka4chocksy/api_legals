@@ -55,6 +55,12 @@ exports.panicAlert = (data, allSockets) => {
                     //var nextOfKin = [];
                     console.log("LIST OF NEXT OF KINS", nextOfKins)
                     if(nextOfKins.length > 0){
+                        data.next_of_kin = {
+                            full_name: nextOfKins[0].full_name,
+                            email_address: nextOfKins[0].email_address,
+                            phone_number: nextOfKins[0].phone_number
+                        }
+
                         data.next_of_kin_full_name = nextOfKins[0].full_name
                         data.next_of_kin_email_address = nextOfKins[0].email_address
                         data.next_of_kin_phone_number = nextOfKins[0].phone_number
@@ -206,36 +212,39 @@ exports.closeAlert = (data, allSockets) => {
 
             console.log("get the alert details========================", alertDetails)
 
-            alertDetails.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin))
-            var sortedDistanceArray = [],
-            distanceArray = []
+            allSockets.users[alertDetails.client_id] &&
+                io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_closed', { message: "This lawyer could not assit you, please initate another panic", data: {unassisted: true} });
 
-            //create object to put all clients details from Redis and then send to the new Lawyers
+            //DON'T CLEAN THIS SET OF COMMETED CODES OOOO
+            // alertDetails.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin))
+            // var sortedDistanceArray = [],
+            // distanceArray = []
 
-            Object.entries(allSockets.users).forEach(([key, value]) => {
-                if(value.user_type === "lawyer" && value.available === true){
-                    if (value.public_id !== data.public_id) {
-                        console.log("did you her get at all at all", value)
-                        var distance = calculateDistance(alertDetails.panic_initiation_latitude, alertDetails.panic_initiation_longitude, value.user_latitude, value.user_longitude)
-                        distanceArray = getNearbyLawyers(distance, value.lawyer_id);
-                    }
-                }
-            });
-            sortedDistanceArray = sortNearbyDistance(distanceArray);
+            // Object.entries(allSockets.users).forEach(([key, value]) => {
+            //     if(value.user_type === "lawyer" && value.available === true){
+            //         if (value.public_id !== data.public_id) {
+            //             console.log("did you her get at all at all", value)
+            //             var distance = calculateDistance(alertDetails.panic_initiation_latitude, alertDetails.panic_initiation_longitude, value.user_latitude, value.user_longitude)
+            //             distanceArray = getNearbyLawyers(distance, value.lawyer_id);
+            //         }
+            //     }
+            // });
+            // sortedDistanceArray = sortNearbyDistance(distanceArray);
 
-            for (i = 0; i < sortedDistanceArray.length; i++) {
-                console.log("LAWYER TO ASK FOR HELP", allSockets.users[sortedDistanceArray[i].public_id] )
+            // for (i = 0; i < sortedDistanceArray.length; i++) {
+            //     console.log("LAWYER TO ASK FOR HELP", allSockets.users[sortedDistanceArray[i].public_id] )
 
-                allSockets.users[sortedDistanceArray[i].public_id] &&
-                    io.of('/panic').to(`${allSockets.users[sortedDistanceArray[i].public_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", alertDetails });
-            }
+            //     allSockets.users[sortedDistanceArray[i].public_id] &&
+            //         io.of('/panic').to(`${allSockets.users[sortedDistanceArray[i].public_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", alertDetails });
+            // }
         }).catch((error)=>{console.log(error)})
     }
     
     if (data.lawyer_response === "hoax"){
         panicService.declareHoax(data).then((result)=>{
+            console.log("HOAX ALERT DETAILS", result, )
             allSockets.users[result.client_id] &&
-                io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('declared_hoax', { message: "Your alert was declared a hoax, do you want to appeal against this?", data: null });
+                io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('declared_hoax', { message: "Your alert was declared a hoax, do you want to appeal against this?", data: {hoax: true} });
 
             if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = true
         }).catch((error)=>{console.log(error)})
@@ -354,6 +363,12 @@ exports.findOlderPanics = (data, allSockets) => {
                         }
                         console.log("EXISTING ALERT DISTANCES", typeof(sortedDistanceArray[i].next_of_kin))
                         //JSON.parse(JSON.stringify(sortedDistanceArray[i].next_of_kin))
+
+                        sortedDistanceArray[i].next_of_kin = {
+                            full_name: sortedDistanceArray[i].next_of_kin_full_name,
+                            email_address: sortedDistanceArray[i].next_of_kin_email_address,
+                            phone_number: sortedDistanceArray[i].next_of_kin_phone_number
+                        }
 
                         clientAlerts.push(sortedDistanceArray[i]);
                     }
