@@ -315,7 +315,7 @@ exports.findOlderPanics = (data, allSockets) => {
             if(oldDispatchArray.length > 0){
                 oldDispatchArray.map((oldDispatchObject) => {
                     if (oldDispatchObject.hasOwnProperty("user_longitude") && oldDispatchObject.status !== "accepted") {
-                        var distance = calculateDistance(data.lawyer_latitude, data.lawyer_longitude, oldDispatchObject.panic_initiation_latitude, oldDispatchObject.panic_initiation_longitude);
+                        var distance = calculateDistance(allSockets.users[data.public_id].user_latitude, allSockets.users[data.public_id].user_longitude, oldDispatchObject.panic_initiation_latitude, oldDispatchObject.panic_initiation_longitude);
                         distanceArray = getNearbyClients(distance, oldDispatchObject);
                     }
                 });

@@ -84,6 +84,24 @@ exports.getPanicAlertById = (id)=>{
     })
 }
 
+exports.getUnresolvedHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ resolved: false }).or([{ client_id: id }, { lawyer_id: id }])
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Unresolved alert history", data: result, status: 200 })
+            })
+    })
+}
+
+exports.getResolvedHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ resolved: true }).or([{ client_id: id }, { lawyer_id: id }])
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Resolved alert history", data: result, status: 200 })
+            })
+    })
+}
+
 exports.getUser = (id) => {
     return new Promise((resolve , reject)=>{
         user.findOne({public_id: id}).select({"password": 0}).exec((err , foundUser)=>{

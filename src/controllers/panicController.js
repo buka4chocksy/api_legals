@@ -35,4 +35,16 @@ module.exports = function panicController(){
             console.log(err)
             res.status(err.status).send(err)});
     }
+
+    this.getUnresolvedHistory = (req,res)=>{
+        service.getUnresolvedHistory(req.auth.public_id).then(data =>{
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.getResolvedHistory = (req,res)=>{
+        service.getResolvedHistory(req.auth.public_id).then(data =>{
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
 }

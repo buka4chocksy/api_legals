@@ -8,6 +8,8 @@ module.exports = function () {
     router.get('/', panicCtrl.getPanicAlerts)
     router.get('/user',middleware.authenticate, panicCtrl.getUserPanicAlertDetail)
     router.post('/deactivate_panic',middleware.authenticate, panicCtrl.deactivatePanic)
+    router.get('/unresolved_history',middleware.authenticate, panicCtrl.getUnresolvedHistory)
+    router.get('/resolved_history',middleware.authenticate, panicCtrl.getResolvedHistory)
 
     return router;
 }
