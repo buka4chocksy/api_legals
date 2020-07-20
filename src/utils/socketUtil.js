@@ -15,7 +15,7 @@ exports.userOnline = (data, allSockets) => {
                 allSockets.users[data.public_id]["available"] = true
                 console.log("new lawyer details", allSockets.users[data.public_id])
             }else{
-                console.log("THID LAWYER ALREADY HAS AN ONGOING ALERT AND CANNOT BE AVAILBLE FOR NOW")
+                console.log("THIS LAWYER ALREADY HAS AN ONGOING ALERT AND CANNOT BE AVAILBLE FOR NOW")
             }
         })
         .catch((error) => {

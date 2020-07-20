@@ -86,7 +86,7 @@ module.exports = function authController() {
     }
 
     this.confirmPassword = (req, res)=>{
-        service.confimrPassword(req.auth.public_id, req.body.password).then(data =>{
+        service.confimPassword(req.auth.public_id, req.body.password).then(data =>{
             res.status(data.status).send(data)
         }).catch(err =>{
             console.log(err)

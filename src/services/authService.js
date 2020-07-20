@@ -450,21 +450,27 @@ const addOrUpdateUserAuthenticationToken = (refreshDetail, userId) => {
     }))
 }
 
-exports.confimrPassword = (public_id, password) => {
+exports.confimPassword = (public_id, password) => {
     return new Promise((resolve, reject) => {
         model.findOne({ public_id: public_id })
             .select({ "__v": 0,  })
             .exec((err, currentUser) => {
                 if (err || !currentUser) {
-                    reject({ message: "User not found", statusCode: 404, data: null })
+                    reject({ message: "User not found", status: 404, data: null })
                 } else {
-                    var validPassword = currentUser.comparePassword(password);
 
-                    if (!validPassword){ 
-                        reject({ message: "Not verified", statusCode: 400, data: { verified: false }  });
+                    if(!currentUser.password){
+                        reject({ message: "You logged in with either linkedin or google account and not allowed to use deactivate a panic", status: 400, data: { verified: false }  });
                     }else{
-                        resolve({ message: "Verification successful", status: 200, data: { verified: true } });
+                        var validPassword = currentUser.comparePassword(password);
+
+                        if (!validPassword){ 
+                            reject({ message: "Wrong password", status: 400, data: { verified: false }  });
+                        }else{
+                            resolve({ message: "Verification successful", status: 200, data: { verified: true } });
+                        }
                     }
+                    
                 }
             })
     })
