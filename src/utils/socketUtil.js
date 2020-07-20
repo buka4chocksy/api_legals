@@ -55,6 +55,9 @@ exports.panicAlert = (data, allSockets) => {
                     //var nextOfKin = [];
                     console.log("LIST OF NEXT OF KINS", nextOfKins)
                     if(nextOfKins.length > 0){
+                        data.next_of_kin_full_name = nextOfKins[0].full_name
+                        data.next_of_kin_email_address = nextOfKins[0].email_address
+                        data.next_of_kin_phone_number = nextOfKins[0].phone_number
                         //Emit alert to NOKs
                         for (i = 0; i < nextOfKins.length; i++) {
                             //nextOfKin.push(nextOfKins[i]);
@@ -64,12 +67,10 @@ exports.panicAlert = (data, allSockets) => {
                                 io.of('/panic').to(`${allSockets.users[nextOfKins[i].next_of_kin_id].socket_address}`).emit('alert_kinsmen', { message: "Help! Help!! Help!!!", data });
                             }
                         }
+                    }else{
+                        data.next_of_kin = {}
                     }
-                    // else{
-                    //     nextOfKin = nextOfKins
-                    // }
 
-                    data.next_of_kin = nextOfKins  
                     var sortedDistanceArray = [],
                     distanceArray = []
 
@@ -129,8 +130,18 @@ exports.acceptAlert = (data, allSockets) => {
                 data.client_country = alertDetails.client_country
                 data.relationship = alertDetails.relationship
                 data.client_device_id = alertDetails.client_device_id
-                data.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin.toString().replace("\n", "")))
+                //data.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin.toString().replace("\n", "")))
                 data.accepted = true
+
+                if(alertDetails.next_of_kin_full_name || alertDetails.next_of_kin_email_address || alertDetails.next_of_kin_phone_number){
+                    data.next_of_kin = {
+                        full_name: alertDetails.next_of_kin_full_name,
+                        email_address: alertDetails.next_of_kin_email_address,
+                        phone_number: alertDetails.next_of_kin_phone_number
+                    }
+                }else{
+                    data.next_of_kin = {}
+                }
 
                 console.log("TO UPDATE THE EXISTING ALERT DETAILS WHEN LAWYER ACCEPTS", data, "NEXT OF KIN DETAILSSSSSS", data.next_of_kin)
                 panicService.updateAlertOnRedis(data)
@@ -242,12 +253,17 @@ exports.updateLawyerPosition = (data, allSockets) => {
             console.log("LAWYER TO STORE HIS POSITION", data)
             panicService.storePosition(data)
 
+            var positionDetails = {
+                lawyer_id: data.public_id, 
+                lawyer_longitude: data.user_longitude, 
+                lawyer_latitude: data.user_latitude
+            }
 
             for(i=0; i<result.data.length; i++){
                 console.log(allSockets.users[result.data[i].client_id])
 
                 allSockets.users[result.data[i].client_id] &&
-                    io.of('/panic').to(`${allSockets.users[result.data[i].client_id].socket_address}`).emit('lawyer_position', {message:"Lawyer position", data});
+                    io.of('/panic').to(`${allSockets.users[result.data[i].client_id].socket_address}`).emit('lawyer_position', {message:"Lawyer position", data: positionDetails});
             }
         })
         .catch((error) => {
@@ -327,8 +343,17 @@ exports.findOlderPanics = (data, allSockets) => {
                         sortedDistanceArray = sortNearbyDistance(distanceArray);
 
                     for (i = 0; i < sortedDistanceArray.length; i++) {
+                        if(sortedDistanceArray[i].next_of_kin_full_name || sortedDistanceArray[i].next_of_kin_email_address || sortedDistanceArray[i].next_of_kin_phone_number){
+                            data.next_of_kin = {
+                                full_name: sortedDistanceArray[i].next_of_kin_full_name,
+                                email_address: sortedDistanceArray[i].next_of_kin_email_address,
+                                phone_number: sortedDistanceArray[i].next_of_kin_phone_number
+                            }
+                        }else{
+                            data.next_of_kin = {}
+                        }
                         console.log("EXISTING ALERT DISTANCES", typeof(sortedDistanceArray[i].next_of_kin))
-                        JSON.parse(JSON.stringify(sortedDistanceArray[i].next_of_kin))
+                        //JSON.parse(JSON.stringify(sortedDistanceArray[i].next_of_kin))
 
                         clientAlerts.push(sortedDistanceArray[i]);
                     }

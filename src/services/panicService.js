@@ -102,6 +102,15 @@ exports.getResolvedHistory = (id) => {
     })
 }
 
+exports.getHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ }).or([{ client_id: id }, { lawyer_id: id }])
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Panic Alert history", data: result, status: 200 })
+            })
+    })
+}
+
 exports.getUser = (id) => {
     return new Promise((resolve , reject)=>{
         user.findOne({public_id: id}).select({"password": 0}).exec((err , foundUser)=>{
@@ -365,7 +374,7 @@ exports.getStoredAlertDetails = (alert_id) => {
 exports.storePosition = (details) => {
     console.log("STORING POSTION", details)
     try {
-        redis.hmset(details.public_id, "id", details.public_id, "longitude", details.user_longitude, "latitude", details.user_latitude)
+        redis.hmset(details.public_id, "public_id", details.public_id, "user_longitude", details.user_longitude, "user_latitude", details.user_latitude)
     } catch (error) {
         console.error(error)
     }

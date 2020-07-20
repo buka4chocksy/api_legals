@@ -10,6 +10,7 @@ module.exports = function () {
     router.post('/deactivate_panic',middleware.authenticate, panicCtrl.deactivatePanic)
     router.get('/unresolved_history',middleware.authenticate, panicCtrl.getUnresolvedHistory)
     router.get('/resolved_history',middleware.authenticate, panicCtrl.getResolvedHistory)
+    router.get('/panic_history',middleware.authenticate, panicCtrl.getHistory)
 
     return router;
 }

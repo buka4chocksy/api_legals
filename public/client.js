@@ -69,7 +69,7 @@ get_nok_position.addEventListener('click', function() {
 
 update_position.addEventListener('click', function() {
     socket.emit('update_nok_position', {
-        id: client_id.value,
+        public_id: client_id.value,
         alert_id: alert_id.value,
         user_latitude: 6.3910178,
         user_longitude: 7.5340073
