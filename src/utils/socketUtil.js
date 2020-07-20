@@ -108,6 +108,8 @@ exports.acceptAlert = (data, allSockets) => {
                 data.lawyer_name = result.first_name + " " + result.last_name
                 data.lawyer_phonenumber = result.phone_number
                 data.lawyer_device_id = result.device_id
+                data.lawyer_latitude = data.user_latitude
+                data.lawyer_longitude = data.user_longitude
                 data.lawyer_email = result.email_address
                 data.status = "accepted"
                 data.client_img_url = alertDetails.client_img_url
@@ -130,7 +132,7 @@ exports.acceptAlert = (data, allSockets) => {
                 data.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin.toString().replace("\n", "")))
                 data.accepted = true
 
-                console.log("TO UPDATE THE EXISTING ALERT DETAILS WHEN LAWYER ACCEPTS", data)
+                console.log("TO UPDATE THE EXISTING ALERT DETAILS WHEN LAWYER ACCEPTS", data, "NEXT OF KIN DETAILSSSSSS", data.next_of_kin)
                 panicService.updateAlertOnRedis(data)
 
                 panicService.updateAlertOnMongo(data).then((updated)=>{
