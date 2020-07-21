@@ -358,27 +358,57 @@ function DBupdateToken(id, tokenID, deviceID, ip_address) {
 
 exports.DBupdateToken = DBupdateToken
 
-exports.refreshToken = (device) => {
+exports.refreshToken = (details, ipaddress) => {
     return new Promise((resolve, reject) => {
-        userToken.findOne({deviceID:device})
-        .exec((err , result)=>{
-             if (err) reject({ success: false, err: err, status: 500 });
-            if(result){
-                getUserDetail(result.userId).then(activeUser => {
-                       generateToken(activeUser).then(token => {
-                       DBupdateToken(result.userId, token, device).then(update => {
-                       if (update) {
-                       resolve({ success: true, status: 200, token: token, message: "user token updated" })
-                       } else {
-                       resolve({ success: false, status: 400, message: 'error updating user token' })
-                       }
-                      })
-                      }).catch(err => reject({ err: err, status: 500 }))
-                     }).catch(err => reject({ err: err, status: 500 }))
-            }else{
-                resolve({success:false , message:"could not find device ", status:404})
+        model.findOne({ public_id: details.public_id }, { __v: 0, }).then(user => {
+            if(!user){
+                resolve({ success: false, message: 'User does not exist', status: 404, data: null })
             }
+                            // status: data.status,
+                            // Id: data._id
+            let jwtTokenDetails = {
+                email_address : details.email_address,
+                phone_number : user.phone_number,
+                public_id : details.public_id,
+                user_type: details.user_type,
+            }
+            let userDetails = {
+                ...jwtTokenDetails, 
+                first_name: details.first_name,
+                last_name: user.last_name,     
+                image_url: user.image_url
+            }
+
+            generateUserAuthenticationResponse(jwtTokenDetails, user._id, ipaddress, true).then(result => {
+                resolve({success: true,  data: { userDetails ,authDetails : result.data }, message: 'authentication successful',status: 200})
+            }).catch(error => {
+                console.log("ERROR IN REFRESHING TOKEN", error)
+                //log error here with logger
+            })  
+        }).catch(err => {
+            console.log("error check", err);
+            reject({ err: err, status: 500 })
         })
+
+        // userToken.findOne({deviceID:device})
+        // .exec((err , result)=>{
+        //      if (err) reject({ success: false, err: err, status: 500 });
+        //     if(result){
+        //         getUserDetail(result.userId).then(activeUser => {
+        //                generateToken(activeUser).then(token => {
+        //                     DBupdateToken(result.userId, token, device).then(update => {
+        //                         if (update) {
+        //                             resolve({ success: true, status: 200, token: token, message: "user token updated" })
+        //                         } else {
+        //                             resolve({ success: false, status: 400, message: 'error updating user token' })
+        //                         }
+        //                     })
+        //               }).catch(err => reject({ err: err, status: 500 }))
+        //              }).catch(err => reject({ err: err, status: 500 }))
+        //     }else{
+        //         resolve({success:false , message:"could not find device ", status:404})
+        //     }
+        // })
     })
 }
 
@@ -448,6 +478,32 @@ const addOrUpdateUserAuthenticationToken = (refreshDetail, userId) => {
             });
         }
     }))
+}
+
+exports.confimPassword = (public_id, password) => {
+    return new Promise((resolve, reject) => {
+        model.findOne({ public_id: public_id })
+            .select({ "__v": 0,  })
+            .exec((err, currentUser) => {
+                if (err || !currentUser) {
+                    reject({ message: "User not found", status: 404, data: null })
+                } else {
+
+                    if(!currentUser.password){
+                        reject({ message: "You logged in with either linkedin or google account and not allowed to use deactivate a panic", status: 400, data: { verified: false }  });
+                    }else{
+                        var validPassword = currentUser.comparePassword(password);
+
+                        if (!validPassword){ 
+                            reject({ message: "Wrong password", status: 400, data: { verified: false }  });
+                        }else{
+                            resolve({ message: "Verification successful", status: 200, data: { verified: true } });
+                        }
+                    }
+                    
+                }
+            })
+    })
 }
 
 exports.generateUserAuthenticationResponse = generateUserAuthenticationResponse;

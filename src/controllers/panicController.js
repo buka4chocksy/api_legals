@@ -25,7 +25,7 @@ module.exports = function panicController(){
             alert_id: req.body.alert_id,
         }
         
-        if(req.body.password) deactivationDetails.password = req.body.password
+        //if(req.body.password) deactivationDetails.password = req.body.password
         if(req.body.reason) deactivationDetails.password = req.body.reason
         if(req.body.alert_type) deactivationDetails.password = req.body.alert_type
 
@@ -34,5 +34,35 @@ module.exports = function panicController(){
         }).catch(err =>{
             console.log(err)
             res.status(err.status).send(err)});
+    }
+
+    this.getUnresolvedHistory = (req,res)=>{
+        service.getUnresolvedHistory(req.auth.public_id).then(data =>{
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.getResolvedHistory = (req,res)=>{
+        service.getResolvedHistory(req.auth.public_id).then(data =>{
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.getHistory = (req,res)=>{
+        service.getHistory(req.auth.public_id).then(data =>{
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.getReceivedHistory = (req,res)=>{
+        service.getReceivedHistory(req.auth.public_id).then(data =>{
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.getSentHistory = (req,res)=>{
+        service.getSentHistory(req.auth.public_id).then(data =>{
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
     }
 }

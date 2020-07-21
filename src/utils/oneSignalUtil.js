@@ -1,18 +1,19 @@
 var OneSignal = require('onesignal-node');
-var App_Id = process.env.appId
-var Api_Key = process.env.apiKey
-var User_Key = process.env.userKey
+var appId = process.env.ONESIGNAL_APP_ID
+var apiKey = process.env.ONESIGNAL_API_KEY
+var userKey = process.env.ONESIGNAL_USER_KEY
+
 
 var myClient = new OneSignal.Client({
-    userAuthKey: User_Key,
-    app: { appAuthKey: Api_Key, appId: App_Id }
+    userAuthKey: userKey,
+    app: { appAuthKey: apiKey, appId: appId }
 });
 
 module.exports = {
     sendNotice: (deviceid, msg) => {
         return new Promise((resolve, reject) => {
             var firstNotification = {
-                app_id: App_Id,
+                app_id: appId,
                 contents: {
                     en: msg,
                 },

@@ -11,6 +11,10 @@ var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL :  process.env.REDIS_URL);
 
+// sub.subscribe(`${dispatchDetails.userdeviceid}`, function (err, count) {
+//     pub.publish(`${dispatchDetails.userdeviceid}`, `Your ${dispatchDetails.contentdetails} dispatch request has been accepted`);
+// });
+
 exports.createPanic = (data,id,user_type)=>{
     return new Promise((resolve , reject)=>{
         nextOfKinModel.findOne({public_id:id}).exec((err , exists)=>{
@@ -57,13 +61,13 @@ exports.createPanic = (data,id,user_type)=>{
 exports.getAllPanicAlerts = ()=>{
     return new Promise((resolve, reject)=>{
         nextOfKinModel.find({}).exec((err, found)=>{
-        if(err)reject({err: err , status:500});
-        if(found){
-            resolve({success:true , message:found , status:200})
-        }else{
-            resolve({success:false , message:'could not find panic alerts', status:404})
-        }
-    })      
+            if(err)reject({err: err , status:500});
+            if(found){
+                resolve({success:true , message:found , status:200})
+            }else{
+                resolve({success:false , message:'could not find panic alerts', status:404})
+            }
+        })      
     })
 }
 
@@ -80,9 +84,61 @@ exports.getPanicAlertById = (id)=>{
     })
 }
 
+exports.getUnresolvedHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.findOne({ resolved: false }).or([{ client_id: id }, { lawyer_id: id }])
+            .exec((err, result) => {
+                var pending
+                if(result){
+                    pending = true
+                }else{
+                    pending = false
+                }
+
+                err ? reject({ success: false, message: err, data: null, status: 500 }) : resolve({ message: "Unresolved alert history", data: {pending, result: result? result : null}, status: 200 })
+            })
+    })
+}
+
+exports.getResolvedHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ resolved: true }).or([{ client_id: id }, { lawyer_id: id }])
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Resolved alert history", data: result, status: 200 })
+            })
+    })
+}
+
+exports.getReceivedHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ lawyer_id: id })
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Received alert history", data: result, status: 200 })
+            })
+    })
+}
+
+exports.getSentHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ client_id: id })
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Sent alert history", data: result, status: 200 })
+            })
+    })
+}
+
+exports.getHistory = (id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ }).or([{ client_id: id }, { lawyer_id: id }])
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Panic Alert history", data: result, status: 200 })
+            })
+    })
+}
+
 exports.getUser = (id) => {
     return new Promise((resolve , reject)=>{
-        user.findOne({public_id: id}).exec((err , foundUser)=>{
+        user.findOne({public_id: id}).select({"password": 0}).exec((err , foundUser)=>{
             if(err)reject({err: err , status:500});
             // console.log("FOUND USER", foundUser, foundUser.user_type)
 
@@ -102,9 +158,9 @@ exports.getUser = (id) => {
                         if(err)reject({err: err , status:500});
 
                         if(!found){
-                        reject({message: "Lawyer does not exist"}) 
+                            reject({message: "Lawyer does not exist"}) 
                         }
-                        
+                        console.log("LAWYER DETAILS FROM DB", foundUser)
                         resolve(foundUser)
                     })
                 }
@@ -120,6 +176,7 @@ exports.getUser = (id) => {
                         foundUser.client_country = found.state_of_origin
                         foundUser.client_state = found.country 
                         
+                        console.log("CLIENT DETAILS FRO DB", foundUser)
                         resolve(foundUser)
                     })
                 }
@@ -127,55 +184,6 @@ exports.getUser = (id) => {
         })
     })
 }
-
-// exports.getUser = (id) => {
-//     return new Promise((resolve , reject)=>{
-//         user.aggregate([{
-//             $lookup: {
-//                     from: "userSettings",
-//                     localField: "public_id",
-//                     foreignField: "public_id",
-//                     as: "copies_sold"
-//             }
-//         }])
-//         user.findOne({public_id: id}).exec((err , foundUser)=>{
-//             if(err)reject({err: err , status:500});
-//             // console.log("FOUND USER", foundUser, foundUser.user_type)
-
-//             if(!foundUser){
-//                reject({message: "User does not exist"}) 
-//             }
-            
-//             //re-write to use aggregate
-//             if(foundUser.user_type === "lawyer"){
-//                 lawyer.findOne({public_id: id}).exec((err , found)=>{
-//                     if(err)reject({err: err , status:500});
-
-//                     if(!found){
-//                        reject({message: "Lawyer does not exist"}) 
-//                     }
-                    
-//                     resolve(foundUser)
-//                 })
-//             }
-            
-//             if(foundUser.user_type === "client"){
-//                 client.findOne({public_id: id}).exec((err , found)=>{
-//                     if(err)reject({err: err , status:500});
-
-//                     if(!found){
-//                        reject({message: "Client does not exist"}) 
-//                     }
-
-//                     foundUser.client_country = found.state_of_origin
-//                     foundUser.client_state = found.country 
-                    
-//                     resolve(foundUser)
-//                 })
-//             }
-//         })
-//     })
-// }
 
 exports.createPanicAlert = (panicDetails)=>{
     return new Promise((resolve , reject)=>{
@@ -193,28 +201,32 @@ exports.getNextOfKin = (id) => {
             resolve(found)
 
             console.log("NEXT OF KIN", found)
-            // for(index=0; index<found.length; index++){
-            //     const options = {
-            //         to: [`${found[index].phone_number}`],
-            //         message: `Someone who you are a next of kin to needs a great help`
-            //     }
-    
-            //     sms.send(options)
-            //         .then(response => {
-            //             // if (details.userdeviceid) {
-            //             //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
-            //             //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
-            //             //     });
-    
-            //             //     resolve({ message: "The rider is on the way to deliver your package", data: details })
-            //             // } else {
-            //                 // resolve({ message: "The rider is on the way to deliver your package", data: details })
-            //             // }
-            //         })
-            //         .catch(error => {
-            //             console.error(error)
-            //         });
-            // }
+            if(found.length>0){
+                for(index=0; index<found.length; index++){
+                    var phone_number = "+234" + found[index].phone_number.split('').slice(1).join('')
+                    const options = {
+                        to: [phone_number],
+                        message: `Yours Kinsmen is calling for help!`
+                    }
+        
+                    sms.send(options)
+                        .then(response => {
+                            console.log("MESSAGE SENT")
+                            // if (details.userdeviceid) {
+                            //     sub.subscribe(`${details.userdeviceid}`, function (err, count) {
+                            //         pub.publish(`${details.userdeviceid}`, `Rider for your ${details.contentdetails} dispatch is enroute`);
+                            //     });
+        
+                            //     resolve({ message: "The rider is on the way to deliver your package", data: details })
+                            // } else {
+                                // resolve({ message: "The rider is on the way to deliver your package", data: details })
+                            // }
+                        })
+                        .catch(error => {
+                            console.error("MESSAGE NOT SENT", error)
+                        });
+                }
+            }
         })
     })
 }
@@ -253,16 +265,16 @@ exports.declareHoax = (alertDetails) => {
                 
                 if(completed.hoax > 1){
                     user.findOneAndUpdate({public_id: result.client_id}, { $set: { blocked: true } },{new: true})
-                    .exec((err , completed)=>{
+                    .exec((err , blocked)=>{
                         if(err)reject({err: err , status:500});
                         
-                        if(completed.hoax > 1){
-                            
-                        }
+                        result.blocked = true
                         resolve(result)
                     })
+                }{
+                    result.blocked = false
+                    resolve(result)
                 }
-                resolve(result)
             })
         })
     })
@@ -270,7 +282,17 @@ exports.declareHoax = (alertDetails) => {
 
 exports.fetchAllUnresolved = (data) => {
     return new Promise((resolve, reject) => {
-        panicModel.find({ resolved: false, lawyer_id: data.lawyer_id })
+        panicModel.find({ resolved: false, lawyer_id: data.public_id })
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null }) : resolve({ message: "Unresolved alert history", data: result })
+            })
+    })
+}
+
+
+exports.fetchAllUnresolvedForClient = (data) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ resolved: false, client_id: data.public_id })
             .exec((err, result) => {
                 err ? reject({ message: err, data: null }) : resolve({ message: "Unresolved alert history", data: result })
             })
@@ -285,31 +307,15 @@ exports.deactivateAlert = (deactivationDetails) => {
                 if (err || !currentUser) {
                     reject({ message: "User not found", statusCode: 404, data: null })
                 } else {
-                    var validPassword;
-
-                    console.log("ERORRRRR")
-                    if(deactivationDetails.password){
-                        validPassword = currentUser.comparePassword(deactivationDetails.password);
-
-                        if (validPassword){ 
-                            reject({ message: "Invalid user credentials", statusCode: 400, data: null });
-                        }else{
-                            deactivatePanicModel.create(deactivationDetails)
-                            .then(result => {
-                                resolve({ message: "Deactivation successful", status: 200, data: null });
-                            }).catch(error => {
-                                //use the error logger here
-                                console.error(error)
-                                reject({message : "Something went wrong", data : null, statusCode : 500})
-                            })
-                        }
-                    }
-
-                    deleteStoredAlertDetails(deactivationDetails.alert_id)
-
-                    if(!deactivationDetails.password){
+                    deactivatePanicModel.create(deactivationDetails)
+                    .then(result => {
                         resolve({ message: "Deactivation successful", status: 200, data: null });
-                    }
+                    }).catch(error => {
+                        //use the error logger here
+                        console.error(error)
+                        reject({message : "Something went wrong", data : null, statusCode : 500})
+                    })
+                    deleteStoredAlertDetails(deactivationDetails.alert_id)
                 }
             })
     })
@@ -373,11 +379,7 @@ exports.fetchExistingAlerts = () => {
 
 exports.storeAlertDetails = (alertDetails) => {
     try {
-        redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, 
-        "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", alertDetails.panic_initiation_latitude, 
-        "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, "client_state", alertDetails.client_state, 
-        "client_device_id", alertDetails.client_device_id, "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin, "next_of_kin_device_id", 
-        alertDetails.next_of_kin_device_id)
+        redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat())
 
         redis.expire(alertDetails.alert_id, 259200)
 
@@ -390,16 +392,15 @@ exports.storeAlertDetails = (alertDetails) => {
 exports.updateAlertOnRedis = (alertDetails) => {
     console.log("I UPDATED THE ALERT DETAILS")
     try {
-        redis.hmset(alertDetails.alert_id, "alert_id", alertDetails.alert_id, "lawyer_img_url", alertDetails.lawyer_img_url, "lawyer_name", alertDetails.lawyer_name, "lawyer_phonenumber", alertDetails.lawyer_phonenumber, "lawyer_email", alertDetails.lawyer_email, 
-        "lawyer_id", alertDetails.lawyer_id, "lawyer_latitude", alertDetails.lawyer_latitude, "lawyer_longitude", alertDetails.lawyer_longitude, "client_img_url", alertDetails.client_img_url, "alert_id", alertDetails.alert_id, "client_name", alertDetails.client_name, "client_phonenumber", alertDetails.client_phonenumber, "client_email", alertDetails.client_email, "client_id", alertDetails.client_id, "panic_initiation_location", alertDetails.panic_initiation_location, "destination", alertDetails.destination, "resolved", alertDetails.resolved, "alert_type", alertDetails.alert_type, "panic_initiation_latitude", 
-        alertDetails.panic_initiation_latitude, "panic_initiation_longitude", alertDetails.panic_initiation_longitude, "status", alertDetails.status, 
-        "client_state", alertDetails.client_state, "client_country", alertDetails.client_country, "next_of_kin", alertDetails.next_of_kin)
+        redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat())
+        redis.expire(alertDetails.alert_id, 259200)
     } catch (error) {
         console.log(error)
     }
 }
 
 exports.getStoredAlertDetails = (alert_id) => {
+    console.log("GETTING STORED ALERT DETAILS", alert_id)
     return new Promise((resolve, reject) => {
         redis.hgetall(alert_id, (err, result) => {
             result ? resolve(result) : console.log(err)
@@ -408,19 +409,30 @@ exports.getStoredAlertDetails = (alert_id) => {
 }
 
 exports.storePosition = (details) => {
+    console.log("STORING POSTION", details)
     try {
-        redis.hmset(details.id, "id", details.id, "longitude", details.longitude, "latitude", details.latitude)
+        redis.hmset(details.public_id, "public_id", details.public_id, "user_longitude", details.user_longitude, "user_latitude", details.user_latitude)
     } catch (error) {
         console.error(error)
     }
 }
 
-exports.getStoredPosition = (lawyer_id) => {
+exports.getStoredPosition = (public_id) => {
+    console.log("GETTING STORED POSITION", public_id)
     return new Promise((resolve, reject) => {
-        redis.hgetall(lawyer_id, (err, result) => {
+        redis.hgetall(public_id, (err, result) => {
             result ? resolve(result) : console.log(err)
         })
     })
 }
 
+sub.on("message", function (channel, message) {
+    oneSignal.sendNotice(channel, message)
+        .then((res) => {
+
+        })
+        .catch((error) => {
+            console.error('FAILED TO SEND PUSH NOTIFICATION', error)
+        })
+});
 // panic_ending_location: {type: String}

@@ -1,7 +1,7 @@
 const authVerify = require('../services/authService');
 const model = require('../models/auth/users');
 const TokenModel = require('../models/auth/userToken');
-const { verifyTokenSync } = require('../utils/jwtUtils');
+const { verifyTokenSync, decodeToken } = require('../utils/jwtUtils');
 //Logic fot authentication goes in here    
 
 exports.authenticate1 = function (req, res, next) {
@@ -74,3 +74,44 @@ exports.authenticate = async (req, res, next) => {
         res.status(401).send({ success: false, message: 'authentication required' });
     }
 };
+
+exports.decodeUser = function(req, res, next) {
+    var token = req.body.token || req.query.token || req.headers['x-access-token'];
+    if (token) {
+        decodeToken(token).then(decoded => {
+            console.log("TOKEN DETAILS", decoded.payload.public_id, token)
+            TokenModel.findOne({ public_id: decoded.payload.public_id , "access_token": token  }).then(exist => {
+                console.log(exist)
+                if (exist) {
+                    model.findOne({ public_id: decoded.payload.public_id }).then(data => {
+                        if (data == null) {
+                            res.setHeader("x-lawyerpp-error", "invalid token");
+                            res.status(401).send({ success: false, message: "invalid token" });
+                        } else {
+                            req.auth = {
+                                public_id: data.public_id,
+                                user_type: data.user_type,
+                                status: data.status,
+                                email: data.email_address,
+                                first_name: data.first_name,
+                                Id: data._id,
+                            };
+
+                            // console.log(req.auth, "IIN AUTH MIDDLEWARE")
+                            res.locals.response = { data: decoded, message: "", success: true };
+                            next();
+                        }
+                    });
+                } else {
+                    res.setHeader("x-lawyerpp-error", "invalid token");
+                    res.status(401).send({ success: false, message: 'un-authorized access' });
+                }
+            });
+        }).catch(err => {
+            console.log("INVALID TOKEN", err)
+            res.status(401).send({ success: false, message: "Authentication failed", data: err });
+        })
+    } else {
+        res.status(401).send({ success: false, message: "No token provided" });
+    }
+}

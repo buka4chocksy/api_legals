@@ -14,18 +14,19 @@ var socket = io.connect(window.location.hostname == "localhost" ? "http://localh
 
 client_online.addEventListener('click', function() {
     socket.emit('online', {
-        client_id: client_id.value,
-        panic_initiation_latitude: 6.3910178,
-        panic_initiation_longitude: 7.5340073,
+        public_id: client_id.value,
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073,
         user_type: "client"
     })
 })
 
 panic_alert.addEventListener('click', function() {
     socket.emit('panic_alert', {
-        client_id: client_id.value,
-        panic_initiation_latitude: 6.3910178,
-        panic_initiation_longitude: 7.5340073,
+        public_id: client_id.value,
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073,
+        alert_type: "Crime"
     })
 })
 
@@ -34,6 +35,10 @@ send_message.addEventListener('click', function() {
         alert_id: alert_id.value,
         message: "haloooo my lawyer",
         to_who: 'lawyer'
+    })
+
+    socket.emit('deactivate_alert', {
+        alert_id: alert_id.value
     })
 })
 
@@ -62,16 +67,16 @@ get_lawyer_position.addEventListener('click', function() {
 get_nok_position.addEventListener('click', function() {
     socket.emit('get_nok_position', {
         next_of_kin_id: '5f0ef270203ea25111656cd7',
-        client_id: client_id.value
+        public_id: client_id.value
     })
 })
 
 update_position.addEventListener('click', function() {
     socket.emit('update_nok_position', {
-        id: client_id.value,
+        public_id: client_id.value,
         alert_id: alert_id.value,
-        latitude: 6.3910178,
-        longitude: 7.5340073
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073
     })
 })
 
@@ -88,6 +93,10 @@ socket.on('alert_accepted', function(data) {
 })
 
 socket.on('alert_closed', function(data) {
+    console.log(data)
+})
+
+socket.on('declared_hoax', function(data) {
     console.log(data)
 })
 

@@ -12,25 +12,26 @@ var    socket = io.connect(window.location.hostname == "localhost" ? "http://loc
 
 lawyer_online.addEventListener('click', function() {
     socket.emit('online', {
-        lawyer_id: lawyer_id.value,
-        lawyer_latitude: 6.3910178,
-        lawyer_longitude: 7.5340073,
-        user_type: "lawyer"
+        public_id: lawyer_id.value,
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073,
+        user_type: "lawyer",
+        // available: true
     })
 
     socket.emit('find_panics', {
-        lawyer_id: lawyer_id.value,
-        lawyer_latitude: 6.3910178,
-        lawyer_longitude: 7.5340073
+        public_id: lawyer_id.value,
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073
     })
 })
 
 accept_alert.addEventListener('click', function() {
     console.log(alert_id.value)
     socket.emit('accept_alert', {
-        lawyer_id: lawyer_id.value,
-        lawyer_latitude: 6.3910178,
-        lawyer_longitude: 7.5340073,
+        public_id: lawyer_id.value,
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073,
         alert_id: alert_id.value
     })
 })
@@ -38,7 +39,7 @@ accept_alert.addEventListener('click', function() {
 send_message.addEventListener('click', function() {
     console.log("sent message")
     socket.emit('send_message', {
-        lawyer_id: lawyer_id.value,
+        public_id: lawyer_id.value,
         alert_id: alert_id.value,
         message: "What's going on client?!",
         to_who: "client"
@@ -51,7 +52,7 @@ close_alert.addEventListener('click', function() {
         lawyer_response: response.value
     })
     socket.emit('close_alert', {
-        lawyer_id: lawyer_id.value,
+        public_id: lawyer_id.value,
         alert_id: alert_id.value,
         lawyer_response: response.value
     })
@@ -59,9 +60,9 @@ close_alert.addEventListener('click', function() {
 
 update_position.addEventListener('click', function() {
     socket.emit('update_lawyer_position', {
-        id: lawyer_id.value,
-        lawyer_latitude: 6.3910178,
-        lawyer_longitude: 7.5340073
+        public_id: lawyer_id.value,
+        user_latitude: 6.3910178,
+        user_longitude: 7.5340073
     })
 })
 
@@ -77,10 +78,18 @@ socket.on('alert_closed', function(data) {
     console.log(data)
 }) 
 
+socket.on('alert_deactivated', function(data) {
+    console.log(data)
+})
+
 socket.on('alert_lawyer', function(data) {
     console.log(data)
 })
 
 socket.on('alert_kinsmen', function(data) {
+    console.log(data)
+})
+success: false,
+socket.on('acceptance_successful', function(data) {
     console.log(data)
 })
