@@ -95,7 +95,7 @@ exports.getUnresolvedHistory = (id) => {
                     pending = false
                 }
 
-                err ? reject({ success: false, message: err, data: null, status: 500 }) : resolve({ message: "Unresolved alert history", data: {pending}, status: 200 })
+                err ? reject({ success: false, message: err, data: null, status: 500 }) : resolve({ message: "Unresolved alert history", data: {pending, result: result? result : null}, status: 200 })
             })
     })
 }

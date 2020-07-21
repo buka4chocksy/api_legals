@@ -207,7 +207,7 @@ exports.closeAlert = (data, allSockets) => {
             io.of('/panic').to(`${allSockets.users[result.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
 
             allSockets.users[result.client_id] &&
-            io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: result });
+            io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('alert_closed', { message: "Lawyer has helped and alert has been closed", data: {event_type: "assisted"} });
 
             if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = true
             
@@ -221,7 +221,7 @@ exports.closeAlert = (data, allSockets) => {
             console.log("get the alert details========================", alertDetails)
 
             allSockets.users[alertDetails.client_id] &&
-                io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_closed', { message: "This lawyer could not assit you, please initate another panic", data: {unassisted: true} });
+                io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_closed', { message: "This lawyer could not assit you, please initate another panic", data: {event_type: "unassisted"} });
 
             allSockets.users[alertDetails.lawyer_id] &&
             io.of('/panic').to(`${allSockets.users[alertDetails.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
@@ -255,7 +255,7 @@ exports.closeAlert = (data, allSockets) => {
         panicService.declareHoax(data).then((result)=>{
             console.log("HOAX ALERT DETAILS", result)
             allSockets.users[result.client_id] &&
-                io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('declared_hoax', { message: "Your alert was declared a hoax, do you want to appeal against this?", data: {hoax: true} });
+                io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('alert_closed', { message: "Your alert was declared a hoax", data: {event_type: "hoax"}});
 
             allSockets.users[result.lawyer_id] &&
             io.of('/panic').to(`${allSockets.users[result.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
