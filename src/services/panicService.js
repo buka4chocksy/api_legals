@@ -88,7 +88,14 @@ exports.getUnresolvedHistory = (id) => {
     return new Promise((resolve, reject) => {
         panicModel.findOne({ resolved: false }).or([{ client_id: id }, { lawyer_id: id }])
             .exec((err, result) => {
-                err ? reject({ message: err, data: null, status: 500 }) : resolve({ message: "Unresolved alert history", data: result, status: 200 })
+                var pending
+                if(result){
+                    pending = true
+                }else{
+                    pending = false
+                }
+
+                err ? reject({ success: false, message: err, data: null, status: 500 }) : resolve({ message: "Unresolved alert history", data: {pending}, status: 200 })
             })
     })
 }

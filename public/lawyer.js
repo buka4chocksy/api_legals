@@ -89,7 +89,7 @@ socket.on('alert_lawyer', function(data) {
 socket.on('alert_kinsmen', function(data) {
     console.log(data)
 })
-
+success: false,
 socket.on('acceptance_successful', function(data) {
     console.log(data)
 })
