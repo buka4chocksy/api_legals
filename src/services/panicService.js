@@ -289,6 +289,16 @@ exports.fetchAllUnresolved = (data) => {
     })
 }
 
+
+exports.fetchAllUnresolvedForClient = (data) => {
+    return new Promise((resolve, reject) => {
+        panicModel.find({ resolved: false, client_id: data.public_id })
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null }) : resolve({ message: "Unresolved alert history", data: result })
+            })
+    })
+}
+
 exports.deactivateAlert = (deactivationDetails) => {
     return new Promise((resolve, reject) => {
         user.findOne({ public_id: deactivationDetails.client_id })
@@ -305,7 +315,7 @@ exports.deactivateAlert = (deactivationDetails) => {
                         console.error(error)
                         reject({message : "Something went wrong", data : null, statusCode : 500})
                     })
-                    //deleteStoredAlertDetails(deactivationDetails.alert_id)
+                    deleteStoredAlertDetails(deactivationDetails.alert_id)
                 }
             })
     })
