@@ -84,14 +84,17 @@ exports.panicAlert = (data, allSockets) => {
                                 var sortedDistanceArray = [],
                                 distanceArray = []
             
+
                                 Object.entries(allSockets.users).forEach(([key, value]) => {
                                     if(value.user_type === "lawyer" && value.available === true){
                                         var distance = calculateDistance(data.user_latitude, data.user_longitude, value.user_latitude, value.user_longitude)
-                                        distanceArray = getNearbyLawyers(distance, value.public_id);
+                                        distanceArray = [...distanceArray, ...getNearbyLawyers(distance, value.public_id)];
                                     }        
                                 });
             
                                 sortedDistanceArray = sortNearbyDistance(distanceArray);
+
+                                console.log("ARRAY OF LAYWERS",sortedDistanceArray)
             
                                 for (i = 0; i < sortedDistanceArray.length; i++) {
                                     console.log("LAWYER ID TO EMIT TO", allSockets.users[sortedDistanceArray[i].public_id], allSockets.users[sortedDistanceArray[i].public_id].socket_address)
@@ -120,8 +123,8 @@ exports.panicAlert = (data, allSockets) => {
 exports.acceptAlert = (data, allSockets) => {
     panicService.getUser(data.public_id).then((result)=>{
         panicService.fetchAllUnresolved(data)
-        .then((result) => {
-            if(result.data.length < 1){
+        .then((unresolved) => {
+            if(unresolved.data.length < 1){
                 panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
                     if(alertDetails.status === "sent"){
                         data.lawyer_id = data.public_id
@@ -370,8 +373,8 @@ exports.getNextOfKinPosition = (data, allSockets) => {
 exports.findOlderPanics = (data, allSockets) => {
     panicService.getUser(data.public_id).then((result)=>{
         panicService.fetchAllUnresolved(data)
-            .then((result) => {
-                if(result.data.length < 1){
+            .then((unresolved) => {
+                if(unresolved.data.length < 1){
                     //fetch available panics and emit to lawyer
                 var sortedDistanceArray = [],
                 distanceArray = [],

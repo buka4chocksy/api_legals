@@ -305,17 +305,21 @@ exports.deactivateAlert = (deactivationDetails) => {
             .select({ "__v": 0,  })
             .exec((err, currentUser) => {
                 if (err || !currentUser) {
-                    reject({ message: "User not found", statusCode: 404, data: null })
+                    reject({ message: "User not found", status: 404, data: null })
                 } else {
-                    deactivatePanicModel.create(deactivationDetails)
-                    .then(result => {
-                        resolve({ message: "Deactivation successful", status: 200, data: null });
-                    }).catch(error => {
-                        //use the error logger here
-                        console.error(error)
-                        reject({message : "Something went wrong", data : null, statusCode : 500})
+                    panicModel.findOneAndUpdate({client_id: deactivationDetails.client_id}, { $set: { resolved: true } }, {new: true}).exec((err , completed)=>{
+                        if(err)reject({err: err , status:500});
+                        
+                        deactivatePanicModel.create(deactivationDetails)
+                        .then(result => {
+                            resolve({ message: "Deactivation successful", status: 200, data: null });
+                        }).catch(error => {
+                            //use the error logger here
+                            console.error(error)
+                            reject({message : "Something went wrong", data : null, statusCode : 500})
+                        })
+                        deleteStoredAlertDetails(deactivationDetails.alert_id)
                     })
-                    deleteStoredAlertDetails(deactivationDetails.alert_id)
                 }
             })
     })
