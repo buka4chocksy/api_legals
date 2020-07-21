@@ -242,50 +242,55 @@ exports.closeAlert = (data, allSockets) => {
     
     if (data.lawyer_response === "unassisted"){
         panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
-            if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = true
+            panicService.closeAlert(data).then((result)=>{
+                if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = true
 
-            console.log("UNASSISTED==========================", alertDetails)
-            allSockets.users[alertDetails.client_id] &&
-                io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_closed', { message: "This lawyer could not assit you, please initate another panic", data: {event_type: "unassisted"} });
+                console.log("UNASSISTED==========================", alertDetails)
+                allSockets.users[alertDetails.client_id] &&
+                    io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_closed', { message: "This lawyer could not assit you, please initate another panic", data: {event_type: "unassisted"} });
 
-            allSockets.users[alertDetails.lawyer_id] &&
-            io.of('/panic').to(`${allSockets.users[alertDetails.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
+                allSockets.users[alertDetails.lawyer_id] &&
+                io.of('/panic').to(`${allSockets.users[alertDetails.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
 
-            //DON'T CLEAN THIS SET OF COMMETED CODES OOOO
-            // alertDetails.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin))
-            // var sortedDistanceArray = [],
-            // distanceArray = []
+                //DON'T CLEAN THIS SET OF COMMETED CODES OOOO
+                // alertDetails.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin))
+                // var sortedDistanceArray = [],
+                // distanceArray = []
 
-            // Object.entries(allSockets.users).forEach(([key, value]) => {
-            //     if(value.user_type === "lawyer" && value.available === true){
-            //         if (value.public_id !== data.public_id) {
-            //             console.log("did you her get at all at all", value)
-            //             var distance = calculateDistance(alertDetails.panic_initiation_latitude, alertDetails.panic_initiation_longitude, value.user_latitude, value.user_longitude)
-            //             distanceArray = getNearbyLawyers(distance, value.lawyer_id);
-            //         }
-            //     }
-            // });
-            // sortedDistanceArray = sortNearbyDistance(distanceArray);
+                // Object.entries(allSockets.users).forEach(([key, value]) => {
+                //     if(value.user_type === "lawyer" && value.available === true){
+                //         if (value.public_id !== data.public_id) {
+                //             console.log("did you her get at all at all", value)
+                //             var distance = calculateDistance(alertDetails.panic_initiation_latitude, alertDetails.panic_initiation_longitude, value.user_latitude, value.user_longitude)
+                //             distanceArray = getNearbyLawyers(distance, value.lawyer_id);
+                //         }
+                //     }
+                // });
+                // sortedDistanceArray = sortNearbyDistance(distanceArray);
 
-            // for (i = 0; i < sortedDistanceArray.length; i++) {
-            //     console.log("LAWYER TO ASK FOR HELP", allSockets.users[sortedDistanceArray[i].public_id] )
+                // for (i = 0; i < sortedDistanceArray.length; i++) {
+                //     console.log("LAWYER TO ASK FOR HELP", allSockets.users[sortedDistanceArray[i].public_id] )
 
-            //     allSockets.users[sortedDistanceArray[i].public_id] &&
-            //         io.of('/panic').to(`${allSockets.users[sortedDistanceArray[i].public_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", alertDetails });
-            // }
+                //     allSockets.users[sortedDistanceArray[i].public_id] &&
+                //         io.of('/panic').to(`${allSockets.users[sortedDistanceArray[i].public_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", alertDetails });
+                // }
+            }).catch((error)=>{console.log(error)})
+                
         }).catch((error)=>{console.log(error)})
     }
     
     if (data.lawyer_response === "hoax"){
         panicService.declareHoax(data).then((result)=>{
-            console.log("HOAX ALERT=====================", result)
-            allSockets.users[result.client_id] &&
-                io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('alert_closed', { message: "Your alert was declared a hoax", data: {event_type: "hoax"}});
+            panicService.closeAlert(data).then((closed)=>{
+                console.log("HOAX ALERT=====================", result)
+                allSockets.users[result.client_id] &&
+                    io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('alert_closed', { message: "Your alert was declared a hoax", data: {event_type: "hoax"}});
 
-            allSockets.users[result.lawyer_id] &&
-            io.of('/panic').to(`${allSockets.users[result.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
+                allSockets.users[result.lawyer_id] &&
+                io.of('/panic').to(`${allSockets.users[result.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
 
-            if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = true
+                if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = true
+            }).catch((error)=>{console.log(error)})
         }).catch((error)=>{console.log(error)})
     }
     /*if hoax, store in hoax model, increment the client numbers of hoax alert, if its up to 2, block him for one week, the emit to the 
