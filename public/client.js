@@ -36,6 +36,10 @@ send_message.addEventListener('click', function() {
         message: "haloooo my lawyer",
         to_who: 'lawyer'
     })
+
+    socket.emit('deactivate_alert', {
+        alert_id: alert_id.value
+    })
 })
 
 to_client.addEventListener('click', function() {

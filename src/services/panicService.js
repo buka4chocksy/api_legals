@@ -298,8 +298,7 @@ exports.deactivateAlert = (deactivationDetails) => {
                         console.error(error)
                         reject({message : "Something went wrong", data : null, statusCode : 500})
                     })
-
-                    deleteStoredAlertDetails(deactivationDetails.alert_id)
+                    //deleteStoredAlertDetails(deactivationDetails.alert_id)
                 }
             })
     })
@@ -377,6 +376,7 @@ exports.updateAlertOnRedis = (alertDetails) => {
     console.log("I UPDATED THE ALERT DETAILS")
     try {
         redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat())
+        redis.expire(alertDetails.alert_id, 259200)
     } catch (error) {
         console.log(error)
     }

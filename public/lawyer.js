@@ -78,6 +78,10 @@ socket.on('alert_closed', function(data) {
     console.log(data)
 }) 
 
+socket.on('alert_deactivated', function(data) {
+    console.log(data)
+})
+
 socket.on('alert_lawyer', function(data) {
     console.log(data)
 })

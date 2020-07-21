@@ -47,6 +47,11 @@ function panicSocket(server) {
                 socketUtil.sendMessage(data, allSockets)
             })
 
+            socket.on('deactivate_alert', (data) => {
+                //alert_id
+                socketUtil.deactivateAlert(data, allSockets)
+            })
+
             socket.on('close_alert', (data) => {
                 socketUtil.closeAlert(data, allSockets)
             })

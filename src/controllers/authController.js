@@ -78,9 +78,10 @@ module.exports = function authController() {
     }
 
     this.refreshToken = (req,res)=>{
-        const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
+        const clientIp = req.connection.remoteAddress.includes("::") ? `[${req.connection.remoteAddress}]` : req.connection.remoteAddress;
+        // const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
 
-        service.refreshToken(device).then(data => {
+        service.refreshToken(req.auth, clientIp).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
     }

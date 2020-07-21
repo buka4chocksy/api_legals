@@ -17,7 +17,7 @@ function generateToken(data = {}) {
 }
 
 const generateTokenSync = (data) => {
-    return jwt.sign(data, secret, {expiresIn : "1d"});
+    return jwt.sign(data, secret, {expiresIn : "30d"});
 }
 
 //verify user token
@@ -45,8 +45,17 @@ const verifyTokenSync = (token= "") => {
     }
 }
 
+function decodeToken(token) {
+    return new Promise((resolve, reject) => {
+        var decoded = jwt.decode(token, { complete: true });
+
+        decoded ? resolve(decoded) : reject()
+    });
+}
+//exports.decodeToken = decodeToken;
+
 
 
 module.exports = {
-    verifyToken, generateToken, generateTokenSync, verifyTokenSync
+    verifyToken, generateToken, generateTokenSync, verifyTokenSync, decodeToken
 }

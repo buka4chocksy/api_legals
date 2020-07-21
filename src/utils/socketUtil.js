@@ -191,12 +191,20 @@ exports.sendMessage = (data, allSockets) => {
     }).catch((error)=>{console.log(error)})
 }
 
+exports.deactivateAlert = (data, allSockets) => {
+    panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
+        console.log("MESSAGE lawyer",alertDetails)
+        allSockets.users[alertDetails.lawyer_id] &&
+            io.of('/panic').to(`${allSockets.users[alertDetails.lawyer_id].socket_address}`).emit('alert_deactivated', { message: "Alert has been deactivated", data: {deactivated: true} });
+    }).catch((error)=>{console.log(error)})
+}
+
 exports.closeAlert = (data, allSockets) => {
     console.log("CLOSE ALERT DATA", {data})
     if(data.lawyer_response === "assisted"){
         panicService.closeAlert(data).then((result)=>{
             allSockets.users[result.lawyer_id] &&
-            io.of('/panic').to(`${allSockets.users[result.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: result });
+            io.of('/panic').to(`${allSockets.users[result.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
 
             allSockets.users[result.client_id] &&
             io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: result });
@@ -214,6 +222,9 @@ exports.closeAlert = (data, allSockets) => {
 
             allSockets.users[alertDetails.client_id] &&
                 io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_closed', { message: "This lawyer could not assit you, please initate another panic", data: {unassisted: true} });
+
+            allSockets.users[alertDetails.lawyer_id] &&
+            io.of('/panic').to(`${allSockets.users[alertDetails.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
 
             //DON'T CLEAN THIS SET OF COMMETED CODES OOOO
             // alertDetails.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin))
@@ -242,9 +253,12 @@ exports.closeAlert = (data, allSockets) => {
     
     if (data.lawyer_response === "hoax"){
         panicService.declareHoax(data).then((result)=>{
-            console.log("HOAX ALERT DETAILS", result, )
+            console.log("HOAX ALERT DETAILS", result)
             allSockets.users[result.client_id] &&
                 io.of('/panic').to(`${allSockets.users[result.client_id].socket_address}`).emit('declared_hoax', { message: "Your alert was declared a hoax, do you want to appeal against this?", data: {hoax: true} });
+
+            allSockets.users[result.lawyer_id] &&
+            io.of('/panic').to(`${allSockets.users[result.lawyer_id].socket_address}`).emit('alert_closed', { message: "Alert has been closed", data: {closed: true} });
 
             if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = true
         }).catch((error)=>{console.log(error)})
@@ -377,6 +391,8 @@ exports.findOlderPanics = (data, allSockets) => {
                     allSockets.users[data.public_id] &&
                         io.of('/panic').to(`${allSockets.users[data.public_id].socket_address}`).emit('older_alerts', { message: "Help! Help!! Help!!!", data: clientAlerts });
                 }
+            }else{
+                console.log("NO OLDER PANIC ALERTS")
             }
         }).catch((error) => {
             console.error(error)

@@ -18,7 +18,7 @@ module.exports = function () {
     router.put('/forgot_password_change', authCtrl.ChangeforgotPassword)
     router.put('/change_password', middleware.authenticate, authCtrl.changePassword)
     router.put('/update_token', middleware.authenticate1 , authCtrl.DBupdateToken)
-    router.put('/refresh_token' , authCtrl.refreshToken)
+    router.put('/refresh_token', middleware.decodeUser, authCtrl.refreshToken)
     router.post('/register/nextofkin/add/:publicid',[(req, res, next) => {req.auth = {public_id : req.params.publicid}, next()}], nextOfkinCtrl.create);
     router.post('/confirm_password', middleware.authenticate, authCtrl.confirmPassword)
     return router;
