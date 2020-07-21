@@ -31,11 +31,11 @@ panic_alert.addEventListener('click', function() {
 })
 
 send_message.addEventListener('click', function() {
-    socket.emit('send_message', {
-        alert_id: alert_id.value,
-        message: "haloooo my lawyer",
-        to_who: 'lawyer'
-    })
+    // socket.emit('send_message', {
+    //     alert_id: alert_id.value,
+    //     message: "haloooo my lawyer",
+    //     to_who: 'lawyer'
+    // })
 
     socket.emit('deactivate_alert', {
         alert_id: alert_id.value

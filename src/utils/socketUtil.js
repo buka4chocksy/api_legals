@@ -24,7 +24,7 @@ exports.userOnline = (data, allSockets) => {
     }
 }
 
-exports.panicAlert = (data, allSockets) => {
+exports.panicAlert = (data, allSockets, lawyersContacted) => {
     data.alert_id = uuidv4()
 
     if(allSockets.users[data.public_id] && allSockets.users[data.public_id].user_type === "lawyer"){
@@ -98,12 +98,16 @@ exports.panicAlert = (data, allSockets) => {
             
                                 for (i = 0; i < sortedDistanceArray.length; i++) {
                                     console.log("LAWYER ID TO EMIT TO", allSockets.users[sortedDistanceArray[i].public_id], allSockets.users[sortedDistanceArray[i].public_id].socket_address)
+
+                                    lawyersContacted.push(sortedDistanceArray[i].public_id)
+
                                     allSockets.users[sortedDistanceArray[i].public_id] &&
                                         io.of('/panic').to(`${allSockets.users[sortedDistanceArray[i].public_id].socket_address}`).emit('alert_lawyer', { message: "Help! Help!! Help!!!", data });
                                 }
             
                                 console.log("BEFORE REDIS STORES ALERT DETAILS", data)
                                 panicService.storeAlertDetails(data)
+                                console.log("LIST OF CONTACTED RIDERS", lawyersContacted)
                             }).catch((error)=>{console.log(error)})
                         }).catch((error)=>{console.log(error)})
                     }else{
@@ -120,7 +124,7 @@ exports.panicAlert = (data, allSockets) => {
     }).catch((error)=>{console.log(error)})
 }
 
-exports.acceptAlert = (data, allSockets) => {
+exports.acceptAlert = (data, allSockets, lawyersContacted) => {
     panicService.getUser(data.public_id).then((result)=>{
         panicService.fetchAllUnresolved(data)
         .then((unresolved) => {
@@ -179,7 +183,26 @@ exports.acceptAlert = (data, allSockets) => {
                             if(data.user_type && data.user_type === "lawyer"){
                                 if(allSockets.users[data.public_id]) allSockets.users[data.public_id]["available"] = false
                             }
+
+                            const index = lawyersContacted.indexOf(data.public_id);
+
+                            if (index > -1) {
+                                lawyersContacted.splice(index, 1);
+                            }
+
+                            if(lawyersContacted.length>0){
+                                for (i = 0; i < lawyersContacted.length; i++) {
+                                    console.log("LAWYERS INFORMED THAT ALERT HAS BEEN ACCEPTED", lawyersContacted, allSockets.users[lawyersContacted[i]].public_id, allSockets.users[lawyersContacted[i]].socket_address)
+
+                                    allSockets.users[lawyersContacted[i]] &&
+                                        io.of('/panic').to(`${allSockets.users[lawyersContacted[i]].socket_address}`).emit('not_available', { message: "This request has already been accepted", data: { alert_id: alertDetails.alert_id, available: false } });
+                                }
+                            }
                         }).catch((error)=>{console.log(error)})
+                    }else{
+                        console.log("ACCEPTANCE FAILED", allSockets.users[data.public_id])
+                        allSockets.users[data.public_id] &&
+                            io.of('/panic').to(`${allSockets.users[data.public_id].socket_address}`).emit('acceptance_failed', { message: "This alert no longer exist", data: {alert_id: data.alert_id, accepted: false }});
                     }
                 }).catch((error)=>{console.log(error)})
             }else{
@@ -215,14 +238,25 @@ exports.sendMessage = (data, allSockets) => {
     }).catch((error)=>{console.log(error)})
 }
 
-exports.deactivateAlert = (data, allSockets) => {
+exports.deactivateAlert = (data, allSockets, lawyersContacted) => {
     //panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
         panicService.getAlert(data.alert_id).then((alertDetails)=>{
             console.log("MESSAGE lawyer",alertDetails)
             console.log("RESULT", alertDetails)
-            allSockets.users[alertDetails.data.lawyer_id] &&
+            if(!alertDetails){
+                allSockets.users[alertDetails.data.lawyer_id] &&
                 io.of('/panic').to(`${allSockets.users[alertDetails.data.lawyer_id].socket_address}`).emit('alert_deactivated', { message: "Alert has been deactivated", data: {deactivated: true} });
+            }
 
+                console.log('LAWYERS TO BE CONTACTED WHEN DEACTIVATIN', lawyersContacted)
+            if(lawyersContacted.length>0){
+                for (i = 0; i < lawyersContacted.length; i++) {
+                    console.log('LAWYERS TO BE CONTACTED WHEN DEACTIVATIN', allSockets.users[lawyersContacted[i]].socket_address)
+
+                    allSockets.users[lawyersContacted[i]].public_id &&
+                        io.of('/panic').to(`${allSockets.users[lawyersContacted[i]].socket_address}`).emit('not_available', { message: "This request has already been deactivated already", data: { alert_id: data.alert_id, available: false } });
+                }
+            }
         // panicService.delet(data.alert_id)
         }).catch((error)=>{console.log(error)})
     //}).catch((error)=>{console.log(error)})
@@ -438,7 +472,7 @@ exports.findOlderPanics = (data, allSockets) => {
                 }).catch((error) => {
                     console.error(error)
                     allSockets.users[data.public_id] &&
-                        io.of('/panic').to(`${allSockets.users[data.public_id].ridersocketid}`).emit('error_message', { message: "Failed to fetch existing alerts, please try again", data: null });
+                        io.of('/panic').to(`${allSockets.users[data.public_id].socket_address}`).emit('error_message', { message: "Failed to fetch existing alerts, please try again", data: null });
                 })
                 }else{
                     console.log("THIS LAWYER ALREADY HAS AN ONGOING ALERT AND CANNOT GET OLDER ALERTS")
