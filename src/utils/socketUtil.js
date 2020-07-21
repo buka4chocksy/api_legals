@@ -216,13 +216,16 @@ exports.sendMessage = (data, allSockets) => {
 }
 
 exports.deactivateAlert = (data, allSockets) => {
-    panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
-        console.log("MESSAGE lawyer",alertDetails)
-        allSockets.users[alertDetails.lawyer_id] &&
-            io.of('/panic').to(`${allSockets.users[alertDetails.lawyer_id].socket_address}`).emit('alert_deactivated', { message: "Alert has been deactivated", data: {deactivated: true} });
+    //panicService.getStoredAlertDetails(data.alert_id).then((alertDetails)=>{
+        panicService.getAlert(data.alert_id).then((alertDetails)=>{
+            console.log("MESSAGE lawyer",alertDetails)
+            console.log("RESULT", alertDetails)
+            allSockets.users[alertDetails.data.lawyer_id] &&
+                io.of('/panic').to(`${allSockets.users[alertDetails.data.lawyer_id].socket_address}`).emit('alert_deactivated', { message: "Alert has been deactivated", data: {deactivated: true} });
 
         // panicService.delet(data.alert_id)
-    }).catch((error)=>{console.log(error)})
+        }).catch((error)=>{console.log(error)})
+    //}).catch((error)=>{console.log(error)})
 }
 
 exports.closeAlert = (data, allSockets) => {

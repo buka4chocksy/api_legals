@@ -233,7 +233,7 @@ exports.getNextOfKin = (id) => {
 
 exports.updateAlertOnMongo = (alertDetails) => {
     return new Promise((resolve , reject)=>{
-        panicModel.findOneAndUpdate({public_id: alertDetails.id}, { $set: { ...alertDetails } }, {new: true}).exec((err , completed)=>{
+        panicModel.findOneAndUpdate({public_id: alertDetails.id, alert_id: alertDetails.alert_id}, { $set: { ...alertDetails } }, {new: true}).exec((err , completed)=>{
             if(err)reject({err: err , status:500});
             
             resolve(completed)
@@ -285,6 +285,15 @@ exports.fetchAllUnresolved = (data) => {
         panicModel.find({ resolved: false, lawyer_id: data.public_id })
             .exec((err, result) => {
                 err ? reject({ message: err, data: null }) : resolve({ message: "Unresolved alert history", data: result })
+            })
+    })
+}
+
+exports.getAlert = (alert_id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.findOne({ alert_id: alert_id })
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null }) : resolve({ message: " alert history", data: result })
             })
     })
 }
