@@ -220,6 +220,8 @@ exports.deactivateAlert = (data, allSockets) => {
         console.log("MESSAGE lawyer",alertDetails)
         allSockets.users[alertDetails.lawyer_id] &&
             io.of('/panic').to(`${allSockets.users[alertDetails.lawyer_id].socket_address}`).emit('alert_deactivated', { message: "Alert has been deactivated", data: {deactivated: true} });
+
+        // panicService.delet(data.alert_id)
     }).catch((error)=>{console.log(error)})
 }
 

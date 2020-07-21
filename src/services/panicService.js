@@ -307,7 +307,7 @@ exports.deactivateAlert = (deactivationDetails) => {
                 if (err || !currentUser) {
                     reject({ message: "User not found", status: 404, data: null })
                 } else {
-                    panicModel.findOneAndUpdate({client_id: deactivationDetails.client_id}, { $set: { resolved: true } }, {new: true}).exec((err , completed)=>{
+                    panicModel.findOneAndUpdate({client_id: deactivationDetails.client_id, alert_id: deactivationDetails.alert_id}, { $set: { resolved: true } }, {new: true}).exec((err , completed)=>{
                         if(err)reject({err: err , status:500});
                         
                         deactivatePanicModel.create(deactivationDetails)
