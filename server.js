@@ -3,6 +3,9 @@ const app = express();
 const os = require("os");
 const morgan = require('morgan');
 const bodyparser = require('body-parser')
+const redis = require('ioredis')
+
+let redisclient = new redis("")
 
 require('dotenv').config();
 const compression = require('compression');
