@@ -80,10 +80,14 @@ exports.decodeUser = function(req, res, next) {
     if (token) {
         decodeToken(token).then(decoded => {
             console.log("TOKEN DETAILS", decoded.payload.public_id, token)
-            TokenModel.findOne({ public_id: decoded.payload.public_id , "access_token": token  }).then(exist => {
+            TokenModel.findOne({ public_id: decoded.payload.public_id , "access_token": token, callback_token: req.body.callback_token  }).exec((err, exist) => {
                 console.log(exist)
+                if(err){
+                    res.status(401).send({ success: true, message: "Something went wrong", data: err });
+                }
+
                 if (exist) {
-                    model.findOne({ public_id: decoded.payload.public_id }).then(data => {
+                    model.findOne({ public_id: decoded.payload.public_id }).exec((err, data) => {
                         if (data == null) {
                             res.setHeader("x-lawyerpp-error", "invalid token");
                             res.status(401).send({ success: false, message: "invalid token" });
@@ -106,7 +110,7 @@ exports.decodeUser = function(req, res, next) {
                     res.setHeader("x-lawyerpp-error", "invalid token");
                     res.status(401).send({ success: false, message: 'un-authorized access' });
                 }
-            });
+            })
         }).catch(err => {
             console.log("INVALID TOKEN", err)
             res.status(401).send({ success: false, message: "Authentication failed", data: err });
