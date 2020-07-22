@@ -80,7 +80,7 @@ exports.decodeUser = function(req, res, next) {
     if (token) {
         decodeToken(token).then(decoded => {
             console.log("TOKEN DETAILS", decoded.payload.public_id, token)
-            TokenModel.findOne({ public_id: decoded.payload.public_id , "access_token": token, callback_token: req.body.callback_token  }).exec((err, exist) => {
+            TokenModel.findOne({ public_id: decoded.payload.public_id , "access_token": token, callback_token: req.headers['callback_code']  }).exec((err, exist) => {
                 console.log(exist)
                 if(err){
                     res.status(401).send({ success: true, message: "Something went wrong", data: err });
