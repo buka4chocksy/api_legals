@@ -1,9 +1,16 @@
 const NextOfKinSchema = require('../../models/common/nextOfKin');
 const UserSchema = require('../../models/auth/users');
-let jsonPatch = require('fast-json-patch')
+let jsonPatch = require('fast-json-patch');
+const UserSettingModel = require('../../models/common/userSettings');
 
-const addNextofKinDetails = (publicId, nextofKinData) => {
-    console.log(publicId)
+/**
+ * 
+ * @param {*} publicId 
+ * @param {*} nextofKinData 
+ * @param {*} fromRegistration this is used to indicate that this function was called from the authentication controller 
+ */
+
+const addNextofKinDetails = (publicId, nextofKinData, fromRegistration) => {
     return new Promise((resolve, reject) => {
         const details = {
             public_id: publicId,
@@ -12,11 +19,18 @@ const addNextofKinDetails = (publicId, nextofKinData) => {
             email_address: nextofKinData.email_address,
             relationship: nextofKinData.relationship
         };
-        UserSchema.findOne({public_id : details.public_id}).exec((err, foundUser) => {
+        UserSchema.findOne({public_id : publicId}).exec((err, foundUser) => {
+            console.log("next of kin check for user status",foundUser )
             if(err || !foundUser){
                 resolve({ success: true, message: "user not found", status: 404 })
             }else{
                 details.user = foundUser._id
+                // resolve({ success: true, message: "user not found", status: 404 })
+                if(fromRegistration){
+                    // addOrUpdateUserPanicAlertSetting(publicId)
+                    UserSettingModel.create({user : foundUser._id, public_id : publicId, receive_panic_alert : nextofKinData.alert_status});
+                }
+
 
                 UserSchema.findOne({email_address : details.email_address}).exec((err, foundNOK) => {
                     if(err || !foundNOK){ 
