@@ -213,12 +213,12 @@ exports.searchLawyer = function (option) {
 }
 
 //profile picture update
-exports.profilePicture = (id, data) => {
+exports.profilePicture = (id, detail) => {
     return new Promise((resolve, reject) => {
-        const detail = {
-            image_url: data.imageUrl,
-            image_id: data.imageID
-        }
+        // const detail = {
+        //     image_url: data.imageUrl,
+        //     image_id: data.imageID
+        // }
         model.findOneAndUpdate({ public_id: id }, detail).exec((err, updated) => {
             if (err) reject({ err: err, status: 500 });
             if (updated) {
