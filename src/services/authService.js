@@ -158,7 +158,8 @@ exports.acceptTerms = (data, id, ipaddress) => {
                     let userDetails = {
                         ...jwtTokenDetails,
                         first_name: updatedUser.first_name,
-                        last_name: updatedUser.last_name
+                        last_name: updatedUser.last_name,
+                        image_url : updatedUser.image_url
                     }
 
                     if (data.user_type === 'client' || data.user_type === 'student') {
