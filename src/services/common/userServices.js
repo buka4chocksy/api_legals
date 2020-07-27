@@ -63,7 +63,7 @@ const updateUserAvatar = (public_id, file) => {
                         }else{
                             resolve({success : true, message : "user details updated", data : cloudResult.secure_url, status : 200});
                         }
-                        updateUserAvater(public_id, avatar_detail);
+                        updateUserAvaterInDatabase(public_id, avatar_detail);
                     })
                     
                 }
@@ -72,8 +72,7 @@ const updateUserAvatar = (public_id, file) => {
     })
 }
 
-const updateUserAvater = (public_id, avatarDetails) => {
-    // console.log("in the update of profile", avatarDetails);
+const updateUserAvaterInDatabase = (public_id, avatarDetails) => {
 return    AvatarModel.findOne({public_id : public_id}).exec((err, foundData) => {
         if(!foundData){
            return AvatarModel.create(avatarDetails);
