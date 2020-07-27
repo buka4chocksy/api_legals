@@ -3,9 +3,12 @@ const bcrypt = require('bcryptjs')
 const mailer = require('../middlewares/mailer');
 const userToken = require('../models/auth/userToken');
 const client = require('../models/client/client');
+const lawyer = require('../models/lawyer/lawyer')
 const {generateToken,verifyToken, generateTokenSync }  = require('../utils/jwtUtils');
 const {setRequestHeader} = require('../utils/responseFormatter');
 const uuid = require('uuid').v4;
+const { applyPatch, validate } = require('fast-json-patch');
+
 exports.Register = (data, res) => {
     console.log("I GOT HERE")
     const userDetails = {
@@ -322,7 +325,6 @@ exports.ChangeforgotPassword = (data) => {
     })
 }
 
-
 function DBupdateToken(id, tokenID, deviceID, ip_address) {
     return new Promise((resolve, reject) => {
             let  details = {
@@ -435,8 +437,6 @@ function getUserDetail(Id) {
     });
 }
 exports.getUserDetail = getUserDetail
-
-
 
 const generateUserAuthenticationResponse = (userData, userId, ipaddress,  islogin = true) => {
     let accessToken  = generateTokenSync(userData);

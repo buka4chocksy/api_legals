@@ -21,5 +21,6 @@ module.exports = function () {
     router.put('/refresh_token', middleware.decodeUser, authCtrl.refreshToken)
     router.post('/register/nextofkin/add/:publicid',[(req, res, next) => {req.auth = {public_id : req.params.publicid}, next()}],authCtrl.AddNextOfKinOnRegistration);
     router.post('/confirm_password', middleware.authenticate, authCtrl.confirmPassword)
+
     return router;
 }

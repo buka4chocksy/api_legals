@@ -24,4 +24,7 @@ const addOrUpdateUserPanicAlertSetting = (public_id, alert_status) => {
     })
 }
 
+
+
+
 module.exports = { addDeviceId, addOrUpdateUserPanicAlertSetting }

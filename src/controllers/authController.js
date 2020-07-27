@@ -1,6 +1,6 @@
 const service = require('../services/authService')
 const {addNextofKinDetails}  = require('../services/common/nextOfKinService');
-
+const cloudinary = require('../middlewares/cloudinary')
 
 module.exports = function authController() {
 
@@ -97,5 +97,4 @@ module.exports = function authController() {
         addNextofKinDetails(publicid, req.body, true).then(result => res.status(result.status).send(result) )
         .catch(next);
     }
-
 }

@@ -3,6 +3,8 @@ const AvatarModel = require('../../models/common/userAvatar');
 const userSettings = require('../../models/common/userSettings')
 const {applyPatch} =require('fast-json-patch');
 const {uploadToCloud, deleteFromCloud} = require('../../utils/cloudinaryUtil');
+const lawyerService = require('../lawyerService')
+const clientService = require('../clientService')
 
 const updateUserDetails = (public_id, patchDetail = []) => {
     return new Promise((resolve, reject) => {
@@ -94,9 +96,67 @@ const addDeviceId = (public_id, user_id, device_id) => {
     })
 }
 
+const updateUserProfile = (details, data) => {
+    return new Promise((resolve, reject) =>{
+        UserModel.findOne({ public_id: details.public_id }).exec((err, found) => {
+            if (err) reject({ err: err, status: 500 });
+            if(!found){
+                resolve({ success: true, message: 'User profile not updated',  status: 200 })
+            }else{
+                var updateProfile =  applyPatch(found.toObject(), data);
+                UserModel.findOneAndUpdate({public_id: details.public_id}, updateProfile.newDocument, {upsert:true , new:true}).exec( async (err , updated)=>{
+                    if (err) reject({ err: err, status: 500 });
+
+                    if(details.user_type === "client"){
+                        clientService.editClientProfile(details.public_id, data).then((result)=>{
+                            resolve(result)
+                        }).catch(error => reject(error))
+                    }
+
+                    if(details.user_type === "lawyer"){
+                        lawyerService.editLawyerProfile(details.public_id, data).then((result)=>{
+                            resolve(result)
+                        }).catch(error => reject(error))
+                    }
+
+                    //resolve({ success: true, message: 'lawyer profile updated successfully', status: 200 })
+                })
+            }
+        })
+    })
+}
+
+const updateUserProfilePicture = (details, data) => {
+    return new Promise((resolve, reject) =>{
+        const imageDetail = {
+            image_url: data.imageUrl,
+            image_id: data.imageID
+        }
+        UserModel.findOneAndUpdate({ public_id: details.public_id }, imageDetail).exec((err, updated) => {
+            if (err) reject({ err: err, status: 500 });
+            console.log("LOGGGGGGG", imageDetail, updated, details)
+            if (updated) {
+                if(details.user_type === "client"){
+                    clientService.profilePicture(details.public_id, imageDetail).then((result)=>{
+                        resolve(result)
+                    }).catch(error => reject(error))
+                }
+
+                if(details.user_type === "lawyer"){
+                    lawyerService.profilePicture(details.public_id, imageDetail).then((result)=>{
+                        resolve(result)
+                    }).catch(error => reject(error))
+                }
+            } else {
+                resolve({ success: false, message: 'Error updating profile picture', status: 400 })
+            }
+        })
+    })
+}
+
 
 
 
 module.exports = {
-    updateUserDetails, updateUserAvatar, addDeviceId
+    updateUserDetails, updateUserAvatar, addDeviceId, updateUserProfile, updateUserProfilePicture
 }
