@@ -125,6 +125,7 @@ exports.panicAlert = (data, allSockets, lawyersContacted) => {
 }
 
 exports.acceptAlert = (data, allSockets, lawyersContacted) => {
+    console.log("USER LAT AND LONG CHECK FOR ACCEPTING", data);
     panicService.getUser(data.public_id).then((result)=>{
         panicService.fetchAllUnresolved(data)
         .then((unresolved) => {
