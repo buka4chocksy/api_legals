@@ -40,6 +40,7 @@ function panicSocket(server) {
 
             socket.on('deactivate_alert', (data) => {
                 //alert_id
+                console.log("REQUESTING TO DEACTIVATE PANIC")
                 socketUtil.deactivateAlert(data, allSockets, lawyersContacted)
             })
             
