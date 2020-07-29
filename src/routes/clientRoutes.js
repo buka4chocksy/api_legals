@@ -10,6 +10,5 @@ module.exports = function(){
     router.delete('/delete_account', middleware.authenticate, clientCtrl.deleteUserAccount)
     router.get('/profile', middleware.authenticate , clientCtrl.getClientDetails)
 
-
     return router;
 }
