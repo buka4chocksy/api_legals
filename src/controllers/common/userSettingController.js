@@ -7,8 +7,12 @@ const UpdateUserDetails = (req, res, next) =>{
 }
 
 const UpdateUserAvatar = (req, res, next) => {
+    if(req.file){
     updateUserAvatar(req.auth.public_id, req.file).then(result => res.status(result.status).send(result))
     .catch(error => res.status(500).send(error));
+    }else{
+        res.status(400).send({data : null, status : 400, message : "no file was sent"})
+    }
 }
 
 const AddUserDeviceId = (req , res)=>{
