@@ -128,13 +128,14 @@ const updateUserProfile = (details, data) => {
 
 const updateUserProfilePicture = (details, data) => {
     return new Promise((resolve, reject) =>{
+
         const imageDetail = {
             image_url: data.imageUrl,
             image_id: data.imageID
         }
         UserModel.findOneAndUpdate({ public_id: details.public_id }, imageDetail).exec((err, updated) => {
             if (err) reject({ err: err, status: 500 });
-            console.log("LOGGGGGGG", imageDetail, updated, details)
+            console.log("LOGGGGGGG", imageDetail, data)
             if (updated) {
                 if(details.user_type === "client"){
                     clientService.profilePicture(details.public_id, imageDetail).then((result)=>{

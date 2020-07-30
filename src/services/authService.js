@@ -249,21 +249,21 @@ exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
     })
 }
 
-exports.sendPasswordChangeToken = (data) => {
+exports.sendForgotPasswordToken = (email_address) => {
     return new Promise((resolve, reject) => {
         const gen = Math.floor(1000 + Math.random() * 9000);
-        model.findOne({ email_address: data.email_address }).exec((err, exists) => {
+        model.findOne({ email_address }).exec((err, exists) => {
             if (err) reject({ err: err, status: 500 })
             if (exists) {
-                model.findOneAndUpdate({ email_address: data.email_address }, { status_code: gen }).exec((err, updated) => {
+                model.findOneAndUpdate({ email_address: email_address }, { status_code: gen }).exec((err, updated) => {
                     if (err) reject({ err: err, status: 500 })
                     if (updated) {
-                        mailer.forgortPasswordMailer(data.email_address, gen, function (err, sent) {
+                        mailer.forgortPasswordMailer(email_address, gen, function (err, sent) {
                             if (err) reject({ err: err, status: 500 })
                             if (sent) {
-                                resolve({ success: true, message: 'proceed to verifying the token ', status: 200 })
+                                resolve({ success: true, message: 'proceed to verifying the token ', status: 200, data: null })
                             } else {
-                                resolve({ success: false, message: 'Error verifying your email', status: 400 })
+                                resolve({ success: false, message: 'Error verifying your email', status: 400, data: null })
                             }
                         })
                     }
@@ -272,6 +272,28 @@ exports.sendPasswordChangeToken = (data) => {
                 resolve({ success: false, message: 'user does not exists ', status: 404 })
             }
         })
+    })
+}
+
+exports.verifyUserOtp = (details) => {
+    return new Promise((resolve, reject) => {
+
+        model.findOne({ email_address: details.email_address })
+            .select({ "__v": 0, "password": 0 })
+            .exec((err, currentUser) => {
+                if (err) reject({ message: "Database error", status: 500, data: err });
+
+                if (currentUser) {
+                    console.log(currentUser.status_code, details.status_code)
+                    if (currentUser.status_code === details.status_code) {
+                        resolve({ success: true, message: "OTP verification successful", data: { verified: true }, status: 200 })
+                    } else {
+                        resolve({ success: false, message: "Incorrect OTP", status: 400 })
+                    }
+                } else {
+                    resolve({ success: false, message: "User details not found", status: 400})
+                }
+            })
     })
 }
 
@@ -303,26 +325,30 @@ exports.changePassword = (id, data) => {
     })
 }
 
-exports.ChangeforgotPassword = (data) => {
+exports.changeForgotPassword = (data) => {
     return new Promise((resolve, reject) => {
-        model.findOne({ status_code: data.status_code }).exec((err, found) => {
-            if (err) reject({ err: err, status: 500 })
-            if (found) {
-                let userEmail = found.email_address
-                let newpassword = bcrypt.hashSync(data.password, 10)
-                model.findOneAndUpdate({ email_address: userEmail }, { password: newpassword }).exec((err, updated) => {
-                    if (err) reject({ err: err, status: 500 })
-                    if (updated) {
-                        resolve({ success: true, message: 'user password has been changed successfully', status: 200 })
-                    } else {
-                        resolve({ success: false, message: 'Error changing password ', status: 404 })
-
-                    }
-                })
-            } else {
-                resolve({ success: false, message: 'Invalid token inserted ', status: 404 })
-            }
-        })
+        if(data.password === data.confirm_password){
+            // model.findOne({ status_code: data.status_code }).exec((err, found) => {
+            //     if (err) reject({ err: err, status: 500 })
+            //     if (found) {
+                    //let userEmail = found.email_address
+            let newpassword = bcrypt.hashSync(data.password, 10)
+            model.findOneAndUpdate({ email_address: data.email_address }, { password: newpassword }).exec((err, updated) => {
+                if (err) reject({ err: err, status: 500 })
+                if (updated) {
+                    resolve({ success: true, message: 'User password has been changed successfully', status: 200 })
+                } else {
+                    resolve({ success: false, message: 'Error changing password ', status: 404 })
+                }
+            })
+            //     } else {
+            //         resolve({ success: false, message: 'Invalid token inserted ', status: 404 })
+            //     }
+            // })
+        }else{
+            resolve({ success: false, message: 'Password fields does not match', status: 400 })
+        }
+        
     })
 }
 
