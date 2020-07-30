@@ -259,13 +259,15 @@ exports.sendForgotPasswordToken = (email_address) => {
                     if (err) reject({ err: err, status: 500 })
                     if (updated) {
                         mailer.forgortPasswordMailer(email_address, gen, function (err, sent) {
-                            if (err) reject({ err: err, status: 500 })
+                            // if (err) reject({ err: err, status: 500 })
+                            console.log("SEND GRID COULD NOT SEND EMAIL",err)
                             if (sent) {
-                                resolve({ success: true, message: 'proceed to verifying the token ', status: 200, data: null })
-                            } else {
-                                resolve({ success: false, message: 'Error verifying your email', status: 400, data: null })
+                                // resolve({ success: true, message: 'proceed to verifying the token ', status: 200, data: null })
+                                console.log("SEND GRID COULD SENT EMAIL",err)
                             }
                         })
+
+                        resolve({ success: true, message: 'proceed to verifying the token ', status: 200, data: null })
                     }
                 })
             } else {
