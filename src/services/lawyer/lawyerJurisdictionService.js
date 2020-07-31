@@ -26,7 +26,7 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
                 if (file) {
                     //save to cloudinary first
                     var cloudResult = await uploadToCloud(file.path, "lawyercerts");
-
+                    console.log("CLOUDINARY DETAILS FOR JURISDICTION", cloudResult);
                     if (cloudResult) {
                         dataToSave.certificate = [{
                             certificate_url: cloudResult.url,
