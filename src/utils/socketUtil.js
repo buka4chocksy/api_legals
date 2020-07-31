@@ -87,6 +87,7 @@ exports.panicAlert = (data, allSockets, lawyersContacted) => {
 
                                 Object.entries(allSockets.users).forEach(([key, value]) => {
                                     if(value.user_type === "lawyer" && value.available === true){
+                                        console.log("POINTS TO SELECT WITH", data.user_latitude, data.user_longitude, value.user_latitude, value.user_longitude)
                                         var distance = calculateDistance(data.user_latitude, data.user_longitude, value.user_latitude, value.user_longitude)
                                         distanceArray = [...distanceArray, ...getNearbyLawyers(distance, value.public_id)];
                                     }        

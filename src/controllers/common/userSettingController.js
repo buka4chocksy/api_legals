@@ -1,4 +1,4 @@
-const {updateUserDetails, updateUserAvatar, addDeviceId, updateUserProfile, updateUserProfilePicture} = require('../../services/common/userServices');
+const {updateUserDetails, updateUserAvatar, addDeviceId, updateUserProfile, updateUserProfilePicture, getUserProfile} = require('../../services/common/userServices');
 const cloudinary = require('../../middlewares/cloudinary')
 
 const UpdateUserDetails = (req, res, next) =>{
@@ -53,7 +53,13 @@ const updateProfilePicture = async (req, res) => {
         });
 }
 
+const getProfile = (req, res) => {
+    getUserProfile(req.auth).then(data => {
+        res.status(data.status).send(data);
+    }).catch(err => res.status(err.status).send(err))
+}
+
 
 module.exports = {
-    UpdateUserDetails,UpdateUserAvatar, AddUserDeviceId, updateProfile, updateProfilePicture
+    UpdateUserDetails,UpdateUserAvatar, AddUserDeviceId, updateProfile, updateProfilePicture, getProfile
 }

@@ -1,4 +1,4 @@
-const service = require('../services/lawyer/bioService');
+const service = require('../../services/common/bioService');
 
 module.exports =  function bioController(){
     this.createBio = (req , res)=>{

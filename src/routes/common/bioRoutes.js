@@ -1,7 +1,7 @@
 const router = require('express').Router()
-const bioController = require('../controllers/bioController')
-const middleware = require('../middlewares/authMiddleware')
-const multer = require('../middlewares/multer');
+const bioController = require('../../controllers/common/bioController')
+const middleware = require('../../middlewares/authMiddleware')
+const multer = require('../../middlewares/multer');
 module.exports = function(){
     const bioCtrl = new bioController()
 

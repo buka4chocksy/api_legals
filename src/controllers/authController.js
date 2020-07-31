@@ -46,27 +46,6 @@ module.exports = function authController() {
         }).catch(err => res.status(err.status).send(err));
     }
 
-    this.passwordToken = (req, res) => {
-        service.sendPasswordChangeToken(req.body).then(data => {
-            res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(err));
-    }
-    this.ChangeforgotPassword = (req, res) => {
-        service.ChangeforgotPassword(req.body).then(data => {
-            res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(err));
-    }
-
-    this.changePassword = (req, res) => {
-        const data = {
-            password: req.body.password,
-            comfirm_password: req.body.new_password
-        }
-        service.changePassword(req.auth.public_id, data).then(data => {
-            res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(err));
-    }
-
     this.DBupdateToken = (req,res)=>{
         const token = req.body.token || req.query.token || req.headers['x-access-token']
         const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
@@ -97,4 +76,38 @@ module.exports = function authController() {
         addNextofKinDetails(publicid, req.body, true).then(result => res.status(result.status).send(result) )
         .catch(next);
     }
+
+    this.passwordToken = (req, res) => {
+        service.sendForgotPasswordToken(req.body.email_address).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.verifyOtp = (req, res) => {
+        service.verifyUserOtp(req.body).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.changeForgotPassword = (req, res) => {
+        const data = {
+            email_address: req.body.email_address,
+            password: req.body.password,
+            confirm_password: req.body.confirm_password
+        }
+        service.changeForgotPassword(data).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
+    this.changePassword = (req, res) => {
+        const data = {
+            password: req.body.password,
+            comfirm_password: req.body.new_password
+        }
+        service.changePassword(req.auth.public_id, data).then(data => {
+            res.status(data.status).send(data)
+        }).catch(err => res.status(err.status).send(err));
+    }
+
 }
