@@ -30,7 +30,7 @@ const userSchema = new schema({
 }, { timestamps: true, toObject: { getters: true } });
 
 userSchema.pre('save', function () {
-    console.log("I GOT HERE O")
+    // console.log("I GOT HERE O")
     if (this.password) {
         this.password = bcrypt.hashSync(this.password, 10);
     }

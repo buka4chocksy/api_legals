@@ -37,7 +37,7 @@ const addLawyerPracticeArea = (publicId, practiceAreaData) => {
 
 const getUserPracticeArea = (publicId) => {
     return new Promise((resolve, reject)=>{
-        PracticeAreaModel.find({public_id : publicId}).exec((err, foundData) => {
+        PracticeAreaModel.find({public_id : publicId}).populate('practice_area').select({ __v: 0, createdAt: 0, updatedAt: 0 }).exec((err, foundData) => {
             if(err){
                 resolve({ success: false, message: 'practice area not found', status: 404 });
             }
