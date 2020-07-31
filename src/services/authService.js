@@ -239,7 +239,7 @@ exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
                                     //log error here with logger
                                 })                        
                     } else {
-                        resolve({ success: false, message: 'incorrect email or password ', status: 400 })
+                        resolve({ success: false, message: 'incorrect email or password', status: 400 })
                     }
                 }
         }).catch(err => {

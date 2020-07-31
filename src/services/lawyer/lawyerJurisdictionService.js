@@ -15,8 +15,6 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
                 //log error here
                 resolve({ success: false, message: 'user not found', status: 404 });
             } else {
-
-                console.log("check", foundUser);
                 let dataToSave = {
                     user: foundUser._id,
                     public_id: foundUser.public_id,
@@ -36,7 +34,9 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
                             certificate_id: cloudResult.asset_id,
                             certificate_delete_token: cloudResult.delete_token,
                             certificate_resource_type: cloudResult.resource_type,
-                            certificate_public_id: cloudResult.public_id
+                            certificate_public_id: cloudResult.public_id,
+                            certificate_name: file.originalname,
+                            certificate_mime_type: file.mimetype
                         }];
                         //why delete?
                         delete dataToSave.enrolment_number;
@@ -173,7 +173,7 @@ const addJurisdictionFile = async (public_id, jurisdiction_id, file) => {
                             certificate_resource_type: cloudResult.resource_type,
                             certificate_public_id: cloudResult.public_id,
                             certificate_name: file.originalname,
-                            mime_type: file.mimetype
+                            certificate_mime_type: file.mimetype
                         };
                     }
                 }
