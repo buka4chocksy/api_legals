@@ -3,10 +3,11 @@ const { google, googleLogin } = require('../utils/config');
 const User = require('../models/auth/users');
 
 const GoogleStrategySignup = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
-    User.findOne({ 'oauth.oauthID': profile.id }, (err, user) => {
+    User.findOne({"$or" : [{'oauth.oauthID': profile.id}, {email_address : profile._json.email}] }, (err, user) => {
+        console.log("GOOGLE CHECKING USER FOUND", user)
         if (err) console.log(err);
         if (user) {
-            done(null, user);
+            done(null, {exist : true, data : user});
         } else {
             const user = new User;
             user.first_name = profile.displayName.split(" ")[0]

@@ -19,7 +19,7 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
                     user: foundUser._id,
                     public_id: foundUser.public_id,
                     jurisdiction_id: jurisdictionData.jurisdiction_id,
-                    enrolment_number: jurisdictionData.enrolment_number,
+                    enrollment_number: jurisdictionData.enrollment_number,
                     year: jurisdictionData.year
                 };
 
@@ -39,7 +39,7 @@ const addlawyerJurisdiction = (public_id, jurisdictionData, file) => {
                             certificate_mime_type: file.mimetype
                         }];
                         //why delete?
-                        delete dataToSave.enrolment_number;
+                        // delete dataToSave.enrollment_number;
                     }
 
                 }

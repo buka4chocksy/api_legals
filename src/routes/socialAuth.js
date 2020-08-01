@@ -8,15 +8,19 @@ module.exports = function () {
     router.get('/auth/google/callback',
         passport.authenticate('google-signup', { failureRedirect: '/error' }),
         (req, res) => {
-            authService.getUserDetail(req.user.public_id).then(activeUser => {
+            // authService.getUserDetail(req.user.public_id).then(activeUser => {
+            if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
                     first_name: activeUser.first_name,
                     last_name: activeUser.last_name,
                     email_address: activeUser.email_address
                 };
+
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
-            });
+            } else {
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: user.public_id }));
+            }
         }
     );
 
@@ -33,7 +37,9 @@ module.exports = function () {
     router.get('/auth/linkedin/callback',
         passport.authenticate('signup', { failureRedirect: '/error' }),
         (req, res) => {
-            authService.getUserDetail(req.user.public_id).then(activeUser => {
+
+            // authService.getUserDetail(req.user.public_id).then(activeUser => {
+            if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
                     first_name: activeUser.first_name,
@@ -42,7 +48,10 @@ module.exports = function () {
                 };
                 console.log('response sent to client: ', response);
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
-            });
+            } else {
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: user.public_id }));
+            }
+            // });
         });
 
 
@@ -81,7 +90,7 @@ module.exports = function () {
                 //log error here with logger
             });
         } else {
-            response.redirect('lawyerpp://login?user=' + JSON.stringify({message : 'incomplete registration', data : null, public_id : public_id}));
+            response.redirect('lawyerpp://login?user=' + JSON.stringify({ message: 'incomplete registration', data: null, public_id: public_id }));
         }
 
     };

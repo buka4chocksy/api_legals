@@ -4,7 +4,7 @@ const User = require('../models/auth/users');
 const mongoose = require('mongoose')
 
 const LinkedinSignup = new LinkedInStrategy(linkedin, async (accessToken, refreshToken, profile, done) => {
-    User.findOne({ 'oauth.oauthID': profile.id }, (err, user) => {
+    User.findOne({"$or" : [{'oauth.oauthID': profile.id}, {email_address : profile.emails[0]}]}, (err, user) => {
         if (err) console.log(err);
         if (user) {
                 done(null, user);

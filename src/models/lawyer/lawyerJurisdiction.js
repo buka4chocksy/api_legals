@@ -5,7 +5,7 @@ const LawyerJurisdictionSchema = new schema({
     public_id : {type : mongoose.SchemaTypes.ObjectId},
     jurisdiction_id: { type: mongoose.SchemaTypes.ObjectId, ref: 'jurisdiction', required : true},
     year: {type : String, default : null},
-    enrolment_number : {type : String, default : null},
+    enrollment_number : {type : String, default : null},
     certificate : [{
         certificate_url : {type : String},
         certificate_secure_url : {type : String},
