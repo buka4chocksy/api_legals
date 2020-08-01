@@ -25,7 +25,7 @@ module.exports = function () {
     router.get('/auth/google/callback/login',
         passport.authenticate('google-signin', { failureRedirect: '/error' }),
         (req, res) => {
-            generateOAuthLoginDetails(req.user,req, res);
+            generateOAuthLoginDetails(req.user, req, res);
         });
 
     // Linkedin sign-up
@@ -51,14 +51,15 @@ module.exports = function () {
     router.get('/auth/linkedin/callback/login',
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
-            generateOAuthLoginDetails(req.user,req, res);
+            generateOAuthLoginDetails(req.user, req, res);
         });
 
 
 
-    const generateOAuthLoginDetails = (userDbDetails,request, response) => {
+    const generateOAuthLoginDetails = (userDbDetails, request, response) => {
         const clientIp = request.connection.remoteAddress.includes("::") ? `[${request.connection.remoteAddress}]` : request.connection.remoteAddress;
-        let { email_address, phone_number, public_id, user_type, first_name, last_name, image_url, id } = userDbDetails;
+        let { email_address, phone_number, public_id, user_type, first_name, last_name, image_url, id, is_complete } = userDbDetails;
+        console.log("OAUTH LOGIN DETAILS CHECK", is_complete);
         let jwtTokenDetails = {
             email_address: email_address,
             phone_number: phone_number,
@@ -71,12 +72,17 @@ module.exports = function () {
             last_name: last_name,
             image_url: image_url
         };
-        authService.generateUserAuthenticationResponse(userDetails, id, clientIp, true).then(result => {
-            let dataToReturn = { success: true, data: { userDetails, authDetails: result.data }, message: 'authentication successful', status: 200 };
-            response.redirect('lawyerpp://login?user=' + JSON.stringify(dataToReturn));
-        }).catch(error => {
-            //log error here with logger
-        });
+        if (is_complete) {
+            authService.generateUserAuthenticationResponse(userDetails, id, clientIp, true).then(result => {
+                let dataToReturn = { success: true, data: { userDetails, authDetails: result.data }, message: 'authentication successful', status: 200 };
+
+                response.redirect('lawyerpp://login?user=' + JSON.stringify(dataToReturn));
+            }).catch(error => {
+                //log error here with logger
+            });
+        } else {
+            response.redirect('lawyerpp://login?user=' + JSON.stringify({message : 'incomplete registration', data : null}));
+        }
 
     };
     return router;

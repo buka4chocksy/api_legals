@@ -546,6 +546,7 @@ exports.confimPassword = (public_id, password) => {
 
 exports.generateUserAuthenticationResponse = generateUserAuthenticationResponse;
 exports.createClientUser = createClientUser;
+exports.GetNextProcessForIncompleteRegistration = GetNextProcessForIncompleteRegistration;
 
 
 
