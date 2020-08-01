@@ -149,6 +149,7 @@ exports.acceptTerms = (data, id, ipaddress) => {
             model.findOneAndUpdate({ public_id: id, terms_accepted : null, phone_number : {"$ne" : null} },dataForUpdate , {new : true}).exec((err, updatedUser) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updatedUser) {
+                    console.log("updated user check", updatedUser);
                     let jwtTokenDetails = {
                         email_address: updatedUser.email_address,
                         phone_number: updatedUser.phone_number,
