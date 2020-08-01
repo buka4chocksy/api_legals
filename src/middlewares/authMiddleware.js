@@ -65,7 +65,7 @@ exports.authenticate = async (req, res, next) => {
                         }
                     });
                 } else {
-                    res.setHeader("x-lawyerpp-error", "invalid token");
+                    res.setHeader("x-authorization-error", "invalid_token");
                     res.status(401).send({ success: false, message: 'un-authorized access' });
                 }
             });

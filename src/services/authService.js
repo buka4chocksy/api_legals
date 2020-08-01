@@ -203,10 +203,18 @@ exports.acceptTerms = (data, id, ipaddress) => {
 
 const createClientUser = (userDetails) => {
         return new Promise((resolve, reject) => {
-            console.log("in aafadf")
-            client.create(userDetails).then(createdUser => {
-                resolve(createdUser);
-            }).catch(err => console.log("in the error", err))
+            client.findOne({email_address : userDetails.email_address}).exec((err, foundUser) => {
+                if(err){
+                    //log err here
+                    reject(err);
+                }else if(!foundUser){
+                    client.create(userDetails).then(createdUser => {
+                        resolve(createdUser);
+                    }).catch(err => console.log("in the error", err))
+                }else{
+                    resolve(foundUser)
+                }
+            })
         })
 }
 
@@ -216,7 +224,7 @@ exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
            if(!user) resolve({ success: false, message: 'user does not exist', status: 404 })
            else if(user && !user.is_complete){
             GetNextProcessForIncompleteRegistration(user, res);
-               resolve({ success: false,message: 'Sorry you have not accepted the terms and condition',status: 401, data : user.public_id})
+               resolve({ success: false,message: 'Sorry you have not accepted the terms and condition',status: 400, data : user.public_id})
             }
             else {
                     const validPassword = user.comparePassword(password);
