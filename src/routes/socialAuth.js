@@ -9,6 +9,7 @@ module.exports = function () {
         passport.authenticate('google-signup', { failureRedirect: '/error' }),
         (req, res) => {
             // authService.getUserDetail(req.user.public_id).then(activeUser => {
+                console.log("USER EXIST IN OAUTH", req.user.exist)
             if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
@@ -19,7 +20,7 @@ module.exports = function () {
 
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
             } else {
-                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: user.public_id, exist : true }));
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: req.user.public_id, exist : true }));
             }
         }
     );
@@ -49,7 +50,7 @@ module.exports = function () {
                 console.log('response sent to client: ', response);
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
             } else {
-                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: user.public_id, exist : true }));
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: req.user.public_id, exist : true }));
             }
             // });
         });
