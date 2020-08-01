@@ -81,7 +81,7 @@ module.exports = function () {
                 //log error here with logger
             });
         } else {
-            response.redirect('lawyerpp://login?user=' + JSON.stringify({message : 'incomplete registration', data : null}));
+            response.redirect('lawyerpp://login?user=' + JSON.stringify({message : 'incomplete registration', data : null, public_id : public_id}));
         }
 
     };
