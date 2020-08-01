@@ -13,9 +13,9 @@ module.exports = function () {
             if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
-                    first_name: activeUser.first_name,
-                    last_name: activeUser.last_name,
-                    email_address: activeUser.email_address
+                    first_name: req.user.first_name,
+                    last_name: req.user.last_name,
+                    email_address: req.user.email_address
                 };
 
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
@@ -43,9 +43,9 @@ module.exports = function () {
             if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
-                    first_name: activeUser.first_name,
-                    last_name: activeUser.last_name,
-                    email_address: activeUser.email_address
+                    first_name: req.user.first_name,
+                    last_name: req.user.last_name,
+                    email_address: req.user.email_address
                 };
                 console.log('response sent to client: ', response);
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
