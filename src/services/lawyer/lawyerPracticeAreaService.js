@@ -42,7 +42,7 @@ const getUserPracticeArea = (publicId) => {
                 resolve({ success: false, message: 'practice area not found', status: 404 });
             }
             delete foundData.user
-            resolve({ success: false, message: 'practice area retrieved', status: 200, data : foundData });
+            resolve({ success: true, message: 'practice area retrieved', status: 200, data : foundData });
         })
     })  
 };
