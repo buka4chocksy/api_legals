@@ -7,6 +7,7 @@ const LinkedinSignup = new LinkedInStrategy(linkedin, async (accessToken, refres
     User.findOne({"$or" : [{'oauth.oauthID': profile.id}, {email_address : profile.emails[0]}]}, (err, user) => {
         if (err) console.log(err);
         if (user) {
+            user.exist = true;
                 done(null, user);
         } else {
             const user = new User;

@@ -7,7 +7,8 @@ const GoogleStrategySignup = new GoogleStrategy(google, async (accessToken, refr
         console.log("GOOGLE CHECKING USER FOUND", user)
         if (err) console.log(err);
         if (user) {
-            done(null, {exist : true, data : user});
+            user.exist = true;
+            done(null, user);
         } else {
             const user = new User;
             user.first_name = profile.displayName.split(" ")[0]

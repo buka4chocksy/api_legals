@@ -19,7 +19,7 @@ module.exports = function () {
 
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
             } else {
-                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: user.public_id }));
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: user.public_id, exist : true }));
             }
         }
     );
@@ -49,7 +49,7 @@ module.exports = function () {
                 console.log('response sent to client: ', response);
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
             } else {
-                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: user.public_id }));
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: user.public_id, exist : true }));
             }
             // });
         });
