@@ -8,15 +8,20 @@ module.exports = function () {
     router.get('/auth/google/callback',
         passport.authenticate('google-signup', { failureRedirect: '/error' }),
         (req, res) => {
-            authService.getUserDetail(req.user.public_id).then(activeUser => {
+            // authService.getUserDetail(req.user.public_id).then(activeUser => {
+                console.log("USER EXIST IN OAUTH", req.user.exist)
+            if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
-                    first_name: activeUser.first_name,
-                    last_name: activeUser.last_name,
-                    email_address: activeUser.email_address
+                    first_name: req.user.first_name,
+                    last_name: req.user.last_name,
+                    email_address: req.user.email_address
                 };
+
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
-            });
+            } else {
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: req.user.public_id, exist : true }));
+            }
         }
     );
 
@@ -25,7 +30,7 @@ module.exports = function () {
     router.get('/auth/google/callback/login',
         passport.authenticate('google-signin', { failureRedirect: '/error' }),
         (req, res) => {
-            generateOAuthLoginDetails(req.user,req, res);
+            generateOAuthLoginDetails(req.user, req, res);
         });
 
     // Linkedin sign-up
@@ -33,16 +38,21 @@ module.exports = function () {
     router.get('/auth/linkedin/callback',
         passport.authenticate('signup', { failureRedirect: '/error' }),
         (req, res) => {
-            authService.getUserDetail(req.user.public_id).then(activeUser => {
+
+            // authService.getUserDetail(req.user.public_id).then(activeUser => {
+            if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
-                    first_name: activeUser.first_name,
-                    last_name: activeUser.last_name,
-                    email_address: activeUser.email_address
+                    first_name: req.user.first_name,
+                    last_name: req.user.last_name,
+                    email_address: req.user.email_address
                 };
                 console.log('response sent to client: ', response);
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
-            });
+            } else {
+                res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: req.user.public_id, exist : true }));
+            }
+            // });
         });
 
 
@@ -51,14 +61,15 @@ module.exports = function () {
     router.get('/auth/linkedin/callback/login',
         passport.authenticate('signin', { failureRedirect: '/error' }),
         (req, res) => {
-            generateOAuthLoginDetails(req.user,req, res);
+            generateOAuthLoginDetails(req.user, req, res);
         });
 
 
 
-    const generateOAuthLoginDetails = (userDbDetails,request, response) => {
+    const generateOAuthLoginDetails = (userDbDetails, request, response) => {
         const clientIp = request.connection.remoteAddress.includes("::") ? `[${request.connection.remoteAddress}]` : request.connection.remoteAddress;
-        let { email_address, phone_number, public_id, user_type, first_name, last_name, image_url, id } = userDbDetails;
+        let { email_address, phone_number, public_id, user_type, first_name, last_name, image_url, id, is_complete } = userDbDetails;
+        console.log("OAUTH LOGIN DETAILS CHECK", is_complete);
         let jwtTokenDetails = {
             email_address: email_address,
             phone_number: phone_number,
@@ -71,12 +82,17 @@ module.exports = function () {
             last_name: last_name,
             image_url: image_url
         };
-        authService.generateUserAuthenticationResponse(userDetails, id, clientIp, true).then(result => {
-            let dataToReturn = { success: true, data: { userDetails, authDetails: result.data }, message: 'authentication successful', status: 200 };
-            response.redirect('lawyerpp://login?user=' + JSON.stringify(dataToReturn));
-        }).catch(error => {
-            //log error here with logger
-        });
+        if (is_complete) {
+            authService.generateUserAuthenticationResponse(userDetails, id, clientIp, true).then(result => {
+                let dataToReturn = { success: true, data: { userDetails, authDetails: result.data }, message: 'authentication successful', status: 200 };
+
+                response.redirect('lawyerpp://login?user=' + JSON.stringify(dataToReturn));
+            }).catch(error => {
+                //log error here with logger
+            });
+        } else {
+            response.redirect('lawyerpp://login?user=' + JSON.stringify({ message: 'incomplete registration', data: null, public_id: public_id }));
+        }
 
     };
     return router;

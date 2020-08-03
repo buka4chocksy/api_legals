@@ -28,7 +28,7 @@ exports.completelawyerRegisteration = (publicId, data, file) => {
                                 //add the lawyer practice area
                                 addLawyerPracticeArea(publicId, data.practice_area);
                                 //add the lawyer jurisdictions
-                                addlawyerJurisdiction(publicId,{jurisdiction_id :  data.jurisdiction_id,enrollment_number : data.enrollment_number}, file)
+                                addlawyerJurisdiction(publicId,{jurisdiction_id :  data.jurisdiction_id,enrollment_number : data.enrollment_number, year : data.year}, file)
                                 //update user type in User collection for the lawyer
                                 user.findOneAndUpdate({ public_id: publicId }, { user_type: details.user_type })
                                 resolve({

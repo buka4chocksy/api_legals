@@ -7,7 +7,7 @@ const userSchema = new schema({
     first_name: { type: String },
     last_name: { type: String },
     name: { type: String },
-    email_address: { type: String, unique: true },
+    email_address: { type: String, unique: true, lowercase : true },
     phone_number: { type: String },
     image_url: { type: String, default: '' },
     image_id: { type: String, default: '' },
@@ -30,7 +30,7 @@ const userSchema = new schema({
 }, { timestamps: true, toObject: { getters: true } });
 
 userSchema.pre('save', function () {
-    console.log("I GOT HERE O")
+    // console.log("I GOT HERE O")
     if (this.password) {
         this.password = bcrypt.hashSync(this.password, 10);
     }

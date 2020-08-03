@@ -4,7 +4,7 @@ const middleware = require('../middlewares/authMiddleware')
 const multer = require('../middlewares/multer');
 module.exports = function(){
     const lawCtrl = new lawyerController()
-    router.post('/register/:publicid', multer.upload.single('certificate'), lawCtrl.completeLawyerRegistration)
+    router.post('/register/:publicid', multer.upload.single('cert'), lawCtrl.completeLawyerRegistration)
     router.get('/profile', middleware.authenticate, lawCtrl.getLawyerProile)
     router.put('/update_profile', middleware.authenticate, lawCtrl.updateLawyerProfile)
     router.delete('/delete_account', middleware.authenticate, lawCtrl.deleteUserAccount)
