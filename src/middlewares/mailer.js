@@ -32,10 +32,6 @@ exports.forgortPasswordMailer = function(reciever, message, callback){
               <div class="column" style="text-align: left;color: #8e959c;font-size: 14px;line-height: 21px;font-family: sans-serif;max-width: 600px;min-width: 320px; width: 320px;width: calc(28000% - 167400px);padding-top: 10px;padding-bottom: 10px;border:1px solid #8e959c4a;">
                 <div style="Margin-left: 20px;Margin-right: 20px;">
                   <div style="mso-line-height-rule: exactly;mso-text-raise: 4px;">
-
-                  <div class="logo-center" align="center" id="emb-email-header">
-                  <img style="display: block;height: auto;width: 50%;margin-top:-60px;border: 0;max-width:50px;" src="https://res.cloudinary.com/dmkb9hqs4/image/upload/v1584088948/App_Icon_1.png"
-                    alt="AffiaMmuta" width="319" />
                 </div>
 
                     <h3 style="Margin-top: 0;Margin-bottom: 0;font-style: normal;font-weight: normal;color: #281557;font-size: 18px;line-height: 26px;font-family: Avenir,sans-serif;">
@@ -105,9 +101,9 @@ exports.forgortPasswordMailer = function(reciever, message, callback){
 </html>`
 
 var msg = {
-  from: 'ocjbosco@gmail.com',
+  from: 'noreply@lawyerpp.com',
   to: `${reciever}`,
-  subject: 'Lawyerpp forgot password Mail',
+  subject: 'Lawyerpp Forgot Password Mail',
   //text: 'and easy to do anywhere, even with Node.js',
   html: mailTemplate,
 };
