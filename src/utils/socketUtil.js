@@ -1,8 +1,12 @@
 var panicService = require('../services/panicService');
+// const axios = require("axios");
 var uuidv4 = require('uuid').v4;
+var http = require('http');
 var { getNearbyClients, getNearbyLawyers, sortNearbyDistance, calculateDistance} = require('./calculatorUtil')
 const oneSignal = require('./oneSignalUtil');
+const {getLocation} = require('./mapUtil')
 const { allSockets } = require('../socket/panicSocket');
+
 
 exports.userOnline = (data, allSockets) => {
     allSockets.users[data.public_id] ? allSockets.updateSocket(data) : allSockets.addSocket(data);
@@ -24,7 +28,7 @@ exports.userOnline = (data, allSockets) => {
     }
 }
 
-exports.panicAlert = (data, allSockets, lawyersContacted) => {
+exports.panicAlert = async(data, allSockets, lawyersContacted) => {
     data.alert_id = uuidv4()
 
     if(allSockets.users[data.public_id] && allSockets.users[data.public_id].user_type === "lawyer"){
@@ -33,7 +37,11 @@ exports.panicAlert = (data, allSockets, lawyersContacted) => {
 
     panicService.getUser(data.public_id).then((result)=>{
         console.log('GET USER SUCCESS')
-        panicService.fetchAllUnresolvedForClient(data)
+
+        getLocation(data.user_latitude, data.user_longitude)
+        .then((locationDetails)=>{
+            console.log("ANOTHERANOTHERANOTHERANOTHERANOTHERANOTHERANOTHERANOTHERANOTHERANOTHER", locationDetails.results[0].formatted_address, locationDetails.results[0].place_id)
+            panicService.fetchAllUnresolvedForClient(data)
             .then((unresolved) => {
                     if(unresolved.data.length < 1){
                         allSockets.users[data.public_id] &&
@@ -53,6 +61,8 @@ exports.panicAlert = (data, allSockets, lawyersContacted) => {
                         data.creation_time = new Date()
                         data.panic_initiation_longitude = data.user_longitude
                         data.panic_initiation_latitude = data.user_latitude
+                        data.local_address = locationDetails.results[0].formatted_address
+                        data.place_id = locationDetails.results[0].place_id
             
                         panicService.createPanicAlert(data).then((result)=>{
                             panicService.getNextOfKin(data.public_id).then((nextOfKins)=>{
@@ -122,6 +132,8 @@ exports.panicAlert = (data, allSockets, lawyersContacted) => {
             .catch((error) => {
                 console.error(error)
             });
+        })
+        .catch((error)=>{console.log(error)})
     }).catch((error)=>{console.log(error)})
 }
 
@@ -159,6 +171,8 @@ exports.acceptAlert = (data, allSockets, lawyersContacted) => {
                         data.client_country = alertDetails.client_country
                         data.relationship = alertDetails.relationship
                         data.client_device_id = alertDetails.client_device_id
+                        data.local_address = alertDetails.local_address
+                        data.place_id = alertDetails.place_id
                         //data.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin.toString().replace("\n", "")))
                         data.accepted = true
         
