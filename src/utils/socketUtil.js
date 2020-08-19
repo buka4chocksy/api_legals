@@ -173,7 +173,6 @@ exports.acceptAlert = (data, allSockets, lawyersContacted) => {
                         data.client_device_id = alertDetails.client_device_id
                         data.local_address = alertDetails.local_address
                         data.place_id = alertDetails.place_id
-                        //data.next_of_kin = JSON.parse(JSON.stringify(alertDetails.next_of_kin.toString().replace("\n", "")))
                         data.accepted = true
         
                         if(alertDetails.next_of_kin_full_name || alertDetails.next_of_kin_email_address || alertDetails.next_of_kin_phone_number){
@@ -190,6 +189,9 @@ exports.acceptAlert = (data, allSockets, lawyersContacted) => {
                         panicService.updateAlertOnRedis(data)
         
                         panicService.updateAlertOnMongo(data).then((updated)=>{
+                                console.log("Accepted Panic Details", allSockets.users[alertDetails.client_id]);
+                                console.log("Accepted Panic Lawyer", allSockets.users[data.public_id].socket_address);
+
                             allSockets.users[alertDetails.client_id] &&
                                 io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_accepted', { message: "A lawyer is coming to your aid", data: data });
         
