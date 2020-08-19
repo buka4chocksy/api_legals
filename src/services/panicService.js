@@ -233,7 +233,7 @@ exports.getNextOfKin = (id) => {
 
 exports.updateAlertOnMongo = (alertDetails) => {
     return new Promise((resolve , reject)=>{
-        panicModel.findOneAndUpdate({public_id: alertDetails.id}, { $set: { ...alertDetails } }, {new: true}).exec((err , completed)=>{
+        panicModel.findOneAndUpdate({public_id: alertDetails.id, alert_id: alertDetails.alert_id}, { $set: { ...alertDetails } }, {new: true}).exec((err , completed)=>{
             if(err)reject({err: err , status:500});
             
             resolve(completed)
@@ -289,6 +289,15 @@ exports.fetchAllUnresolved = (data) => {
     })
 }
 
+exports.getAlert = (alert_id) => {
+    return new Promise((resolve, reject) => {
+        panicModel.findOne({ alert_id: alert_id })
+            .exec((err, result) => {
+                err ? reject({ message: err, data: null }) : resolve({ message: " alert history", data: result })
+            })
+    })
+}
+
 
 exports.fetchAllUnresolvedForClient = (data) => {
     return new Promise((resolve, reject) => {
@@ -305,17 +314,21 @@ exports.deactivateAlert = (deactivationDetails) => {
             .select({ "__v": 0,  })
             .exec((err, currentUser) => {
                 if (err || !currentUser) {
-                    reject({ message: "User not found", statusCode: 404, data: null })
+                    reject({ message: "User not found", status: 404, data: null })
                 } else {
-                    deactivatePanicModel.create(deactivationDetails)
-                    .then(result => {
-                        resolve({ message: "Deactivation successful", status: 200, data: null });
-                    }).catch(error => {
-                        //use the error logger here
-                        console.error(error)
-                        reject({message : "Something went wrong", data : null, statusCode : 500})
+                    panicModel.findOneAndUpdate({client_id: deactivationDetails.client_id, alert_id: deactivationDetails.alert_id}, { $set: { resolved: true } }, {new: true}).exec((err , completed)=>{
+                        if(err)reject({err: err , status:500});
+                        
+                        deactivatePanicModel.create(deactivationDetails)
+                        .then(result => {
+                            resolve({ message: "Deactivation successful", status: 200, data: null });
+                        }).catch(error => {
+                            //use the error logger here
+                            console.error(error)
+                            reject({message : "Something went wrong", data : null, statusCode : 500})
+                        })
+                        deleteStoredAlertDetails(deactivationDetails.alert_id)
                     })
-                    deleteStoredAlertDetails(deactivationDetails.alert_id)
                 }
             })
     })

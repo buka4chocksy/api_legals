@@ -3,6 +3,8 @@ const AvatarModel = require('../../models/common/userAvatar');
 const userSettings = require('../../models/common/userSettings')
 const {applyPatch} =require('fast-json-patch');
 const {uploadToCloud, deleteFromCloud} = require('../../utils/cloudinaryUtil');
+const lawyerService = require('../lawyerService')
+const clientService = require('../clientService')
 
 const updateUserDetails = (public_id, patchDetail = []) => {
     return new Promise((resolve, reject) => {
@@ -63,7 +65,7 @@ const updateUserAvatar = (public_id, file) => {
                         }else{
                             resolve({success : true, message : "user details updated", data : cloudResult.secure_url, status : 200});
                         }
-                        updateUserAvater(public_id, avatar_detail);
+                        updateUserAvaterInDatabase(public_id, avatar_detail);
                     })
                     
                 }
@@ -72,8 +74,7 @@ const updateUserAvatar = (public_id, file) => {
     })
 }
 
-const updateUserAvater = (public_id, avatarDetails) => {
-    // console.log("in the update of profile", avatarDetails);
+const updateUserAvaterInDatabase = (public_id, avatarDetails) => {
 return    AvatarModel.findOne({public_id : public_id}).exec((err, foundData) => {
         if(!foundData){
            return AvatarModel.create(avatarDetails);
@@ -95,9 +96,113 @@ const addDeviceId = (public_id, user_id, device_id) => {
     })
 }
 
+const updateUserProfile = (details, data) => {
+    return new Promise((resolve, reject) =>{
+        UserModel.findOne({ public_id: details.public_id }).exec((err, found) => {
+            if (err) reject({ err: err, status: 500 });
+            if(!found){
+                resolve({ success: true, message: 'User profile not updated',  status: 200 })
+            }else{
+                var updateProfile =  applyPatch(found.toObject(), data);
+                UserModel.findOneAndUpdate({public_id: details.public_id}, updateProfile.newDocument, {upsert:true , new:true}).exec( async (err , updated)=>{
+                    if (err) reject({ err: err, status: 500 });
+
+                    if(details.user_type === "client"){
+                        clientService.editClientProfile(details.public_id, data).then((result)=>{
+                            resolve(result)
+                        }).catch(error => reject(error))
+                    }
+
+                    if(details.user_type === "lawyer"){
+                        lawyerService.editLawyerProfile(details.public_id, data).then((result)=>{
+                            resolve(result)
+                        }).catch(error => reject(error))
+                    }
+
+                    //resolve({ success: true, message: 'lawyer profile updated successfully', status: 200 })
+                })
+            }
+        })
+    })
+}
+
+const updateUserProfilePicture = (details, data) => {
+    return new Promise((resolve, reject) =>{
+
+        const imageDetail = {
+            image_url: data.imageUrl,
+            image_id: data.imageID
+        }
+        UserModel.findOneAndUpdate({ public_id: details.public_id }, imageDetail).exec((err, updated) => {
+            if (err) reject({ err: err, status: 500 });
+            console.log("LOGGGGGGG", imageDetail, data)
+            if (updated) {
+                if(details.user_type === "client"){
+                    clientService.profilePicture(details.public_id, imageDetail).then((result)=>{
+                        resolve(result)
+                    }).catch(error => reject(error))
+                }
+
+                if(details.user_type === "lawyer"){
+                    lawyerService.profilePicture(details.public_id, imageDetail).then((result)=>{
+                        resolve(result)
+                    }).catch(error => reject(error))
+                }
+            } else {
+                resolve({ success: false, message: 'Error updating profile picture', status: 400 })
+            }
+        })
+    })
+}
+
+const getUserProfile = (details) => {
+    return new Promise((resolve, reject) => {
+        if(details.user_type === "client"){
+            clientService.getClientProfile(details.public_id).then((result)=>{
+                resolve(result)
+            }).catch(error => reject(error))
+        }
+
+        if(details.user_type === "lawyer"){
+            lawyerService.getLawyerProfile(details.public_id).then((result)=>{
+                resolve(result)
+            }).catch(error => reject(error))
+        }
+    })
+}
+
+// exports.getLawyerProfile = (id) => {
+//     return new Promise((resolve, reject) => {
+//         model.findOne({ public_id: id })
+//             .populate({ path: "practice_area.practice_area_id", model: 'practiceArea', select: { _id: 0, __v: 0 } })
+//             .populate({ path: "jurisdiction.jurisdiction_id", model: 'jurisdiction', select: { _id: 0, __v: 0 } })
+//             .exec((err, found) => {
+//                 if (err) reject({ err: err, status: 500 });
+//                 if (found) {
+//                     resolve({ success: true, message: 'lawyer profile', data: found, status: 200 })
+//                 } else {
+//                     resolve({ success: false, message: 'could not get lawyer profile !!', status: 404 })
+//                 }
+//             })
+//     })
+// }
+
+// exports.getClientProfile = (publicId)=>{
+//     return new Promise((resolve ,reject)=>{
+//         model.findOne({public_id:publicId}).exec((err , client)=>{
+//             if(err)reject({err: err , status:500});
+//             if(client){
+//                 resolve({success:true , message:'client profile', data:client , status:200})
+//             }else{
+//                 resolve({success:false , message:'could not find client details' , status:400})
+//             }
+//         })
+//     })
+// }
+
 
 
 
 module.exports = {
-    updateUserDetails, updateUserAvatar, addDeviceId
+    updateUserDetails, updateUserAvatar, addDeviceId, updateUserProfile, updateUserProfilePicture, getUserProfile
 }

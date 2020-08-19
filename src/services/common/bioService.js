@@ -1,4 +1,4 @@
-const bio = require('../../models/lawyer/bio');
+const bio = require('../../models/common/bio');
 const { applyPatch, validate } = require('fast-json-patch');
 
 exports.createBio = (data) => {

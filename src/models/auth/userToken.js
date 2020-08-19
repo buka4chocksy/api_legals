@@ -5,7 +5,7 @@ const schema = mongoose.Schema;
 const UserTokenSchema = new schema({
     user: { type: mongoose.SchemaTypes.ObjectId, required: true, ref: 'users' },
     phone_number: { type: String },
-    public_id: { type: String },
+    public_id: { type: mongoose.SchemaTypes.ObjectId },
     access_token: { type: String },
     expiry_time: { type: Date },
     refresh_count: { type: Number, default: 0, },

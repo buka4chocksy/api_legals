@@ -67,22 +67,6 @@ app.use(express.json()); //for parsing application/json
 app.use(express.urlencoded({ extended: false})); //for parsing application/x-www-form-urlencoded
 app.use(cors());
 
-// app.set('allRiderSockets', {});
-// const options = {
-//   uploadDir: os.tmpdir(),
-//   autoClean: true
-// };
- 
-// // parse data with connect-multiparty. 
-// app.use(formData.parse(options));
-// // delete from the request all empty files (size == 0)
-// app.use(formData.format());
-// // change the file objects to fs.ReadStream 
-// app.use(formData.stream());
-// // union the body and the files
-// app.use(formData.union());
-// // app.set('allUserSockets', {});
-
 app.use('/api', rootRouter);
 app.use('/', socialAuth);
 

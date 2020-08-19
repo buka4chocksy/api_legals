@@ -1,7 +1,8 @@
 exports.getNearbyLawyers = (distance, public_id) => {
     var distances = []
 
-    if (distance < 2000) {
+    console.log("LAWYER-CLIETNY DISTANCE APART===============================", distance)
+    if (distance < 2) {
         distances.push({ distance, public_id })
     }
 
@@ -10,8 +11,8 @@ exports.getNearbyLawyers = (distance, public_id) => {
 
 exports.getNearbyClients = (distance, client) => {
     var distances = []
-
-    if (distance < 2000) {
+    console.log("CLIENT-LAWYER DISTANCE APART================================", distance)
+    if (distance < 2) {
         distances.push({ distance, ...client })
     }
 

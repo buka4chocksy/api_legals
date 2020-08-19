@@ -1,15 +1,14 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const schema = mongoose.Schema;
-const EducationSchema = new schema({
-    user : {type : mongoose.SchemaTypes.ObjectId, ref : "users"},
-    public_id : {type : mongoose.SchemaTypes.ObjectId},
-    institution: { type: String, default: '' },
-    degree: { type: String, default: '' },
-    qualification: { type: String, default: '' },
-    yearFrom: { type: Date, default: '' },
-    yearTo: { type: Date, default: '' },
-}, { timestamps: true });
 
+const educationSchema = new schema({
+    public_id: { type: mongoose.SchemaTypes.ObjectId },
+    school: { type: String },
+    start_year: { type: String },
+    end_year: { type: String },
+    organization: { type: String },
+    awards : {type : String}
+}, { timestamps: true, toObject: { getters: true } });
 
-
-module.exports = mongoose.model('users', EducationSchema);
+module.exports = mongoose.model('education', educationSchema);

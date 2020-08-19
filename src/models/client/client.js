@@ -12,7 +12,7 @@ const clientSchema = new schema({
     occupation:{type:String ,default:''},
     country:{type:String ,default:''},
     state_of_origin:{type:String , default:''},
-      profileSummary:{type:String , default:''},
+    profileSummary:{type:String , default:''},
     user_type: { type: String, required: true },
     public_id: { type: mongoose.SchemaTypes.ObjectId },
 })

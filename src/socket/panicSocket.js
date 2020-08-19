@@ -13,6 +13,8 @@ const { get } = require('mongoose');
 var allSockets = {}
 allSockets.users = {}
 
+var lawyersContacted = []
+
 allSockets.addSocket = function(details) {
     this.users[details.public_id] = { ...details } 
     console.log("ADDED NEW USER", allSockets.users)  
@@ -28,28 +30,32 @@ function panicSocket(server) {
     io = socket(server)
     this.panicAlert = () => {
         io.of("/panic").on('connection', (socket) => {
+            
+
             socket.on('online', (data) => {
                 data["socket_address"] = socket.id
                 socketUtil.userOnline(data, allSockets)
             })
 
+
+            socket.on('deactivate_alert', (data) => {
+                //alert_id
+                console.log("REQUESTING TO DEACTIVATE PANIC")
+                socketUtil.deactivateAlert(data, allSockets, lawyersContacted)
+            })
+            
             socket.on('panic_alert', (data) => {
                 //id
-                socketUtil.panicAlert(data, allSockets)
+                socketUtil.panicAlert(data, allSockets, lawyersContacted)
             })
 
             socket.on('accept_alert', (data) => {
-                socketUtil.acceptAlert(data, allSockets)
+                socketUtil.acceptAlert(data, allSockets, lawyersContacted)
             })
 
             socket.on('send_message', (data) => {
                 //alert_id,public_id,to_who
                 socketUtil.sendMessage(data, allSockets)
-            })
-
-            socket.on('deactivate_alert', (data) => {
-                //alert_id
-                socketUtil.deactivateAlert(data, allSockets)
             })
 
             socket.on('close_alert', (data) => {

@@ -28,7 +28,7 @@ exports.completelawyerRegisteration = (publicId, data, file) => {
                                 //add the lawyer practice area
                                 addLawyerPracticeArea(publicId, data.practice_area);
                                 //add the lawyer jurisdictions
-                                addlawyerJurisdiction(publicId,{jurisdiction_id :  data.jurisdiction_id,enrollment_number : data.enrollment_number}, file)
+                                addlawyerJurisdiction(publicId,{jurisdiction_id :  data.jurisdiction_id,enrollment_number : data.enrollment_number, year : data.year}, file)
                                 //update user type in User collection for the lawyer
                                 user.findOneAndUpdate({ public_id: publicId }, { user_type: details.user_type })
                                 resolve({
@@ -51,7 +51,7 @@ exports.completelawyerRegisteration = (publicId, data, file) => {
 //get lawyer profile 
 exports.getLawyerProfile = (id) => {
     return new Promise((resolve, reject) => {
-        model.find({ public_id: id })
+        model.findOne({ public_id: id })
             .populate({ path: "practice_area.practice_area_id", model: 'practiceArea', select: { _id: 0, __v: 0 } })
             .populate({ path: "jurisdiction.jurisdiction_id", model: 'jurisdiction', select: { _id: 0, __v: 0 } })
             .exec((err, found) => {
@@ -213,12 +213,12 @@ exports.searchLawyer = function (option) {
 }
 
 //profile picture update
-exports.profilePicture = (id, data) => {
+exports.profilePicture = (id, detail) => {
     return new Promise((resolve, reject) => {
-        const detail = {
-            image_url: data.imageUrl,
-            image_id: data.imageID
-        }
+        // const detail = {
+        //     image_url: data.imageUrl,
+        //     image_id: data.imageID
+        // }
         model.findOneAndUpdate({ public_id: id }, detail).exec((err, updated) => {
             if (err) reject({ err: err, status: 500 });
             if (updated) {

@@ -21,7 +21,9 @@ const panicHistory = new schema({
     client_id: { type: String },
     lawyer_id: { type: String },
     client_img_url: {type: String},
-    lawyer_img_url: {type: String}
+    lawyer_img_url: {type: String},
+    lawyer_latitude : {type :String},
+    lawyer_longitude : {type : String}
 }, {timestamps: true})
 
 module.exports =  mongoose.model('panicHistory' , panicHistory)

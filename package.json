@@ -23,7 +23,9 @@
   "homepage": "https://gitlab.com/genesys_development/Node_Api_Boilerplate#readme",
   "dependencies": {
     "@hapi/joi": "^17.1.1",
+    "@sendgrid/mail": "^7.2.2",
     "africastalking": "^0.4.7",
+    "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.19.0",
     "cloudinary": "^1.20.0",
