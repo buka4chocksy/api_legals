@@ -189,6 +189,7 @@ exports.acceptAlert = (data, allSockets, lawyersContacted) => {
                         panicService.updateAlertOnRedis(data)
         
                         panicService.updateAlertOnMongo(data).then((updated)=>{
+                                console.log("Accepted Panic Details", allSockets.users);
                                 console.log("Accepted Panic Details", allSockets.users[alertDetails.client_id]);
                                 console.log("Accepted Panic Lawyer", allSockets.users[data.public_id].socket_address);
 
