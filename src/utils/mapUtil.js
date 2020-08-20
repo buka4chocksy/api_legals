@@ -7,10 +7,11 @@ exports.getLocation = (latitude, longitude) => {
         try {
             const response = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_MAP_API_KEY}`);
             const data = response.data;
-            console.log("************************************************************************",data);
+            // console.log("************************************************************************",data);
             resolve (data)
           } catch (error) {
-            console.log("************************************************************************",error);
+            // console.log("************************************************************************",error);
+            console.log("error check", error);
             reject (error)
           }
     })
