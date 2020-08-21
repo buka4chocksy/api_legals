@@ -160,19 +160,8 @@ exports.acceptAlert = (panicAcceptanceDetail, allSockets, lawyersContacted) => {
 
             if (unresolved.data.length < 1) {
                 panicService.getStoredAlertDetails(panicAcceptanceDetail.alert_id).then((alertDetails) => {
-                    console.log("data retrieved check", alertDetails);
                     if (alertDetails.status === "sent") {
                         panicAcceptanceDetail = formatLawyerPanicAcceptanceData(panicAcceptanceDetail, alertDetails, lawyerUserDetail, locationDetails);
-
-                        // if (alertDetails.next_of_kin_full_name || alertDetails.next_of_kin_email_address || alertDetails.next_of_kin_phone_number) {
-                        //     panicAcceptanceDetail.next_of_kin = {
-                        //         full_name: alertDetails.next_of_kin_full_name,
-                        //         email_address: alertDetails.next_of_kin_email_address,
-                        //         phone_number: alertDetails.next_of_kin_phone_number
-                        //     };
-                        // }
-                        // console.log("TO UPDATE THE EXISTING ALERT DETAILS WHEN LAWYER ACCEPTS", data, "NEXT OF KIN DETAILSSSSSS", panicAcceptanceDetail.next_of_kin);
-                        panicService.updateAlertOnRedis(panicAcceptanceDetail);
 
                         panicService.updateAlertOnMongo(panicAcceptanceDetail).then((updated) => {
                             // console.log("Acceptance details", panicAcceptanceDetail);
@@ -181,7 +170,7 @@ exports.acceptAlert = (panicAcceptanceDetail, allSockets, lawyersContacted) => {
 
                             allSockets.users[alertDetails.client_id] &&
                                 io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_accepted', { message: "A lawyer is coming to your aid", data: panicAcceptanceDetail });
-                   
+
 
                             if (panicAcceptanceDetail.user_type && panicAcceptanceDetail.user_type === "lawyer") {
                                 if (allSockets.users[panicAcceptanceDetail.public_id]) allSockets.users[panicAcceptanceDetail.public_id]["available"] = false;
@@ -336,7 +325,7 @@ exports.closeAlert = (data, allSockets) => {
             }).catch((error) => { console.log(error); });
         }).catch((error) => { console.log(error); });
     }
-    /*if hoax, store in hoax model, increment the client numbers of hoax alert, if its up to 2, block him for one week, the emit to the 
+    /*if hoax, store in hoax model, increment the client numbers of hoax alert, if its up to 2, block him for one week, the emit to the
         cilent so that he/she can appeal and only th admin can revert the number of hoax and unblock
     */
 };
@@ -389,7 +378,7 @@ exports.getLawyerPosition = (data, allSockets) => {
 
 exports.updateNextOfKinPosition = (data, allSockets) => {
     //store update clients position on redis with the public_id
-    //fetch all ongoing alerts of the person(possibly from redis) and emit position to the clients or lawyers 
+    //fetch all ongoing alerts of the person(possibly from redis) and emit position to the clients or lawyers
     //data will contai lawyerid, lawyerlongitude, lawyerlatitude
     console.log("UPDATING NOK POSITION", data);
     panicService.getStoredAlertDetails(data.alert_id).then((alertDetails) => {

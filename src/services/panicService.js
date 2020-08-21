@@ -153,7 +153,6 @@ exports.getUser = (id) => {
 
 exports.createPanicAlert = (panicDetails) => {
     return new Promise((resolve, reject) => {
-        console.log("data to save", panicDetails);
         panicModel.create(panicDetails).then(created => {
             resolve();
         }).catch(error => console.log(error));
@@ -200,7 +199,6 @@ exports.getNextOfKin = (id) => {
 
 exports.updateAlertOnMongo = (alertDetails) => {
     return new Promise((resolve, reject) => {
-        console.log("update details", alertDetails);
         panicModel.findOneAndUpdate({ public_id: alertDetails.id, alert_id: alertDetails.alert_id }, { $set: { ...alertDetails } }, { new: true }).exec((err, completed) => {
             if (err) reject({ err: err, status: 500 });
 
