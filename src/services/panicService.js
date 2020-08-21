@@ -12,6 +12,7 @@ var redis = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS
 var sub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL : process.env.REDIS_URL);
 var pub = new Redis(process.env.NODE_ENV === 'development' ? process.env.REDIS_URL_LOCAL : process.env.REDIS_URL);
 
+// redis.flushall();
 // sub.subscribe(`${dispatchDetails.userdeviceid}`, function (err, count) {
 //     pub.publish(`${dispatchDetails.userdeviceid}`, `Your ${dispatchDetails.contentdetails} dispatch request has been accepted`);
 // });
@@ -25,7 +26,6 @@ exports.createPanic = (data, id, user_type) => {
             } else {
                 //while creating pannic as client front end will have to pick the usertype data from front end 
                 //but as a lawyer the usertype will come from the database
-                console.log(data.user_type, 'kgkgkgkgk');
                 const details = {
                     next_of_kin: data.next_of_kin,
                     // country_code:data.country_code,
@@ -143,67 +143,17 @@ exports.getUser = (id) => {
         if (foundUser) {
             if (userSetting && userSetting.device_id) foundUser.device_id = userSetting.device_id;
             return foundUser;
-        }else{
+        } else {
             return null;
         }
     }).catch(err => {
         console.log("err here", { err });
     });
-
-
-
-
-
-    // return new Promise((resolve , reject)=>{
-    //     user.findOne({public_id: id}).select({"password": 0}).exec((err , foundUser)=>{
-    //         if(err)reject({err: err , status:500});
-    //         // console.log("FOUND USER", foundUser, foundUser.user_type)
-
-    //         if(!foundUser){
-    //            reject({message: "User does not exist"}) 
-    //         }
-
-    //         userSettings.findOne({public_id: id}).exec((err, settings)=>{
-    //             if(err)reject({err: err , status:500});
-
-    //             //console.log("", settings)
-    //             if(settings && settings.device_id) foundUser.device_id = settings.device_id 
-
-    //             //re-write to use aggregate
-    //             if(foundUser.user_type === "lawyer"){
-    //                 lawyer.findOne({public_id: id}).exec((err , found)=>{
-    //                     if(err)reject({err: err , status:500});
-
-    //                     if(!found){
-    //                         reject({message: "Lawyer does not exist"}) 
-    //                     }
-    //                     console.log("LAWYER DETAILS FROM DB", foundUser)
-    //                     resolve(foundUser)
-    //                 })
-    //             }
-
-    //             if(foundUser.user_type === "client"){
-    //                 client.findOne({public_id: id}).exec((err , found)=>{
-    //                     if(err)reject({err: err , status:500});
-
-    //                     if(!found){
-    //                     reject({message: "Client does not exist"}) 
-    //                     }
-
-    //                     foundUser.client_country = found.state_of_origin
-    //                     foundUser.client_state = found.country 
-
-    //                     console.log("CLIENT DETAILS FRO DB", foundUser)
-    //                     resolve(foundUser)
-    //                 })
-    //             }
-    //         })
-    //     })
-    // })
 };
 
 exports.createPanicAlert = (panicDetails) => {
     return new Promise((resolve, reject) => {
+        console.log("data to save", panicDetails);
         panicModel.create(panicDetails).then(created => {
             resolve();
         }).catch(error => console.log(error));
@@ -250,6 +200,7 @@ exports.getNextOfKin = (id) => {
 
 exports.updateAlertOnMongo = (alertDetails) => {
     return new Promise((resolve, reject) => {
+        console.log("update details", alertDetails);
         panicModel.findOneAndUpdate({ public_id: alertDetails.id, alert_id: alertDetails.alert_id }, { $set: { ...alertDetails } }, { new: true }).exec((err, completed) => {
             if (err) reject({ err: err, status: 500 });
 
@@ -383,8 +334,8 @@ const getExistingRequestsDetails = async (result) => {
 
 function getAllFromRedis(id) {
     return new Promise((resolve, reject) => {
-        redis.hgetall([id], (err, result) => {
-            err ? resolve({}) : resolve(result);
+        redis.get(id, (err, result) => {
+            err ? resolve({}) : resolve(JSON.parse(result));
         });
     });
 }
@@ -410,12 +361,9 @@ exports.fetchExistingAlerts = () => {
 };
 
 exports.storeAlertDetails = (alertDetails) => {
-    let aa = Object.entries(alertDetails);
-    aa = aa.__proto__;
-    console.log("details",aa.__proto__)
-
     try {
-        redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat());
+        redis.set(`${alertDetails.alert_id}`, JSON.stringify(alertDetails));
+        // redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat());
 
         redis.expire(alertDetails.alert_id, 259200);
 
@@ -426,9 +374,9 @@ exports.storeAlertDetails = (alertDetails) => {
 };
 
 exports.updateAlertOnRedis = (alertDetails) => {
-    console.log("I UPDATED THE ALERT DETAILS");
     try {
-        redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat());
+        redis.set(`${alertDetails.alert_id}`, JSON.stringify(alertDetails));
+        // redis.hmset(`${alertDetails.alert_id}`, Object.entries(alertDetails).flat());
         redis.expire(alertDetails.alert_id, 259200);
     } catch (error) {
         console.log(error);
@@ -436,11 +384,13 @@ exports.updateAlertOnRedis = (alertDetails) => {
 };
 
 exports.getStoredAlertDetails = (alert_id) => {
-    console.log("GETTING STORED ALERT DETAILS", alert_id);
     return new Promise((resolve, reject) => {
-        redis.hgetall(alert_id, (err, result) => {
-            result ? resolve(result) : console.log(err);
+        redis.get(alert_id, (err, result) => {
+            return err ? resolve(null) : resolve(JSON.parse(result));
         });
+        // redis.hgetall(alert_id, (err, result) => {
+        //     result ? resolve(result) : resolve(null);
+        // });
     });
 };
 

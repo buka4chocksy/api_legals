@@ -17,7 +17,6 @@ exports.userOnline = (data, allSockets) => {
                 console.log("LIST OF OPEN ALERT FOR THIS LAWYER", result);
                 if (result.data.length < 1) {
                     allSockets.users[data.public_id]["available"] = true;
-                    console.log("new lawyer details", allSockets.users[data.public_id]);
                 } else {
                     console.log("THIS LAWYER ALREADY HAS AN ONGOING ALERT AND CANNOT BE AVAILBLE FOR NOW");
                 }
@@ -51,7 +50,7 @@ const formatClientPanicRequestData = (data, result, locationDetails) => {
         latitude: data.user_latitude,
         longitude: data.user_longitude
     };
-    data.next_of_kin = {};
+    // data.next_of_kin = {};
     return data;
 };
 
@@ -96,7 +95,7 @@ exports.panicAlert = async (data, allSockets, lawyersContacted) => {
                         }
                     }
                 }
-                console.log("data checl", data);
+
                 const createdPanic = await panicService.createPanicAlert(data);
 
                 Object.entries(allSockets.users).forEach(([key, value]) => {
@@ -146,6 +145,7 @@ const formatLawyerPanicAcceptanceData = (panicDetail, alertDetails, lawyerUserDe
     panicDetail.resolved = false;
     panicDetail.accepted = true;
     // panicDetail.next_of_kin = {};
+    delete panicDetail.nextOfKin;
     return panicDetail;
 };
 
@@ -160,6 +160,7 @@ exports.acceptAlert = (panicAcceptanceDetail, allSockets, lawyersContacted) => {
 
             if (unresolved.data.length < 1) {
                 panicService.getStoredAlertDetails(panicAcceptanceDetail.alert_id).then((alertDetails) => {
+                    console.log("data retrieved check", alertDetails);
                     if (alertDetails.status === "sent") {
                         panicAcceptanceDetail = formatLawyerPanicAcceptanceData(panicAcceptanceDetail, alertDetails, lawyerUserDetail, locationDetails);
 
