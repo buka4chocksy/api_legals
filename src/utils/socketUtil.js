@@ -77,7 +77,6 @@ exports.panicAlert = async (data, allSockets, lawyersContacted) => {
 
             if (userDetails.hoax_alert < 3) {
                 data = formatClientPanicRequestData(data, userDetails, locationDetails);
-                const createdPanic = await panicService.createPanicAlert(data);
                 const nextOfKins = await panicService.getNextOfKin(data.public_id);
                 if (nextOfKins.length > 0) {
                     data.next_of_kin = {
@@ -97,6 +96,8 @@ exports.panicAlert = async (data, allSockets, lawyersContacted) => {
                         }
                     }
                 }
+                console.log("data checl", data);
+                const createdPanic = await panicService.createPanicAlert(data);
 
                 Object.entries(allSockets.users).forEach(([key, value]) => {
                     if (value.user_type === "lawyer" && value.available === true) {
@@ -127,6 +128,7 @@ exports.panicAlert = async (data, allSockets, lawyersContacted) => {
 };
 
 const formatLawyerPanicAcceptanceData = (panicDetail, alertDetails, lawyerUserDetail, lawyerLocationDetails) => {
+    panicDetail = { ...panicDetail, ...alertDetails };
     panicDetail.lawyer_id = panicDetail.public_id;
     panicDetail.lawyer_img_url = lawyerUserDetail.image_url;
     panicDetail.lawyer_name = lawyerUserDetail.first_name + " " + lawyerUserDetail.last_name;
@@ -141,27 +143,9 @@ const formatLawyerPanicAcceptanceData = (panicDetail, alertDetails, lawyerUserDe
     };
     panicDetail.lawyer_email = lawyerUserDetail.email_address;
     panicDetail.status = "accepted";
-    panicDetail.client_img_url = alertDetails.client_img_url;
-    panicDetail.alert_id = alertDetails.alert_id;
-    panicDetail.creation_time = alertDetails.creation_time;
-    panicDetail.client_name = alertDetails.client_name;
-    panicDetail.client_phonenumber = alertDetails.client_phonenumber;
-    panicDetail.client_email = alertDetails.client_email;
-    panicDetail.client_id = alertDetails.client_id;
-    panicDetail.panic_initiation_location = alertDetails.panic_initiation_location;
-    panicDetail.destination = alertDetails.destination;
     panicDetail.resolved = false;
-    panicDetail.alert_type = alertDetails.alert_type;
-    panicDetail.panic_initiation_latitude = alertDetails.panic_initiation_latitude;
-    panicDetail.panic_initiation_longitude = alertDetails.panic_initiation_longitude;
-    panicDetail.client_state = alertDetails.client_state;
-    panicDetail.client_country = alertDetails.client_country;
-    panicDetail.relationship = alertDetails.relationship;
-    panicDetail.client_device_id = alertDetails.client_device_id;
-    panicDetail.local_address = alertDetails.local_address;
-    panicDetail.place_id = alertDetails.place_id;
     panicDetail.accepted = true;
-    panicDetail.next_of_kin = {};
+    // panicDetail.next_of_kin = {};
     return panicDetail;
 };
 
@@ -180,13 +164,13 @@ exports.acceptAlert = (panicAcceptanceDetail, allSockets, lawyersContacted) => {
                 if (alertDetails.status === "sent") {
                     panicAcceptanceDetail = formatLawyerPanicAcceptanceData(panicAcceptanceDetail, alertDetails, lawyerUserDetail, locationDetails);
 
-                    if (alertDetails.next_of_kin_full_name || alertDetails.next_of_kin_email_address || alertDetails.next_of_kin_phone_number) {
-                        panicAcceptanceDetail.next_of_kin = {
-                            full_name: alertDetails.next_of_kin_full_name,
-                            email_address: alertDetails.next_of_kin_email_address,
-                            phone_number: alertDetails.next_of_kin_phone_number
-                        };
-                    }
+                    // if (alertDetails.next_of_kin_full_name || alertDetails.next_of_kin_email_address || alertDetails.next_of_kin_phone_number) {
+                    //     panicAcceptanceDetail.next_of_kin = {
+                    //         full_name: alertDetails.next_of_kin_full_name,
+                    //         email_address: alertDetails.next_of_kin_email_address,
+                    //         phone_number: alertDetails.next_of_kin_phone_number
+                    //     };
+                    // }
                     // console.log("TO UPDATE THE EXISTING ALERT DETAILS WHEN LAWYER ACCEPTS", data, "NEXT OF KIN DETAILSSSSSS", panicAcceptanceDetail.next_of_kin);
                     panicService.updateAlertOnRedis(panicAcceptanceDetail);
 

@@ -35,7 +35,8 @@ const panicHistory = new schema({
         place_id: { type: String },
         latitude: { type: String },
         longitude: { type: String }
-    }
+    },
+    next_of_kin: { type: mongoose.Schema.Types.Mixed}
 }, { timestamps: true });
 
 module.exports = mongoose.model('panicHistory', panicHistory);
