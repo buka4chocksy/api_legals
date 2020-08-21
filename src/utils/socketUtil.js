@@ -128,7 +128,7 @@ exports.panicAlert = async (data, allSockets, lawyersContacted) => {
 };
 
 const formatLawyerPanicAcceptanceData = (panicDetail, alertDetails, lawyerUserDetail, lawyerLocationDetails) => {
-    panicDetail = { ...panicDetail, ...alertDetails };
+    panicDetail = { ...alertDetails, ...panicDetail };
     panicDetail.lawyer_id = panicDetail.public_id;
     panicDetail.lawyer_img_url = lawyerUserDetail.image_url;
     panicDetail.lawyer_name = lawyerUserDetail.first_name + " " + lawyerUserDetail.last_name;
@@ -151,67 +151,70 @@ const formatLawyerPanicAcceptanceData = (panicDetail, alertDetails, lawyerUserDe
 
 
 exports.acceptAlert = (panicAcceptanceDetail, allSockets, lawyersContacted) => {
-    console.log(panicAcceptanceDetail);
-    if (!panicAcceptanceDetail.public_id || !panicAcceptanceDetail.user_latitude || !panicAcceptanceDetail.user_longitude || !panicAcceptanceDetail.alert_id) return;
+    try {
+        if (!panicAcceptanceDetail.public_id || !panicAcceptanceDetail.user_latitude || !panicAcceptanceDetail.user_longitude || !panicAcceptanceDetail.alert_id) return;
 
-    Promise.all([panicService.getUser(panicAcceptanceDetail.public_id), getLocation(panicAcceptanceDetail.user_latitude, panicAcceptanceDetail.user_longitude), panicService.fetchAllUnresolved(panicAcceptanceDetail)]).then((allResults) => {
-        let [lawyerUserDetail, locationDetails, unresolved] = allResults;
-        console.log("un resolved", unresolved, lawyerUserDetail);
-        if (!lawyerUserDetail) return;
+        Promise.all([panicService.getUser(panicAcceptanceDetail.public_id), getLocation(panicAcceptanceDetail.user_latitude, panicAcceptanceDetail.user_longitude), panicService.fetchAllUnresolved(panicAcceptanceDetail)]).then((allResults) => {
+            let [lawyerUserDetail, locationDetails, unresolved] = allResults;
+            if (!lawyerUserDetail) return;
 
-        if (unresolved.data.length < 1) {
-            panicService.getStoredAlertDetails(panicAcceptanceDetail.alert_id).then((alertDetails) => {
-                if (alertDetails.status === "sent") {
-                    panicAcceptanceDetail = formatLawyerPanicAcceptanceData(panicAcceptanceDetail, alertDetails, lawyerUserDetail, locationDetails);
+            if (unresolved.data.length < 1) {
+                panicService.getStoredAlertDetails(panicAcceptanceDetail.alert_id).then((alertDetails) => {
+                    if (alertDetails.status === "sent") {
+                        panicAcceptanceDetail = formatLawyerPanicAcceptanceData(panicAcceptanceDetail, alertDetails, lawyerUserDetail, locationDetails);
 
-                    // if (alertDetails.next_of_kin_full_name || alertDetails.next_of_kin_email_address || alertDetails.next_of_kin_phone_number) {
-                    //     panicAcceptanceDetail.next_of_kin = {
-                    //         full_name: alertDetails.next_of_kin_full_name,
-                    //         email_address: alertDetails.next_of_kin_email_address,
-                    //         phone_number: alertDetails.next_of_kin_phone_number
-                    //     };
-                    // }
-                    // console.log("TO UPDATE THE EXISTING ALERT DETAILS WHEN LAWYER ACCEPTS", data, "NEXT OF KIN DETAILSSSSSS", panicAcceptanceDetail.next_of_kin);
-                    panicService.updateAlertOnRedis(panicAcceptanceDetail);
+                        // if (alertDetails.next_of_kin_full_name || alertDetails.next_of_kin_email_address || alertDetails.next_of_kin_phone_number) {
+                        //     panicAcceptanceDetail.next_of_kin = {
+                        //         full_name: alertDetails.next_of_kin_full_name,
+                        //         email_address: alertDetails.next_of_kin_email_address,
+                        //         phone_number: alertDetails.next_of_kin_phone_number
+                        //     };
+                        // }
+                        // console.log("TO UPDATE THE EXISTING ALERT DETAILS WHEN LAWYER ACCEPTS", data, "NEXT OF KIN DETAILSSSSSS", panicAcceptanceDetail.next_of_kin);
+                        panicService.updateAlertOnRedis(panicAcceptanceDetail);
 
-                    panicService.updateAlertOnMongo(panicAcceptanceDetail).then((updated) => {
+                        panicService.updateAlertOnMongo(panicAcceptanceDetail).then((updated) => {
+                            // console.log("Acceptance details", panicAcceptanceDetail);
+                            allSockets.users[panicAcceptanceDetail.public_id] &&
+                                io.of('/panic').to(`${allSockets.users[panicAcceptanceDetail.public_id].socket_address}`).emit('acceptance_successful', { message: "You have accepted the alert successfully", data: panicAcceptanceDetail });
 
-                        allSockets.users[alertDetails.client_id] &&
-                            io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_accepted', { message: "A lawyer is coming to your aid", data: panicAcceptanceDetail });
+                            allSockets.users[alertDetails.client_id] &&
+                                io.of('/panic').to(`${allSockets.users[alertDetails.client_id].socket_address}`).emit('alert_accepted', { message: "A lawyer is coming to your aid", data: panicAcceptanceDetail });
+                   
 
-                        allSockets.users[panicAcceptanceDetail.public_id] &&
-                            io.of('/panic').to(`${allSockets.users[panicAcceptanceDetail.public_id].socket_address}`).emit('acceptance_successful', { message: "You have accepted the alert successfully", data: panicAcceptanceDetail });
-
-                        if (panicAcceptanceDetail.user_type && panicAcceptanceDetail.user_type === "lawyer") {
-                            if (allSockets.users[panicAcceptanceDetail.public_id]) allSockets.users[panicAcceptanceDetail.public_id]["available"] = false;
-                        }
-
-                        const index = lawyersContacted.indexOf(panicAcceptanceDetail.public_id);
-
-                        if (index > -1) {
-                            lawyersContacted.splice(index, 1);
-                        }
-
-                        if (lawyersContacted.length > 0) {
-                            for (i = 0; i < lawyersContacted.length; i++) {
-                                allSockets.users[lawyersContacted[i]] &&
-                                    io.of('/panic').to(`${allSockets.users[lawyersContacted[i]].socket_address}`).emit('not_available', { message: "This request has already been accepted", data: { alert_id: alertDetails.alert_id, available: false } });
+                            if (panicAcceptanceDetail.user_type && panicAcceptanceDetail.user_type === "lawyer") {
+                                if (allSockets.users[panicAcceptanceDetail.public_id]) allSockets.users[panicAcceptanceDetail.public_id]["available"] = false;
                             }
-                        }
-                    }).catch((error) => { console.log(error); });
-                } else {
-                    console.log("ACCEPTANCE FAILED", allSockets.users[panicAcceptanceDetail.public_id]);
-                    allSockets.users[panicAcceptanceDetail.public_id] &&
-                        io.of('/panic').to(`${allSockets.users[panicAcceptanceDetail.public_id].socket_address}`).emit('acceptance_failed', { message: "This alert no longer exist", data: { alert_id: panicAcceptanceDetail.alert_id, accepted: false } });
-                }
-            }).catch((error) => { console.log(error); });
-        } else {
-            allSockets.users[panicAcceptanceDetail.public_id] &&
-                io.of('/panic').to(`${allSockets.users[panicAcceptanceDetail.public_id].socket_address}`).emit('lawyer_has_pending_alert_request', { message: "you have a pending request to complete", data: unresolved.data[0] });
-            console.log("THIS LAWYER ALREADY HAS AN ONGOING ALERT AND CANNOT BE AVAILBLE FOR NOW");
-        }
 
-    });
+                            const index = lawyersContacted.indexOf(panicAcceptanceDetail.public_id);
+
+                            if (index > -1) {
+                                lawyersContacted.splice(index, 1);
+                            }
+
+                            if (lawyersContacted.length > 0) {
+                                for (i = 0; i < lawyersContacted.length; i++) {
+                                    allSockets.users[lawyersContacted[i]] &&
+                                        io.of('/panic').to(`${allSockets.users[lawyersContacted[i]].socket_address}`).emit('not_available', { message: "This request has already been accepted", data: { alert_id: alertDetails.alert_id, available: false } });
+                                }
+                            }
+                        }).catch((error) => { console.log(error); });
+                    } else {
+                        console.log("ACCEPTANCE FAILED", allSockets.users[panicAcceptanceDetail.public_id]);
+                        allSockets.users[panicAcceptanceDetail.public_id] &&
+                            io.of('/panic').to(`${allSockets.users[panicAcceptanceDetail.public_id].socket_address}`).emit('acceptance_failed', { message: "This alert no longer exist", data: { alert_id: panicAcceptanceDetail.alert_id, accepted: false } });
+                    }
+                }).catch((error) => { console.log(error); });
+            } else {
+                allSockets.users[panicAcceptanceDetail.public_id] &&
+                    io.of('/panic').to(`${allSockets.users[panicAcceptanceDetail.public_id].socket_address}`).emit('lawyer_has_pending_alert_request', { message: "you have a pending request to complete", data: unresolved.data[0] });
+                console.log("THIS LAWYER ALREADY HAS AN ONGOING ALERT AND CANNOT BE AVAILBLE FOR NOW");
+            }
+
+        });
+    } catch (err) {
+        console.log("error ocurred", err);
+    }
 };
 
 exports.sendMessage = (data, allSockets) => {
