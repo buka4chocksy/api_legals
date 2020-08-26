@@ -244,8 +244,9 @@ exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
                     };
                     generateUserAuthenticationResponse(jwtTokenDetails, user._id, ipaddress, true).then(result => {
                         resolve({ success: true, data: { userDetails, authDetails: result.data }, message: 'authentication successful', status: 200 });
-                    }).catch(error => {
+                    }).catch(err => {
                         //log error here with logger
+                        reject({ err: err, status: 500 });
                     });
                 } else {
                     resolve({ success: false, message: 'incorrect email or password', status: 400 });
