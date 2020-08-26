@@ -1,17 +1,20 @@
 var mongoose = require('mongoose');
-const db = process.env.NODE_ENV === "production" ? process.env.lawDBURL : process.env.localDB;
+mongoose.Promise = require('bluebird');
+const uri = process.env.NODE_ENV === "production" ? process.env.lawDBURL : process.env.localDB;
+// if(process.env.NODE_ENV !== 'production') mongoose.set('debug', true);
 module.exports = function init() {
-    if (db) {
+
+    if (uri) {
         mongoose.connect(
-            db, {
+            uri, {
             useNewUrlParser: true,
             useCreateIndex: true,
             useUnifiedTopology: true,
-            useFindAndModify: false
+            useFindAndModify: false,
         },
             (err) => {
                 if (err) {
-                    console.log("Database connection failed");
+                    console.log("Database connection failed", err);
                 }
                 else {
                     console.log("Sucessfully connected to MongoDB");

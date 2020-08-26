@@ -18,7 +18,8 @@ lawyer_online.addEventListener('click', function() {
         user_type: "lawyer",
         // available: true
     })
-
+    
+    console.log("lawyer valuue", lawyer_id.value);
     socket.emit('find_panics', {
         public_id: lawyer_id.value,
         user_latitude: 6.3910178,
