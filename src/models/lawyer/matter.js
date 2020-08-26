@@ -5,7 +5,8 @@ var matterSchema = new Schema({
         Lawyer: { type: mongoose.SchemaTypes.ObjectId, ref: "Lawyer", autopopulate: [true, "lawyer id  not available"] },
         publicId: { type: mongoose.SchemaTypes.ObjectId }
     },
-    clientid: { type: mongoose.SchemaTypes.ObjectId, ref: "client", autopopulate: true, index: true },
+    clientid: { type: mongoose.SchemaTypes.ObjectId, ref: "user", autopopulate: true, index: true },
+    publicId: { type: mongoose.SchemaTypes.ObjectId},
     client_name: { type: String, lowercase: true },
     deadline: {
         type: Date, required: [true, "Time limit not provided"]
@@ -19,17 +20,22 @@ var matterSchema = new Schema({
         audioUrl: { type: String, default: '' },
         created_on: { type: Date, default: new Date() },
     }],
+    location:{
+        place_id:{ type: String , default:""},
+        local_address:{ type: String},
+        latitude: { type: String , default:""},
+        longitude:{ type: String , default:""},
+    },
     // fileId: { type: String, default: '' },
     matter_title: { type: String, required: [true, "matter title  not available"]},
     matter_description: { type: String, required: [true, "case instruction  not available"]},
     dateadded: { type: Date, required: [true, "date case was added not available"], default: new Date() },
     status: { type: mongoose.SchemaTypes.Boolean, default: null },
-    country:  { type: mongoose.SchemaTypes.ObjectId, ref: "jurisdiction", autopopulate: true },
-    state: { type: mongoose.SchemaTypes.ObjectId, ref: "jurisdiction", autopopulate: true },
     practiceArea: [{
         practiceArea_id:    { type: mongoose.SchemaTypes.ObjectId, ref: "practiceArea" }
     }],
     public: { type: Boolean, default: true },
+    user_type:{type:String},
     interestedLawyers: [
         {
             DateIndicated: { type: Date, default: new Date() },
@@ -63,7 +69,7 @@ var matterSchema = new Schema({
             publicId: { type: mongoose.SchemaTypes.ObjectId }
         },
     },
-})
+}, {timestamps : true})
 
 
 module.exports = mongoose.model('matter', matterSchema);
