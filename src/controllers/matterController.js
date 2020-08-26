@@ -1,21 +1,21 @@
-const service = require('../services/matterService');
+const service = require('../services/getAlawyerService/matterService');
 const cloudinary = require('../middlewares/cloudinary');
 
 module.exports = function matterController() {
     this.createMatter = async (req, res) => {
         const files = req.files
         
-        let audio = files.audio == undefined ? null : files.audio[0].path
+       // let audio = files.audio == undefined ? null : files.audio[0].path
         let image = files.image == undefined ? null :files.image[0].path
-        var audioFile = { audio: audio != null && audio !== undefined ? audio : null };
+        //var audioFile = { audio: audio != null && audio !== undefined ? audio : null };
         var imageFile = { image: image != null && image !== undefined ? image : null }
         // audio cloudinary upload
-        if (audio !== null && audio !== undefined) {
-            await cloudinary.uploadToCloud(audioFile.audio).then(result => {
-                audioFile.audioUrl = result.url;
-                return audioFile;
-            });
-        }
+        // if (audio !== null && audio !== undefined) {
+        //     await cloudinary.uploadToCloud(audioFile.audio).then(result => {
+        //         audioFile.audioUrl = result.url;
+        //         return audioFile;
+        //     });
+        // }
         //image cloudinary upload
         if (image !== null && image !== undefined) {
             await cloudinary.uploadToCloud(imageFile.image).then(img => {
@@ -23,7 +23,8 @@ module.exports = function matterController() {
                 return imageFile;
             });
         }
-        service.getLaywer(req.body, req.auth.public_id, audioFile.audioUrl, imageFile.imageUrl).then(data => {
+        console.log(imageFile.imageUrl , 'ggngngngng' , req.auth.public_id)
+        service.getLaywer(req.body, req.auth.Id ,req.auth.public_id, imageFile.imageUrl).then(data => {
             res.status(200).send(data)
         }).catch(err => res.status(500).send(err));
     }
