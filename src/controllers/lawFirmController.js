@@ -2,10 +2,11 @@ const service = require('../services/lawFirmService');
 const cloudinary = require('../middlewares/cloudinary')
 module.exports = function lawFirmController() {
 
-    this.createLawFirm = (req, res) => {
-        service.createLawFirm(req.auth.public_id, req.body).then(data => {
-            res.status(data.status).send(data)
-        }).catch(err => res.status(err.status).send(data))
+
+    this.createLawFirm = async(req,res)=>{
+        await service.createLawFirm(req.auth.public_id , req.body).then(data =>{
+            res.status(data.status).send(data);
+        }).catch(err => res.status(err.status).send(err))
     }
 
     this.uploadProfilePicture = async (req, res) => {
@@ -43,7 +44,6 @@ module.exports = function lawFirmController() {
             .then(data => {
                 res.status(data.status).send(data);
             }).catch(err =>{
-                console.log("eeror fro", err)
                 res.status(err.status).send(err)
             }
             );
@@ -54,7 +54,6 @@ module.exports = function lawFirmController() {
             .then(data => {
                 res.status(data.status).send(data);
             }).catch(err =>{
-                console.log("eeror fro", err)
                 res.status(err.status).send(err)
             }
             );

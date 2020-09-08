@@ -20,14 +20,11 @@ const addNextofKinDetails = (publicId, nextofKinData, fromRegistration) => {
             relationship: nextofKinData.relationship
         };
         UserSchema.findOne({public_id : publicId}).exec((err, foundUser) => {
-            console.log("next of kin check for user status",foundUser )
             if(err || !foundUser){
                 resolve({ success: true, message: "user not found", status: 404 })
             }else{
                 details.user = foundUser._id
-                // resolve({ success: true, message: "user not found", status: 404 })
                 if(fromRegistration){
-                    // addOrUpdateUserPanicAlertSetting(publicId)
                     UserSettingModel.create({user : foundUser._id, public_id : publicId, receive_panic_alert : nextofKinData.alert_status});
                 }
 
@@ -71,7 +68,6 @@ const addNextofKinDetails = (publicId, nextofKinData, fromRegistration) => {
 
 const updateNextofKinDetails = (id, publicId , data) => {
     return new Promise((resolve, reject) => {
-        console.log(id, publicId )
         NextOfKinSchema.findOne({ _id:id , public_id: publicId }).exec((err, found) => {
             if (err) reject({ err: err, status: 500 });
             if(!found){
@@ -79,7 +75,6 @@ const updateNextofKinDetails = (id, publicId , data) => {
             }else{
                 let validationError = jsonPatch.validate(data);
                 if(validationError){
-                    console.log(validationError)
                     resolve({ success: false, message: 'invalid operation', status: 400 });
                 }
                 
@@ -97,7 +92,6 @@ const updateNextofKinDetails = (id, publicId , data) => {
 
 const deleteNextofKinDetails = (publicId , id)=>{
     return new Promise((resolve , reject)=>{
-        console.log(publicId, id)
         NextOfKinSchema.findOneAndRemove({_id:id , public_id:publicId}).exec((err , deleted)=>{
             if(err)reject({err:err , status:500});
             if(!deleted){

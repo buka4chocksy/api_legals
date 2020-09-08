@@ -11,7 +11,6 @@ const uploadToCloud = async (filename, folder = "public") => {
         var result = await   cloudinary.uploader.upload(filename,{folder : `/lawyerpp/${cloudinaryPath}/${folder}/`, return_delete_token : true, resource_type : "auto"})
         return result;
     }catch(err){
-        console.log("ERRORR",err)
         return null;
     }
 };
@@ -21,13 +20,11 @@ const uploadToCloud = async (filename, folder = "public") => {
 const deleteFromCloud = function (fileId) {
     return cloudinary.uploader.destroy(fileId, function (result) {
         //console.log("HERE S THE ERROR", err)
-        console.log("check here for destroy",fileId, result )
         return Promise.resolve(result);
     });
 };
 
 const multipleUpload = function (filenames = []) {
-    console.log("in clodinary method", filenames);
     return new Promise((resolve, reject) => {
         var responses = [];
         var newNonEmptyArray = filenames.filter((value, index) => {

@@ -5,12 +5,10 @@ const cloudinary = require('../middlewares/cloudinary')
 module.exports = function authController() {
 
     this.register = (req, res, next) => {
-        //const device = req.body.deviceID || req.query.deviceID || req.headers['device-id'];
         const token = req.body.token || req.query.token || req.headers['x-access-token'];
         service.Register(req.body, res).then(data => {
             res.status(data.status).send(data)
         }).catch(err => {
-            console.log(err)
             res.status(err.status).send(err)
         });
     }
@@ -56,8 +54,6 @@ module.exports = function authController() {
 
     this.refreshToken = (req,res)=>{
         const clientIp = req.connection.remoteAddress.includes("::") ? `[${req.connection.remoteAddress}]` : req.connection.remoteAddress;
-        // const device = req.body.deviceID || req.query.deviceID || req.headers['device-id']
-
         service.refreshToken(req.auth, clientIp).then(data => {
             res.status(data.status).send(data)
         }).catch(err => res.status(err.status).send(err));
@@ -67,7 +63,6 @@ module.exports = function authController() {
         service.confimPassword(req.auth.public_id, req.body.password).then(data =>{
             res.status(data.status).send(data)
         }).catch(err =>{
-            console.log(err)
             res.status(err.status).send(err)});
     }
 

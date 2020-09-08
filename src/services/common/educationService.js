@@ -11,7 +11,7 @@ exports.createEducation = (publicId, data) => {
             organization: data.organization,
             awards: data.awards
         };
-        
+
         education.create(dataToSave).then((created) => {
             if (created) {
                 resolve({ success: true, message: 'Education created', status: 201, data: created });

@@ -3,13 +3,11 @@ const { applyPatch, validate } = require('fast-json-patch');
 
 exports.createExperience = (data) => {
     return new Promise((resolve, reject) => {
-        console.log("DATA", data);
         experience.create(data).then((updated) => {
             if (updated) {
                 resolve({ success: true, message: 'Experience created', status: 200, data: null });
             }
         }).catch(error => {
-            //log error here
             console.log(error);
             reject({ success: false, message: error, status: 500 });
         });
@@ -17,17 +15,14 @@ exports.createExperience = (data) => {
 };
 
 exports.updateExperience = (data, patchUpdateData) => {
-    console.log(data);
     return new Promise((resolve, reject) => {
         experience.findOne({ public_id: data.public_id }).exec((err, foundExperience) => {
             if (err || !foundExperience) {
                 resolve({ success: false, message: 'Experience not found', status: 404 });
             }
 
-            console.log(foundExperience);
             let validationError = validate(patchUpdateData);
             if (validationError) {
-                console.log(validationError);
                 resolve({ success: false, message: 'invalid operation', status: 400 });
             }
 

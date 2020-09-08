@@ -6,10 +6,8 @@ function generateToken(data = {}) {
     return new Promise((resolve, reject) => {
         jwt.sign({ ...data }, secret, { expiresIn: 20*60 }, function (err, token) {
             if (err) {
-                console.log("error ", err);
                 reject(err);
             } else {
-                console.log("success", token);
                 resolve(token);
             }
         });
@@ -52,7 +50,6 @@ function decodeToken(token) {
         decoded ? resolve(decoded) : reject()
     });
 }
-//exports.decodeToken = decodeToken;
 
 
 

@@ -36,7 +36,6 @@ exports.Register = (data, res) => {
             } else {
                 return model.create(userDetails).then(created => {
                     if (!created) {
-                        //log error message
                         return ({ success: false, message: 'Error registering user', status: 400 });
                     }
                     //what is this for?
@@ -47,7 +46,6 @@ exports.Register = (data, res) => {
                         message: 'Signup almost complete, please choose part ', status: 201, data: created.public_id
                     });
                 }).catch(err => {
-                    console.log("error ", err);
                     return { err: err, status: 500 };
                 });
             }
@@ -70,8 +68,6 @@ exports.updatePhonenumberForOAuthRegistration = (publicId, phonenumber) => {
     return model.findOneAndUpdate({ public_id: publicId }, { phone_number: phonenumber })
         .then(updated => {
             if (!updated) {
-                // throw new Error('Error updating this user');
-                //create logger here
                 return { success: false, message: 'current user not found', status: 404 };
             }
             return { success: true, message: 'phone number updated', status: 200, data: publicId };
@@ -145,11 +141,9 @@ exports.acceptTerms = (data, id, ipaddress) => {
         if (data.accept == 'accept') {
             const usertype = data.user_type;
             const dataForUpdate = { status: true, user_type: usertype, is_complete: true, terms_accepted: true };
-            // usertype === 'lawyer' ? dataForUpdate.is_complete = false :  dataForUpdate.is_complete = true; 
             model.findOneAndUpdate({ public_id: id, terms_accepted: null, phone_number: { "$ne": null } }, dataForUpdate, { new: true }).exec((err, updatedUser) => {
                 if (err) reject({ err: err, status: 500 });
                 if (updatedUser) {
-                    console.log("updated user check", updatedUser);
                     let jwtTokenDetails = {
                         email_address: updatedUser.email_address,
                         phone_number: updatedUser.phone_number,
@@ -166,16 +160,14 @@ exports.acceptTerms = (data, id, ipaddress) => {
                     if (data.user_type === 'client' || data.user_type === 'student') {
                         createClientUser(userDetails).then(createduser => {
                             generateUserAuthenticationResponse(jwtTokenDetails, updatedUser._id, ipaddress, true).then(result => {
-                                console.log("in the rsolv");
                                 resolve({
                                     success: true,
                                     data: { userDetails, authDetails: result.data },
                                     message: 'registration complete',
                                     status: 200
                                 });
-                            }).catch(error => {
-                                //add logger here
-                                console.log("error", error);
+                            }).catch(err => {
+                                reject(err)
                             });
                         });
                     } else {
@@ -186,11 +178,9 @@ exports.acceptTerms = (data, id, ipaddress) => {
                                 message: 'registration complete',
                                 status: 200
                             });
-                        }).catch(error => {
-                            console.log("error", error);
-                            //add logger here
+                        }).catch(err => {
+                            reject(err)
                         });
-                        // resolve({success : true, status : 201, data : updatedUser.public_id});
                     }
                 } else {
                     resolve({ success: false, message: 'could not accept terms. make sure you have added a valid phone number or you have already accepted our tems of service', status: 404 });
@@ -206,12 +196,11 @@ const createClientUser = (userDetails) => {
     return new Promise((resolve, reject) => {
         client.findOne({ email_address: userDetails.email_address }).exec((err, foundUser) => {
             if (err) {
-                //log err here
                 reject(err);
             } else if (!foundUser) {
                 client.create(userDetails).then(createdUser => {
                     resolve(createdUser);
-                }).catch(err => console.log("in the error", err));
+                }).catch(err => reject(err));
             } else {
                 resolve(foundUser);
             }
@@ -245,7 +234,6 @@ exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
                     generateUserAuthenticationResponse(jwtTokenDetails, user._id, ipaddress, true).then(result => {
                         resolve({ success: true, data: { userDetails, authDetails: result.data }, message: 'authentication successful', status: 200 });
                     }).catch(err => {
-                        //log error here with logger
                         reject({ err: err, status: 500 });
                     });
                 } else {
@@ -253,7 +241,6 @@ exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
                 }
             }
         }).catch(err => {
-            console.log("error check", err);
             reject({ err: err, status: 500 });
         });
     });
@@ -269,11 +256,9 @@ exports.sendForgotPasswordToken = (email_address) => {
                     if (err) reject({ err: err, status: 500 });
                     if (updated) {
                         mailer.forgortPasswordMailer(email_address, gen, function (err, sent) {
-                            // if (err) reject({ err: err, status: 500 })
-                            console.log("SEND GRID COULD NOT SEND EMAIL", err);
+                            if (err) reject({ err: err, status: 500 })
                             if (sent) {
-                                // resolve({ success: true, message: 'proceed to verifying the token ', status: 200, data: null })
-                                console.log("SEND GRID COULD SENT EMAIL", err);
+                                resolve({ success: true, message: 'proceed to verifying the token ', status: 200, data: null })
                             }
                         });
 
@@ -296,7 +281,6 @@ exports.verifyUserOtp = (details) => {
                 if (err) reject({ message: "Database error", status: 500, data: err });
 
                 if (currentUser) {
-                    console.log(currentUser.status_code, details.status_code);
                     if (currentUser.status_code === details.status_code) {
                         resolve({ success: true, message: "OTP verification successful", data: { verified: true }, status: 200 });
                     } else {
@@ -340,10 +324,6 @@ exports.changePassword = (id, data) => {
 exports.changeForgotPassword = (data) => {
     return new Promise((resolve, reject) => {
         if (data.password === data.confirm_password) {
-            // model.findOne({ status_code: data.status_code }).exec((err, found) => {
-            //     if (err) reject({ err: err, status: 500 })
-            //     if (found) {
-            //let userEmail = found.email_address
             let newpassword = bcrypt.hashSync(data.password, 10);
             model.findOneAndUpdate({ email_address: data.email_address }, { password: newpassword }).exec((err, updated) => {
                 if (err) reject({ err: err, status: 500 });
@@ -353,10 +333,6 @@ exports.changeForgotPassword = (data) => {
                     resolve({ success: false, message: 'Error changing password ', status: 404 });
                 }
             });
-            //     } else {
-            //         resolve({ success: false, message: 'Invalid token inserted ', status: 404 })
-            //     }
-            // })
         } else {
             resolve({ success: false, message: 'Password fields does not match', status: 400 });
         }
@@ -405,8 +381,6 @@ exports.refreshToken = (details, ipaddress) => {
             if (!user) {
                 resolve({ success: false, message: 'User does not exist', status: 404, data: null });
             }
-            // status: data.status,
-            // Id: data._id
             let jwtTokenDetails = {
                 email_address: details.email_address,
                 phone_number: user.phone_number,
@@ -422,34 +396,12 @@ exports.refreshToken = (details, ipaddress) => {
 
             generateUserAuthenticationResponse(jwtTokenDetails, user._id, ipaddress, true).then(result => {
                 resolve({ success: true, data: { userDetails, authDetails: result.data }, message: 'authentication successful', status: 200 });
-            }).catch(error => {
-                console.log("ERROR IN REFRESHING TOKEN", error);
-                //log error here with logger
+            }).catch(err => {
+                reject({ err: err, status: 500 });
             });
         }).catch(err => {
-            console.log("error check", err);
             reject({ err: err, status: 500 });
         });
-
-        // userToken.findOne({deviceID:device})
-        // .exec((err , result)=>{
-        //      if (err) reject({ success: false, err: err, status: 500 });
-        //     if(result){
-        //         getUserDetail(result.userId).then(activeUser => {
-        //                generateToken(activeUser).then(token => {
-        //                     DBupdateToken(result.userId, token, device).then(update => {
-        //                         if (update) {
-        //                             resolve({ success: true, status: 200, token: token, message: "user token updated" })
-        //                         } else {
-        //                             resolve({ success: false, status: 400, message: 'error updating user token' })
-        //                         }
-        //                     })
-        //               }).catch(err => reject({ err: err, status: 500 }))
-        //              }).catch(err => reject({ err: err, status: 500 }))
-        //     }else{
-        //         resolve({success:false , message:"could not find device ", status:404})
-        //     }
-        // })
     });
 };
 
@@ -480,8 +432,6 @@ const generateUserAuthenticationResponse = (userData, userId, ipaddress, islogin
         ip_address: ipaddress,
         $inc: { refresh_count: 1 }
     };
-    // islogin && delete dataForSave["$inc"];
-
     return addOrUpdateUserAuthenticationToken(dataForSave, userId);
 };
 

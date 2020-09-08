@@ -59,7 +59,6 @@ exports.authenticate = async (req, res, next) => {
                                 Id: data._id,
                             };
 
-                            // console.log(req.auth, "IIN AUTH MIDDLEWARE")
                             res.locals.response = { data: decode, message: "", success: true };
                             next();
                         }
@@ -79,9 +78,7 @@ exports.decodeUser = function(req, res, next) {
     var token = req.body.token || req.query.token || req.headers['x-access-token'];
     if (token) {
         decodeToken(token).then(decoded => {
-            console.log("TOKEN DETAILS", decoded.payload.public_id, token)
             TokenModel.findOne({ public_id: decoded.payload.public_id , "access_token": token, callback_token: req.headers['callback-code']  }).exec((err, exist) => {
-                console.log(exist)
                 if(err){
                     res.status(401).send({ success: true, message: "Something went wrong", data: err });
                 }
@@ -112,7 +109,6 @@ exports.decodeUser = function(req, res, next) {
                 }
             })
         }).catch(err => {
-            console.log("INVALID TOKEN", err)
             res.status(401).send({ success: false, message: "Authentication failed", data: err });
         })
     } else {

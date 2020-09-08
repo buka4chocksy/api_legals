@@ -3,7 +3,6 @@ const service = require('../../services/lawyer/lawyerPracticeAreaService');
 
 module.exports = function practiceAreaController(){
     this.addLawyerPracticeArea = (req,res)=>{
-        console.log("I GOT HERE",req.auth, req.auth.public_id)
         service.addLawyerPracticeArea(req.auth.public_id, req.body.practice_area_data).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));
@@ -17,7 +16,6 @@ module.exports = function practiceAreaController(){
     }
 
     this.updateUserPracticeArea = (req,res)=>{
-        console.log("THE BODY",req.body)
         service.updateUserPracticeArea(req.auth.public_id, req.params.id, req.body).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => res.status(err.status).send(err));

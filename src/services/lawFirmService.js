@@ -6,83 +6,73 @@ const lawfirmAdmin = require('../models/firms/admin');
 const lawyerFormatter = require('../utils/userFormatter');
 
 const lawyers = require('../models/lawyer/lawyer');
-exports.createLawFirm = (id, data) => {
-    return new Promise((resolve, reject) => {
-        lawyerFormatter.getLawyerId(id).then(result => {
-            if (result) {
-                const details = {
-                    public_id: id,
-                    lawyer_id: result,
-                    name_of_firm: data.name_of_firm,
-                    contact_email: data.contact_email,
-                    website_url: data.website_url,
-                    contact_phone_number: [{
-                        phone_number: data.contact_phone_number
-                    }],
-                    location: [{
-                        country_Id: data.country,
-                        state_Id: data.state,
-                        address: data.address
-                    }],
-                }
-                model.findOne({ name_of_firm: details.name_of_firm, contact_email: details.contact_email }).exec((err, exists) => {
-                    if (err) reject({ err: err, status: 500 });
-                    if (exists) {
-                        resolve({ success: false, message: 'lawfirm already exists !!!', status: 404 })
-                    } else {
-                        model.create(details).then(created => {
-                            if (created) {
-                                let lawfrimId = created._id
-                                lawFirmlawyers.find({ $and: [{ firm: lawfrimId }, { lawyer: data.lawyer }] }).exec((err, found) => {
-                                    if (err) reject({ err: err, status: 500 });
-                                    if (found) {
-                                        let details = {
-                                            firm: lawfrimId,
-                                            lawyer: data.lawyer
-                                        }
-                                        lawFirmlawyers.create(details).then(sent => {
-                                            if (sent) {
-                                                firmpracticeArea.find({ $and: [{ firm: lawfrimId }, { practice_area: data.practice_area }] }).exec((err, exists) => {
-                                                    if (err) reject({ err: err, status: 500 });
-                                                    if (exists) {
-                                                        let datas = {
-                                                            firm: lawfrimId,
-                                                            practice_area: data.practice_area
-                                                        }
-                                                        firmpracticeArea.create(datas).then(created => {
-                                                            if (created) {
-                                                                resolve({ success: true, message: 'lawfirm created successfully', status: 200 })
 
-                                                            } else {
-                                                                resolve({ success: false, message: 'Error created firm', status: 401 })
-
-                                                            }
-                                                        }).catch(err => ({ success: false, message: err.message, status: 401 }))
-                                                    }
-                                                })
-                                            } else {
-                                                resolve({ success: false, message: 'Error created firm', status: 401 })
-                                            }
-                                        }).catch(err => ({ success: false, message: err.message, status: 401 }))
-
-                                    }
-                                })
-                            } else {
-                                resolve({ success: false, message: 'error creating lawfirm', status: 401 })
-                            }
-                        }).catch(err => ({ success: false, message: err.message, status: 401 }))
-
-                    }
-                })
-            } else {
-                resolve({ success: false, message: 'lawyer not found !!', status: 404 })
+exports.createLawFirm = async (id, data) => {
+    try {
+        let getLawyerId = await lawyerFormatter.getLawyerId(id);
+        if (getLawyerId) {
+            const details = {
+                public_id: id,
+                lawyer_id: getLawyerId,
+                name_of_firm: data.name_of_firm,
+                contact_email: data.contact_email,
+                website_url: data.website_url,
+                contact_phone_number: [{
+                    phone_number: data.contact_phone_number
+                }],
+                location: [{
+                    country_Id: data.country,
+                    state_Id: data.state,
+                    address: data.address
+                }],
             }
-        }).catch(err => ({ success: false, message: err.message, status: 401 }))
+            let findLawfirm = await model.findOne({ name_of_firm: details.name_of_firm, contact_email: details.contact_email })
+            if (findLawfirm) {
+                return { success: false, message: 'lawfirm already exists !!!', status: 404 }
 
+            } else {
+                let create_law_firm = await model.create(details);
+                if (create_law_firm) {
+                    let lawfrimId = create_law_firm._id
+                    let find_lawfirm_lawyers = await lawFirmlawyers.findOne({ $and: [{ firm: lawfrimId }, { lawyer: data.lawyer }] })
+                    if (!find_lawfirm_lawyers) {
+                        let firm_lawyers_details = {
+                            firm: lawfrimId,
+                            lawyer: data.lawyer
+                        }
+                        let create_firm_lawyers = await lawFirmlawyers.create(firm_lawyers_details)
+                        if (create_firm_lawyers) {
 
-    })
+                            let find_firm_practicearea = await firmpracticeArea.findOne({ $and: [{ firm: lawfrimId }, { practice_area: data.practice_area }] })
+                            if (find_firm_practicearea) {
+                                return { success: false, message: "practice area already exists with firm", status: 400 }
+                            } else {
+                                let practiceAreaDetails = {
+                                    firm: lawfrimId,
+                                    practice_area: data.practice_area
+                                }
+                                let create_firm_pracitise_area = await firmpracticeArea.create(practiceAreaDetails);
+                                if (create_firm_pracitise_area) {
+                                    return { success: true, message: "Lawfirm created successfully", status: 200 }
+                                } else {
+                                    return { success: false, message: "error creating firm practice area", status: 400 }
+                                }
+                            }
+                        } else {
+                            return { success: false, message: "error creating lawfirm", status: 400 }
+                        }
+                    } else {
+                        return { success: false, message: "lawyer already exists in this lawfirm", status: 404 }
+                    }
+                } else {
+                    return { success: false, message: "Error creating lawfirm", status: 400 }
+                }
+            }
+        }
+    } catch (err) {
+        return err
+    }
 }
-
 //profile picture update
 exports.uploadProfilePicture = (id, firmId, data) => {
     return new Promise((resolve, reject) => {
@@ -229,7 +219,6 @@ exports.addAdmin = (id, firmId, data) => {
                         firm: firmId
                     }));
                     lawfirmAdmin.insertMany(newAdmins, (err, result) => {
-                        console.log(err);
                         if (err) {
 
                         } else {
@@ -421,36 +410,6 @@ exports.getFirmAdmins = (firmId) => {
     })
 }
 
-// exports.addFirmPracticeArea = (Firmpractiareas, firmId) => {
-//     return new Promise((resolve, reject) => {
-//         let stringsArray1 = Firmpractiareas.practice_area.split(",")
-//         firmpracticeArea.find({ firm: firmId }).exec((err, found) => {
-//             let stringsArray = found.map(a => a.practice_area.toString())
-//             let arrayConcat = stringsArray1.concat(stringsArray);
-//             let sortArray = arrayConcat.sort()
-//             console.log(sortArray , 'sorted array')
-//             // var results = [];
-//             // for (var i = 0; i < arrayConcat.length - 1; i++) {
-//             //     if (sortArray[i + 1] != sortArray[i]) {
-//             //         results.push(sortArray[i]);
-//             //     }
-//             // }
-//             // let newPracticeArea = results.map(b =>({
-//             //     practice_area:b,
-//             //     firm:firmId
-//             // }));
-//             // firmpracticeArea.insertMany(newPracticeArea , (err, done)=>{
-//             //     if(err) {
-//             //         if (err) reject({ err: err, status: 500 });
-//             //     } else {
-//             //         resolve({ status: 201, data: null, message: 'practicearea added' });
-//             //     }
-//             // })
-
-//         })
-//     })
-// }
-
 exports.addFirmPracticeArea = (Firmpractiareas, firmId) => {
     return new Promise((resolve, reject) => {
         let stringsArray1 = Firmpractiareas.practice_area.split(",")
@@ -462,21 +421,20 @@ exports.addFirmPracticeArea = (Firmpractiareas, firmId) => {
             for (var i = 0; i < arrayConcat.length - 1; i++) {
                 if (sortArray[i + 1] != sortArray[i]) {
                     results.push(sortArray[i]);
-                    
+
                 }
             }
-            console.log(results , 'hmmmmmm')
-            // let newPracticeArea = results.map(b =>({
-            //     practice_area:b,
-            //     firm:firmId
-            // }));
-            // firmpracticeArea.insertMany(newPracticeArea , (err, done)=>{
-            //     if(err) {
-            //         if (err) reject({ err: err, status: 500 });
-            //     } else {
-            //         resolve({ status: 201, data: null, message: 'practicearea added' });
-            //     }
-            // })
+            let newPracticeArea = results.map(b => ({
+                practice_area: b,
+                firm: firmId
+            }));
+            firmpracticeArea.insertMany(newPracticeArea, (err, done) => {
+                if (err) {
+                    if (err) reject({ err: err, status: 500 });
+                } else {
+                    resolve({ status: 201, data: null, message: 'practicearea added' });
+                }
+            })
 
         })
     })

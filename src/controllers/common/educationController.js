@@ -2,11 +2,9 @@ const service = require('../../services/common/educationService');
 
 module.exports =  function bioController(){
     this.createEducation = (req , res)=>{
-        console.log(req.body)
         service.createEducation(req.auth.public_id, req.body).then(data =>{
             res.status(data.status).send(data);
         }).catch(err => {
-            console.log("ERRRRRRR",err)
             res.status(err.status).send(err)})
     }
 

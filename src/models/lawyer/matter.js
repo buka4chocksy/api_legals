@@ -1,63 +1,50 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var matterSchema = new Schema({
-    lawyer: {
-        Lawyer: { type: mongoose.SchemaTypes.ObjectId, ref: "Lawyer", autopopulate: [true, "lawyer id  not available"] },
-        publicId: { type: mongoose.SchemaTypes.ObjectId }
+    title: { type: String, required: [true, "matter title  not available"] },
+    case_owner: {
+        user_detail: { type: mongoose.SchemaTypes.ObjectId, autopopulate: true, index: true },
+        publicId: { type: mongoose.SchemaTypes.ObjectId , autopopulate: true, index: true },
+        name: { type: String, lowercase: true },
+        user_type: { type: String, lowercase: true },
     },
-    clientid: { type: mongoose.SchemaTypes.ObjectId, ref: "user", autopopulate: true, index: true },
-    publicId: { type: mongoose.SchemaTypes.ObjectId},
-    client_name: { type: String, lowercase: true },
     deadline: {
-        type: Date, required: [true, "Time limit not provided"]
+        type: String, required: [true, "Time limit not provided"]
         // validate: { msg: "time limit can't be less than today", validator: validateReportDate }
     },
-    Imagefile: [{
-        imageUrl: { type: String, default: '' },
-        created_on: { type: Date, default: new Date() },
+    matter_description: { type: String, required: [true, "case instruction  not available"] },
+    specified_practiceareas: [{
+        practiceArea_id: { type: mongoose.SchemaTypes.ObjectId, ref: "practiceArea" }
     }],
-    audiofile: [{
-        audioUrl: { type: String, default: '' },
-        created_on: { type: Date, default: new Date() },
-    }],
-    location:{
-        place_id:{ type: String , default:""},
-        local_address:{ type: String},
-        latitude: { type: String , default:""},
-        longitude:{ type: String , default:""},
+    location: {
+        place_id: { type: String, default: "" },
+        local_address: { type: String },
+        latitude: { type: String, default: "" },
+        longitude: { type: String, default: "" },
     },
-    // fileId: { type: String, default: '' },
-    matter_title: { type: String, required: [true, "matter title  not available"]},
-    matter_description: { type: String, required: [true, "case instruction  not available"]},
-    dateadded: { type: Date, required: [true, "date case was added not available"], default: new Date() },
-    status: { type: mongoose.SchemaTypes.Boolean, default: null },
-    practiceArea: [{
-        practiceArea_id:    { type: mongoose.SchemaTypes.ObjectId, ref: "practiceArea" }
+    case_files: [{
+        case_file_url: { type: String },
+        case_file_secure_url: { type: String },
+        case_file_id: { type: String },
+        case_file_delete_token: { type: String },
+        case_file_resource_type: { type: String },
+        case_file_public_id: { type: String },
+        case_file_name: { type: String },
+        case_file_mime_type: { type: String },
+        created_on: { type: Date, default: new Date() },
     }],
-    public: { type: Boolean, default: true },
-    user_type:{type:String},
-    interestedLawyers: [
-        {
-            DateIndicated: { type: Date, default: new Date() },
-            Lawyer: { type: mongoose.SchemaTypes.ObjectId, ref: "Lawyer", index: true, autopopulate: true },
-            status: { type: Boolean, default: false },
-            publicId: { type: mongoose.SchemaTypes.ObjectId },
-            userType: { type: String, default: 'lawyer' },
-            isfirm: { type: Boolean, default: false },
-            firm: { type: mongoose.SchemaTypes.ObjectId, ref: "lawFirm", index: true, autopopulate: true }
-
-        }
-    ],
-    specifiedLawyer: {
-        Lawyer: { type: mongoose.SchemaTypes.ObjectId, ref: "Lawyer", autopopulate: true },
+    is_public: { type: Boolean, default: true },
+    is_available: { type: mongoose.SchemaTypes.Boolean, default: true },
+    specified_lawyer: {
+        lawyer_detail: { type: mongoose.SchemaTypes.ObjectId, ref: "Lawyer", autopopulate: true },
         status: { type: Boolean, default: null }, //default to null when no reponse has been recieved
-        firm: { type: mongoose.SchemaTypes.ObjectId, ref: "lawFirm", autopopulate: true },
         publicId: { type: mongoose.SchemaTypes.ObjectId },
-        isFirm: { type: Boolean, default: false }
     },
-    completed: { type: Boolean, default: false },
-    //this is for when a firm has been hired to handle a case, then use this.
-    isFirm: { type: Boolean, default: false },
+    specified_firm: {
+        firm_detail: { type: mongoose.SchemaTypes.ObjectId, ref: "lawFirm", autopopulate: true },
+        status: { type: Boolean, default: null }, //default to null when no reponse has been recieved
+        publicId: { type: mongoose.SchemaTypes.ObjectId },
+    },
     assignedTo: {
         usertype: { type: String },
         lawyer: {
@@ -69,7 +56,8 @@ var matterSchema = new Schema({
             publicId: { type: mongoose.SchemaTypes.ObjectId }
         },
     },
-}, {timestamps : true})
+}, { timestamps: true })
+
 
 
 module.exports = mongoose.model('matter', matterSchema);

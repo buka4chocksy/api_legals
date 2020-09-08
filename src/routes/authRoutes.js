@@ -9,7 +9,7 @@ const {validate} = require('../validators/lib/index');
 module.exports = function () {
     const authCtrl = new authController()
     const nextOfkinCtrl = new nextOfKinController();
-    router.post('/register', validate(userValidator.schema), authCtrl.register)
+    router.post('/register',  authCtrl.register)
     router.put('/oauth/addphonenumber/:publicid',validate(userValidator.PhoneNumberSchema), authCtrl.updatePhonenumberForOAuthRegistration)
     router.put('/verify',middleware.authenticate, authCtrl.verifyUser)
     router.post('/terms/:publicid', authCtrl.terms )

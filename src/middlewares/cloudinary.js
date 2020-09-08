@@ -34,7 +34,6 @@ exports.deleteFromCloud = function(publicID){
 }
 
 exports.multipleUpload = function(filenames = []){
-    console.log("in clodinary method", filenames)
     return new Promise((resolve, reject) => {
         var responses = [];
       var newNonEmptyArray =   filenames.filter((value, index) => {

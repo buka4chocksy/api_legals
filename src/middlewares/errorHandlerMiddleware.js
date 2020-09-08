@@ -39,7 +39,6 @@ module.exports.schemaValidatorHandler = (schema) => {
         joiValidator(req.body, schema).then(result => {
             next();
         }).catch(error => {
-            // res.status(400).send(error);
             res.status(400).send({ success: false, message: error, data: null })
         });
     };

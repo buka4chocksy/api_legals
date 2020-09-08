@@ -8,8 +8,6 @@ module.exports = function () {
     router.get('/auth/google/callback',
         passport.authenticate('google-signup', { failureRedirect: '/error' }),
         (req, res) => {
-            // authService.getUserDetail(req.user.public_id).then(activeUser => {
-                console.log("USER EXIST IN OAUTH", req.user.exist)
             if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
@@ -39,7 +37,6 @@ module.exports = function () {
         passport.authenticate('signup', { failureRedirect: '/error' }),
         (req, res) => {
 
-            // authService.getUserDetail(req.user.public_id).then(activeUser => {
             if (!req.user.exist) {
                 const response = {
                     public_id: req.user.public_id,
@@ -47,12 +44,10 @@ module.exports = function () {
                     last_name: req.user.last_name,
                     email_address: req.user.email_address
                 };
-                console.log('response sent to client: ', response);
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify(response));
             } else {
                 res.redirect('lawyerpp://signup?user=' + JSON.stringify({ message: 'email already exist', data: null, public_id: req.user.public_id, exist : true }));
             }
-            // });
         });
 
 
@@ -69,7 +64,6 @@ module.exports = function () {
     const generateOAuthLoginDetails = (userDbDetails, request, response) => {
         const clientIp = request.connection.remoteAddress.includes("::") ? `[${request.connection.remoteAddress}]` : request.connection.remoteAddress;
         let { email_address, phone_number, public_id, user_type, first_name, last_name, image_url, id, is_complete } = userDbDetails;
-        console.log("OAUTH LOGIN DETAILS CHECK", is_complete);
         let jwtTokenDetails = {
             email_address: email_address,
             phone_number: phone_number,

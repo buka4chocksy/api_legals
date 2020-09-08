@@ -2,8 +2,8 @@ const model = require('../models/lawyer/lawyer');
 const user = require('../models/auth/users')
 const authService = require('../services/authService')
 const jsonPatch = require('fast-json-patch')
-const {addlawyerJurisdiction} = require('./lawyer/lawyerJurisdictionService');
-const {addLawyerPracticeArea}  = require('./lawyer/lawyerPracticeAreaService');
+const { addlawyerJurisdiction } = require('./lawyer/lawyerJurisdictionService');
+const { addLawyerPracticeArea } = require('./lawyer/lawyerPracticeAreaService');
 
 
 exports.completelawyerRegisteration = (publicId, data, file) => {
@@ -19,7 +19,7 @@ exports.completelawyerRegisteration = (publicId, data, file) => {
                     public_id: publicId
                 }
                 model.findOne({ public_id: publicId }).exec((err, exists) => {
-                    if (err) reject({success: true,  err: err, status: 500, data : null, message : "something went wrong" })
+                    if (err) reject({ success: true, err: err, status: 500, data: null, message: "something went wrong" })
                     if (exists) {
                         resolve({ success: true, message: 'lawyer already exists, please upload certificate', status: 400 })
                     } else {
@@ -28,17 +28,17 @@ exports.completelawyerRegisteration = (publicId, data, file) => {
                                 //add the lawyer practice area
                                 addLawyerPracticeArea(publicId, data.practice_area);
                                 //add the lawyer jurisdictions
-                                addlawyerJurisdiction(publicId,{jurisdiction_id :  data.jurisdiction_id,enrollment_number : data.enrollment_number, year : data.year}, file)
+                                addlawyerJurisdiction(publicId, { jurisdiction_id: data.jurisdiction_id, enrollment_number: data.enrollment_number, year: data.year }, file)
                                 //update user type in User collection for the lawyer
                                 user.findOneAndUpdate({ public_id: publicId }, { user_type: details.user_type })
                                 resolve({
                                     success: true,
                                     message: 'please accept the terms and conditon',
                                     status: 201,
-                                    data : publicId
+                                    data: publicId
                                 });
                             }
-                        }).catch(err =>reject({ err: err, status: 500 }))
+                        }).catch(err => reject({ err: err, status: 500 }))
                     }
                 })
             } else {
@@ -69,11 +69,11 @@ exports.editLawyerProfile = (id, data) => {
     return new Promise((resolve, reject) => {
         model.findOne({ public_id: id }).exec((err, found) => {
             if (err) reject({ err: err, status: 500 });
-            if(!found){
-                resolve({ success: true, message: 'lawyer profile not updated',  status: 200 })
-            }else{
-                var updateProfile =  jsonPatch.applyPatch(found.toObject(), data);
-                model.findOneAndUpdate({public_id:id}, updateProfile.newDocument, {upsert:true , new:true}).exec((err , updated)=>{
+            if (!found) {
+                resolve({ success: true, message: 'lawyer profile not updated', status: 200 })
+            } else {
+                var updateProfile = jsonPatch.applyPatch(found.toObject(), data);
+                model.findOneAndUpdate({ public_id: id }, updateProfile.newDocument, { upsert: true, new: true }).exec((err, updated) => {
                     if (err) reject({ err: err, status: 500 });
                     resolve({ success: true, message: 'lawyer profile updated successfully', status: 200 })
                 })
@@ -82,26 +82,6 @@ exports.editLawyerProfile = (id, data) => {
         })
     })
 }
-
-
-// //update lawyer edit profile
-// exports.editLawyerProfile = (id, data) => {
-//     return new Promise((resolve, reject) => {
-//         const details = {
-//             gender: data.gender,
-//             country: data.country,
-//             state_of_origin: data.state_of_origin
-//         }
-//         model.findOneAndUpdate({ public_id: id }, details).exec((err, update) => {
-//             if (err) reject({ err: err, status: 500 });
-//             if (update) {
-//                 resolve({ success: true, message: 'lawyer Profile updated !!!', status: 200 })
-//             } else {
-//                 resolve({ success: false, message: 'error updating lawyer profile!!!', status: 400 })
-//             }
-//         })
-//     })
-// }
 
 //delete user account
 exports.deleteAccount = (id, publicId) => {
@@ -193,7 +173,7 @@ exports.searchLawyer = function (option) {
         model.find({
             $or: [{ first_name: { $regex: option.search, $options: 'i' } }, { last_name: { $regex: option.search, $options: 'i' } },
             { email_address: { $regex: option.search, $options: 'i' } }]
-        }, {  __v: 0, password: 0, status_code: 0 })
+        }, { __v: 0, password: 0, status_code: 0 })
             .populate({ path: "practice_area.practice_area_id", model: 'practiceArea', select: { _id: 0, __v: 0 } })
             .populate({ path: "jurisdiction.jurisdiction_id", model: 'jurisdiction', select: { _id: 0, __v: 0 } })
             .exec((err, found) => {
@@ -215,10 +195,6 @@ exports.searchLawyer = function (option) {
 //profile picture update
 exports.profilePicture = (id, detail) => {
     return new Promise((resolve, reject) => {
-        // const detail = {
-        //     image_url: data.imageUrl,
-        //     image_id: data.imageID
-        // }
         model.findOneAndUpdate({ public_id: id }, detail).exec((err, updated) => {
             if (err) reject({ err: err, status: 500 });
             if (updated) {

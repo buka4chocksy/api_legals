@@ -11,7 +11,6 @@ exports.getLocation = (latitude, longitude) => {
             resolve (data)
           } catch (error) {
             // console.log("************************************************************************",error);
-            console.log("error check", error);
             reject (error)
           }
     })
