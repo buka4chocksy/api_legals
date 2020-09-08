@@ -4,7 +4,6 @@ const User = require('../models/auth/users');
 
 const GoogleStrategySignup = new GoogleStrategy(google, async (accessToken, refreshToken, profile, done) => {
     User.findOne({"$or" : [{'oauth.oauthID': profile.id}, {email_address : profile._json.email}] }, (err, user) => {
-        console.log("GOOGLE CHECKING USER FOUND", user)
         if (err) console.log(err);
         if (user) {
             user.exist = true;
@@ -19,7 +18,6 @@ const GoogleStrategySignup = new GoogleStrategy(google, async (accessToken, refr
             user.oauth.provider = profile.provider;
             user.save().then(created => {
                 if (created) {
-                    console.log('Google User created successfully!')
                     done(null, created)
                 }
             }).catch(err => {
@@ -31,7 +29,6 @@ const GoogleStrategySignup = new GoogleStrategy(google, async (accessToken, refr
 
 const GoogleStrategySignin = new GoogleStrategy(googleLogin, async (accessToken, refreshToken, profile, done) => {
     User.findOne({ 'oauth.oauthID': profile.id }, (err, user) => {
-        console.log(' Google reached here...', user)
         if (err) console.log(err);
         if (user) {
             done(null, user)
