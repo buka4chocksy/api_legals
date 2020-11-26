@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 mongoose.Promise = require('bluebird');
-const uri = process.env.NODE_ENV === "production" ? process.env.lawDBURL : process.env.localDB;
+const uri = process.env.NODE_ENV === "production" ? process.env.lawDBURL : process.env.lawDBURL;
 // if(process.env.NODE_ENV !== 'production') mongoose.set('debug', true);
 module.exports = function init() {
 
