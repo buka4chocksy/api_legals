@@ -211,10 +211,10 @@ const createClientUser = (userDetails) => {
 exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
     return new Promise((resolve, reject) => {
         model.findOne({ email_address: email_address.toLowerCase() }, { __v: 0, }).then(user => {
-            if (!user) resolve({ success: false, message: 'user does not exist', status: 404 });
+            if (!user) resolve({ success: false, message: 'user does not exist', status: 401 });
             else if (user && !user.is_complete) {
                 GetNextProcessForIncompleteRegistration(user, res);
-                resolve({ success: false, message: 'Sorry you have not accepted the terms and condition', status: 400, data: user.public_id });
+                resolve({ success: false, message: 'Sorry you have not accepted the terms and condition', status: 401, data: user.public_id });
             }
             else {
                 const validPassword = user.comparePassword(password);
@@ -237,7 +237,7 @@ exports.userLogin = (email_address, password, deviceID, ipaddress, res) => {
                         reject({ err: err, status: 500 });
                     });
                 } else {
-                    resolve({ success: false, message: 'incorrect email or password', status: 400 });
+                    resolve({ success: false, message: 'incorrect email or password', status: 401 });
                 }
             }
         }).catch(err => {
