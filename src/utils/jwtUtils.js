@@ -4,7 +4,7 @@ const secret = process.env.JWT_SECRET
 //generate token
 function generateToken(data = {}) {
     return new Promise((resolve, reject) => {
-        jwt.sign({ ...data }, secret, { expiresIn: 20*60 }, function (err, token) {
+        jwt.sign({ ...data }, secret, { expiresIn:"24hrs" }, function (err, token) {
             if (err) {
                 reject(err);
             } else {
