@@ -27,6 +27,7 @@ const { LinkedinSignup, LinkedinSignin } = require('./src/auth/linkedin');
 
 // Initialize Passport
 app.use(passport.initialize());
+app.use(cors({allowedHeaders : "*"}));
 app.use(passport.session());
 app.use(session({
   secret: 'keyboard cat',
@@ -65,7 +66,7 @@ app.use(bodyparser.urlencoded({ extended: true }));
 app.use(bodyparser.json());
 app.use(express.json()); //for parsing application/json
 app.use(express.urlencoded({ extended: false})); //for parsing application/x-www-form-urlencoded
-app.use(cors());
+
 
 app.use('/api', rootRouter);
 app.use('/', socialAuth);
